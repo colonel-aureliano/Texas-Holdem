@@ -2,6 +2,27 @@ open OUnit2
 open Texas_holdem
 open Card
 
+(* helper function *)
+let rec cards_to_string (hand : card list) =
+  match hand with
+  | [] -> ""
+  | h :: t -> (
+      match h with
+      | S x -> "S " ^ string_of_int x ^ "\n" ^ cards_to_string t
+      | C x -> "C " ^ string_of_int x ^ "\n" ^ cards_to_string t
+      | H x -> "H " ^ string_of_int x ^ "\n" ^ cards_to_string t
+      | D x -> "D " ^ string_of_int x ^ "\n" ^ cards_to_string t)
+
+let n_random_card_test
+    (name : string)
+    (input1 : card list)
+    (input2 : int)
+    (expected_output : int) =
+  let output = n_random_card input1 input2 in
+  (*let _ = print_string (cards_to_string (fst output)) in*)
+  name >:: fun _ ->
+  assert_equal expected_output (List.length (snd output))
+
 let single_compare_test
     (name : string)
     (input1 : card)
@@ -12,16 +33,16 @@ let single_compare_test
 
 let high_card_test
     (name : string)
-    (input1 : t)
-    (input2 : t)
+    (input1 : card list)
+    (input2 : card list)
     (expected_output : int) =
   name >:: fun _ ->
   assert_equal expected_output (high_card input1 input2)
 
 let f_test
     (name : string)
-    (f : t -> bool)
-    (input : t)
+    (f : card list -> bool)
+    (input : card list)
     (expected_output : bool) =
   name >:: fun _ -> assert_equal expected_output (f input)
 
@@ -35,6 +56,7 @@ let hand4 = [ C 5; D 5; H 5; S 5; C 2; C 1; S 0 ] (* four of a kind *)
 
 let card_tests =
   [
+    n_random_card_test "n_random_card_test" new_deck 5 47;
     single_compare_test "single_compare_test greater" (C 1) (H 2) 1;
     single_compare_test "single_compare_test lesser" (D 5) (S 13) ~-1;
     single_compare_test "single_compare_test equal 1" (H 13) (H 13) 0;

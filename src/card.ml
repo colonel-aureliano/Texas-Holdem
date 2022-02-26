@@ -31,6 +31,14 @@ let random_card (t : t) =
   let new_deck = List.filter (fun x -> x <> c) t in
   (c, new_deck)
 
+let rec n_random_card (t : t) (n : int) =
+  match n with
+  | 0 -> ([], t)
+  | _ ->
+      let card, new_deck = random_card t in
+      let remaining_cards, new_deck = n_random_card new_deck (n - 1) in
+      (card :: remaining_cards, new_deck)
+
 let extract_value (c : card) =
   match c with
   | S x | H x | C x | D x -> x
