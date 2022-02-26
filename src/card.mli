@@ -35,4 +35,22 @@ val high_card : t -> t -> int
     card of [hand1] is larger than the highest card of [hand2] (using
     poker comparison rules), -1 if it's less than, 0 if they're equal. *)
 
-val determine_pair : t -> (card * card) list
+val has_pair : t -> bool
+(** [has_pair hand] returns true if there is at least one pair in
+    [hand], false otherwise. *)
+
+val has_two_pair : t -> bool
+(** [has_two_pair hand] returns true if there is at least two distinct
+    pairs in [hand], false otherwise. Examples:
+
+    - [has_two_pair \[C 5; D 5; S 4; H 4; S 2; S 1; H 1\]] is true
+    - [has_two_pair \[C 5; D 5; S 5; H 5; S 2; S 1; H 1\]] is true
+    - [has_two_pair \[C 5; D 5; S 5; H 5; S 2; S 1; H 0\]] is false*)
+
+val has_three_of_a_kind : t -> bool
+(** [has_three_of_a_kind hand] returns true if there is at least three
+    cards of a kind in [hand], false otherwise.*)
+
+val has_four_of_a_kind : t -> bool
+(** [has_four_of_a_kind hand] returns true if there is at least four
+    cards of a kind in [hand], false otherwise.*)

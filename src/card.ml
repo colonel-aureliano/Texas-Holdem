@@ -57,6 +57,26 @@ let rec determine_pair (hand : t) =
   match hand_temp with
   | x1 :: x2 :: _ ->
       if x1 = x2 then
-        (List.hd hand, List.nth hand 1) :: determine_pair (List.tl hand)
+        extract_value (List.hd hand) :: determine_pair (List.tl hand)
       else determine_pair (List.tl hand)
   | _ -> []
+
+let has_pair (hand : t) = determine_pair hand <> []
+
+let has_two_pair (hand : t) =
+  List.length (List.sort_uniq compare (determine_pair hand)) > 1
+
+let rec has_three_of_a_kind (hand : t) =
+  let l = determine_pair hand in
+  match l with
+  | [] -> false
+  | h :: t -> List.mem h t || has_three_of_a_kind (List.tl hand)
+
+let rec has_four_of_a_kind (hand : t) =
+  let l = determine_pair hand in
+  match l with
+  | [] -> false
+  | h1 :: h2 :: t ->
+      (h1 = h2 && List.mem h1 (List.tl t))
+      || has_three_of_a_kind (List.tl hand)
+  | _ -> false
