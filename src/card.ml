@@ -6,8 +6,6 @@ type card =
 
 type t = card list
 
-exception NotSameSuit
-
 let rec create_new_deck lst =
   match lst with
   | [] -> create_new_deck [ S 1 ]
@@ -33,12 +31,32 @@ let random_card (t : t) =
   let new_deck = List.filter (fun x -> x <> c) t in
   (c, new_deck)
 
-let compare (card1 : card) (card2 : card) =
-  match (card1, card2) with
-  | S x1, S x2 | H x1, H x2 | C x1, C x2 | D x1, D x2 -> (
-      match (x1, x2) with
-      | 1, 1 -> 0
-      | 1, _ -> 1
-      | _, 1 -> -1
-      | _ -> if x1 > x2 then 1 else if x1 < x2 then -1 else 0)
-  | _ -> raise NotSameSuit
+let extract_value (c : card) =
+  match c with
+  | S x | H x | C x | D x -> x
+
+let single_compare (card1 : card) (card2 : card) =
+  let x1 = extract_value card1 in
+  let x2 = extract_value card2 in
+  match (x1, x2) with
+  | 1, 1 -> 0
+  | 1, _ -> 1
+  | _, 1 -> -1
+  | _ -> if x1 > x2 then 1 else if x1 < x2 then -1 else 0
+
+let high_card (hand1 : t) (hand2 : t) =
+  let hand1 = List.rev (List.sort single_compare hand1) in
+  let hand2 = List.rev (List.sort single_compare hand2) in
+  let h1 = List.hd hand1 in
+  let h2 = List.hd hand2 in
+  single_compare h1 h2
+
+let rec determine_pair (hand : t) =
+  let hand = List.rev (List.stable_sort single_compare hand) in
+  let hand_temp = List.map extract_value hand in
+  match hand_temp with
+  | x1 :: x2 :: _ ->
+      if x1 = x2 then
+        (List.hd hand, List.nth hand 1) :: determine_pair (List.tl hand)
+      else determine_pair (List.tl hand)
+  | _ -> []

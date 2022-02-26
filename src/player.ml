@@ -4,6 +4,8 @@ type player = {
   cards : Card.t;
 }
 
+exception IllegalMove
+
 let create_player
     (input_name : string)
     (input_wealth : int)
@@ -13,6 +15,8 @@ let create_player
 let name player = player.name
 let wealth player = player.wealth
 let cards player = player.cards
-let fold player = { player with cards = [] }
-let raise player amount = failwith "unimplemented"
-let call player amount = failwith "unimplemented"
+let remove_cards player = { player with cards = [] }
+
+let deduct player amount =
+  if player.wealth < amount then raise IllegalMove
+  else { player with wealth = player.wealth - amount }
