@@ -80,6 +80,10 @@ let rec has_three_of_a_kind (hand : t) =
   | [] -> false
   | h :: t -> List.mem h t || has_three_of_a_kind (List.tl hand)
 
+let has_straight (hand : t) = failwith "unimplemented"
+let has_flush (hand : t) = failwith "unimplemented"
+let has_full_house (hand : t) = failwith "unimplemented"
+
 let rec has_four_of_a_kind (hand : t) =
   let l = determine_pair hand in
   match l with
@@ -88,3 +92,6 @@ let rec has_four_of_a_kind (hand : t) =
       (h1 = h2 && List.mem h1 (List.tl t))
       || has_three_of_a_kind (List.tl hand)
   | _ -> false
+
+let has_straight_flush (hand : t) = failwith "unimplemented"
+let has_royal_flush (hand : t) = failwith "unimplemented"

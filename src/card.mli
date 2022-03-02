@@ -51,6 +51,25 @@ val has_three_of_a_kind : t -> bool
 (** [has_three_of_a_kind hand] returns true if there is at least three
     cards of a kind in [hand], false otherwise.*)
 
+val has_straight : t -> bool
+(** [has_straight hand] returns true if [hand] is a striaght, false
+    otherwise. *)
+
+val has_flush : t -> bool
+(** [has_flush hand] returns true if [hand] is a flush, false otherwise. *)
+
+val has_full_house : t -> bool
+(** [has_full_house hand] returns true if [hand] is a full house, false
+    otherwise. *)
+
 val has_four_of_a_kind : t -> bool
 (** [has_four_of_a_kind hand] returns true if there is at least four
     cards of a kind in [hand], false otherwise.*)
+
+val has_straight_flush : t -> bool
+(** [has_straight_flush hand] returns true if [hand] is a straight
+    flush, false otherwise.*)
+
+val has_royal_flush : t -> bool
+(** [has_royal_flush hand] returns true if [hand] is a royal flush,
+    false otherwise.*)
