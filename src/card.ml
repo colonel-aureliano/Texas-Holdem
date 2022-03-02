@@ -27,7 +27,7 @@ let new_deck = create_new_deck []
 
 let random_card (t : t) =
   let _ = Random.self_init () in
-  let c = List.nth t (Random.int 52) in
+  let c = List.nth t (Random.int (List.length t - 1)) in
   let new_deck = List.filter (fun x -> x <> c) t in
   (c, new_deck)
 

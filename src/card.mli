@@ -16,10 +16,6 @@ type t = card list
 val new_deck : t
 (** Returns a new deck of cards. There are 52 cards in it. *)
 
-val random_card : t -> card * t
-(** [random_card deck] returns [(c, new_deck)] where [c] is a random
-    card from [deck] and [new_deck] is [deck] with [c] removed. *)
-
 val n_random_card : t -> int -> t * t
 (** [n_random_card deck amount] returns [(cards, new_deck)] where
     [cards] is a list of distinct random cards from [deck] and
