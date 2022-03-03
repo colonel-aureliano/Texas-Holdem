@@ -22,6 +22,15 @@ val n_random_card : t -> int -> t * t
     [new_deck] is [deck] with elements of [cards] removed. Requires:
     [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
+val index_of_highest_hand : t list -> int
+(** [index_of_highest_hand list_of_list_card] returns the index of the
+    highest hand in [list_of_list_card], using texas holdem card ranking
+    rules. *)
+
+(********************************************************************
+    Below are mainly for testing purposes.
+ ********************************************************************)
+
 val single_compare : card -> card -> int
 (** [compare card1 card2] returns 1 if [card1] is larger than [card2]
     (using poker comparison rules), -1 if [card1] is less than [card2],
@@ -74,5 +83,3 @@ val has_straight_flush : t -> bool
 val has_royal_flush : t -> bool
 (** [has_royal_flush hand] returns true if [hand] has 'A', 'K', 'Q',
     'J', 10 of the same suit, false otherwise. *)
-
-val determine_pair : t -> int list

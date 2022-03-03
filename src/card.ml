@@ -259,3 +259,5 @@ let rec has_royal_flush_helper hand =
 let has_royal_flush (hand : t) =
   let hand = sort_and_group hand in
   has_royal_flush_helper hand
+
+let index_of_highest_hand (list : t list) = failwith "unimplemented"
