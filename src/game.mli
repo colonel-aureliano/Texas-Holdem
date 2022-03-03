@@ -1,20 +1,16 @@
-type game = {
-    player_queue = player list
-    consecutive_calls = int
-    pot = int
-    current_deck = Card.t
-    cards_on_table = Card.t
-
-}
-
-val create_game : player list -> game 
-(** [create_game] initialize the game with player list passed
-in from the interface player牌 + 桌上的三张*)
+open Player
+type game 
+(** The abstract type of values representing game. *)
 
 type command =
 | Call 
 | Raise
 | Fold
+
+
+val create_game : player list -> game 
+(** [create_game] initialize the game with player list passed
+in from the interface player牌 + 桌上的三张*)
 
 val execute_command: game -> command -> game
 
