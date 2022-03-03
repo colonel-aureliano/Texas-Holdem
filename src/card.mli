@@ -49,27 +49,30 @@ val has_two_pair : t -> bool
 
 val has_three_of_a_kind : t -> bool
 (** [has_three_of_a_kind hand] returns true if there is at least three
-    cards of a kind in [hand], false otherwise.*)
+    cards of the same value in [hand], false otherwise.*)
 
 val has_straight : t -> bool
-(** [has_straight hand] returns true if [hand] is a striaght, false
-    otherwise. *)
+(** [has_straight hand] returns true if [hand] has at least five
+    consecutive cards (using poker comparison rules), false otherwise. *)
 
 val has_flush : t -> bool
-(** [has_flush hand] returns true if [hand] is a flush, false otherwise. *)
+(** [has_flush hand] returns true if [hand] has at least five cards of
+    the same suit, false otherwise. *)
 
 val has_full_house : t -> bool
-(** [has_full_house hand] returns true if [hand] is a full house, false
-    otherwise. *)
+(** [has_full_house hand] returns true if [hand] has at least three
+    cards of one value and two cards of another, false otherwise. *)
 
 val has_four_of_a_kind : t -> bool
 (** [has_four_of_a_kind hand] returns true if there is at least four
-    cards of a kind in [hand], false otherwise.*)
+    cards of the same value in [hand], false otherwise.*)
 
 val has_straight_flush : t -> bool
-(** [has_straight_flush hand] returns true if [hand] is a straight
-    flush, false otherwise.*)
+(** [has_straight_flush hand] returns true if [hand] has at least five
+    consecutive cards of the same suit, false otherwise.*)
 
 val has_royal_flush : t -> bool
-(** [has_royal_flush hand] returns true if [hand] is a royal flush,
-    false otherwise.*)
+(** [has_royal_flush hand] returns true if [hand] has 'A', 'K', 'Q',
+    'J', 10 of the same suit, false otherwise.*)
+
+val determine_pair : t -> int list
