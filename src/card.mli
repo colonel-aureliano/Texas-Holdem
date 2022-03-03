@@ -20,7 +20,7 @@ val n_random_card : t -> int -> t * t
 (** [n_random_card deck amount] returns [(cards, new_deck)] where
     [cards] is a list of distinct random cards from [deck] and
     [new_deck] is [deck] with elements of [cards] removed. Requires:
-    [amount] >= 0. *)
+    [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
 val single_compare : card -> card -> int
 (** [compare card1 card2] returns 1 if [card1] is larger than [card2]
@@ -45,11 +45,11 @@ val has_two_pair : t -> bool
 
     - [has_two_pair \[C 5; D 5; S 4; H 4; S 2; S 1; H 1\]] is true
     - [has_two_pair \[C 5; D 5; S 5; H 5; S 2; S 1; H 1\]] is true
-    - [has_two_pair \[C 5; D 5; S 5; H 5; S 2; S 1; H 0\]] is false*)
+    - [has_two_pair \[C 5; D 5; S 5; H 5; S 2; S 1; H 0\]] is false *)
 
 val has_three_of_a_kind : t -> bool
 (** [has_three_of_a_kind hand] returns true if there is at least three
-    cards of the same value in [hand], false otherwise.*)
+    cards of the same value in [hand], false otherwise. *)
 
 val has_straight : t -> bool
 (** [has_straight hand] returns true if [hand] has at least five
@@ -65,14 +65,14 @@ val has_full_house : t -> bool
 
 val has_four_of_a_kind : t -> bool
 (** [has_four_of_a_kind hand] returns true if there is at least four
-    cards of the same value in [hand], false otherwise.*)
+    cards of the same value in [hand], false otherwise. *)
 
 val has_straight_flush : t -> bool
 (** [has_straight_flush hand] returns true if [hand] has at least five
-    consecutive cards of the same suit, false otherwise.*)
+    consecutive cards of the same suit, false otherwise. *)
 
 val has_royal_flush : t -> bool
 (** [has_royal_flush hand] returns true if [hand] has 'A', 'K', 'Q',
-    'J', 10 of the same suit, false otherwise.*)
+    'J', 10 of the same suit, false otherwise. *)
 
 val determine_pair : t -> int list
