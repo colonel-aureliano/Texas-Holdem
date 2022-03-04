@@ -49,7 +49,7 @@ let setup () =
       2
   in
   let players = create_players n 1 [] in
-  print_endline "Please enter the amount of small blind.\n";
+  print_endline "\nPlease enter the amount of small blind.\n";
   print_string "> ";
   let sb =
     try read_line () |> int_of_string
@@ -58,7 +58,7 @@ let setup () =
         "Warning: small blind is now set to 50 by default. \n";
       50
   in
-  "The small blind is " ^ string_of_int sb ^ "." |> print_endline;
+  "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
   players |> play
 (* create_game players sb |> play *)
 
