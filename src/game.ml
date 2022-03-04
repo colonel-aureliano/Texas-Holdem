@@ -1,6 +1,8 @@
 open Card
 open Player
 
+exception MorePlayersNeeded
+
 type game = {
   player_queue : player Queue.t;
   consecutive_calls : int;
@@ -14,7 +16,42 @@ type command =
   | Raise of int
   | Fold
 
-let create_game players = raise (Failure "Unimplemented")
+(* beginning of helper functions for create game *)
+let list_to_queue players = 
+  let order_after_blind = 
+    match players with 
+    | sm :: big :: [] -> players 
+    | sm :: big :: tail ->  tail @ [sm] @ [big]
+    | _ -> raise (MorePlayersNeeded) in 
+  let rec helper order_after_blind queue = 
+    match order_after_blind with
+    | [] -> queue
+    | h :: t -> helper t (Queue.add h queue; queue)
+  in 
+  let myqueue = Queue.create (); in 
+  helper order_after_blind myqueue
+
+let rec card_to_players players deck new_players = 
+  match players with 
+  | [] -> (new_players, deck)
+  | h :: t ->   
+      let cards, new_deck = n_random_card deck 3 in 
+      let new_player = set_cards h cards in  
+      card_to_players t new_deck (new_players @ [new_player])
+(* end of helper functions for create game *)
+
+let create_game (players : player list) = 
+  let (new_players, new_deck) =  card_to_players players Card.new_deck [] in 
+  let (table_card, final_deck) = n_random_card new_deck 3 in
+  let curr_queue = list_to_queue new_players in 
+  {
+    player_queue = curr_queue;
+    consecutive_calls = 0;
+    pot = 3;
+    current_deck = final_deck;
+    cards_on_table = table_card;
+  }
+
 
 let player_move (cmd : command) (p : player) : player =
   match cmd with
