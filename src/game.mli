@@ -8,7 +8,7 @@ type command =
   | Raise of int
   | Fold
 
-val create_game : player list -> game
+val create_game : player list -> int -> game
 (** [create_game] initialize the game with player list passed in from
     the interface player牌 + 桌上的三张*)
 
