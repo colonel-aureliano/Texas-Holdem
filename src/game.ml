@@ -5,7 +5,7 @@ exception MorePlayersNeeded
 
 type game = {
   player_queue : player Queue.t;
-  small_blind : player
+  small_blind : player;
   consecutive_calls : int;
   pot : int;
   current_deck : Card.t;
