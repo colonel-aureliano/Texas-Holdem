@@ -58,6 +58,15 @@ let hand8 = [ D 10; S 3; H 1; D 12; C 8; H 2; D 4 ]
 let hand9 = [ S 10; D 4; H 1; D 12; C 5; D 8; S 7 ]
 (* nothing, high = 1*)
 
+let hand1_match = [ S 10; D 10; H 10; D 12; C 5; D 8; S 7 ]
+(* three of a kind *)
+
+let hand2_match_0 = [ C 5; D 11; H 2; S 6; C 1; C 2; S 11 ]
+(* two pair, higher than hand2 *)
+
+let hand2_match_1 = [ C 5; D 10; H 3; S 6; C 1; C 3; S 10 ]
+(* two pair, higher than hand2 *)
+
 let card_tests =
   [
     n_random_card_test "n_random_card_test" new_deck 5 47;
@@ -70,9 +79,28 @@ let card_tests =
     index_of_highest_hand_test
       "index_of_highest_hand_test hand5 hand6 hand7"
       [ hand5; hand6; hand7 ] 2;
+    index_of_highest_hand_test "index_of_highest_hand_test hand1-9"
+      [ hand1; hand2; hand3; hand4; hand5; hand6; hand7; hand8; hand9 ]
+      6;
+    (* Below are tests for tie or tie breakers. *)
     index_of_highest_hand_fail_test
       "index_of_highest_hand_fail_test hand8 hand9" [ hand8; hand9 ]
       (Tied [ hand8; hand9 ]);
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand1 hand1_match"
+      [ hand1; hand1_match ] 1;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand2 hand2_match_0"
+      [ hand1; hand2_match_0 ]
+      1;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand2 hand2_match_1"
+      [ hand1; hand2_match_1 ]
+      1;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand2 hand2_match_0 hand2_match_1"
+      [ hand1; hand2_match_0; hand2_match_1 ]
+      1;
   ]
 
 let single_compare_test
@@ -155,6 +183,6 @@ let card_impl_tests =
 
 let suite =
   "test suite for texas_holdem"
-  >::: List.flatten [ card_tests; card_impl_tests ]
+  >::: List.flatten [ card_tests (*; card_impl_tests*) ]
 
 let _ = run_test_tt_main suite

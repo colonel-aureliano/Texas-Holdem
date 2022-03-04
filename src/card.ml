@@ -291,7 +291,7 @@ let rec high_card_determine_tie lst tied_at =
       else high_card_determine_tie t tied_at
 
 let break_tie (lst : t list) (rank : int) =
-  (* elements in lst are tied at rank *)
+  (* elements in [lst] are tied at [rank] *)
   failwith "break tie unimplemented"
 
 exception Tied of t list
