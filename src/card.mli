@@ -24,11 +24,11 @@ val n_random_card : t -> int -> t * t
 
 exception Tied of t list
 
-val highest_hand : t list -> t
-(** [highest_hand card_list_list] returns the highest hand in
-    [card_list_list], using texas holdem card ranking rules. Raises:
-    Tied of \[hand1, hand2 ... hand n\] if hand1, hand2 ... hand n are
-    of the same rank. *)
+val index_of_highest_hand : t list -> int
+(** [index_of_highest_hand list_of_list_card] returns the index of the
+    highest hand in [list_of_list_card], using texas holdem card ranking
+    rules. Raises: Tied of \[hand1, hand2 ... hand n\] if hand1, hand2
+    ... hand n are of the same rank. *)
 
 (********************************************************************
     Below are mainly for testing purposes.

@@ -259,7 +259,7 @@ let has_royal_flush (hand : t) =
   let hand = sort_and_group hand in
   has_royal_flush_helper hand
 
-let rec highest_hand_helper (lst : t list) =
+let rec rank_hands (lst : t list) =
   match lst with
   | [] -> []
   | h :: t ->
@@ -275,7 +275,7 @@ let rec highest_hand_helper (lst : t list) =
         else if has_pair h then 1
         else 0
       in
-      (rank, h) :: highest_hand_helper t
+      (rank, h) :: rank_hands t
 
 let rec high_card_extract (lst : t list) =
   (* extracts the high card for each element of lst *)
@@ -294,10 +294,10 @@ let refined_comparison (lst : t list) (rank : int) = lst
 
 exception Tied of t list
 
-let highest_hand (lst : t list) =
+let highest_hand_helper (lst : t list) =
   if List.length lst = 1 then List.hd lst
   else
-    let lst = highest_hand_helper lst in
+    let lst = rank_hands lst in
     let lst =
       List.rev
         (List.sort
@@ -327,3 +327,15 @@ let highest_hand (lst : t list) =
       let lst = List.filter (fun x -> fst x = fst (List.hd lst)) lst in
       List.hd
         (refined_comparison (snd (List.split lst)) (fst (List.hd lst)))
+
+exception NotFound
+
+let rec find_index_of_element e list index =
+  match list with
+  | [] -> raise NotFound
+  | h :: t ->
+      if h = e then index else find_index_of_element e t (index + 1)
+
+let index_of_highest_hand (lst : t list) =
+  let hand = highest_hand_helper lst in
+  find_index_of_element hand lst 0

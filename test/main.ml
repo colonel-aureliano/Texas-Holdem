@@ -23,11 +23,12 @@ let n_random_card_test
   name >:: fun _ ->
   assert_equal expected_output (List.length (snd output))
 
-let highest_hand_test
+let index_of_highest_hand_test
     (name : string)
     (input : card list list)
-    (expected_output : card list) =
-  name >:: fun _ -> assert_equal expected_output (highest_hand input)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output (index_of_highest_hand input)
 
 let hand1 = [ C 5; D 2; H 2; S 6; C 3; C 2; S 10 ] (* three of a kind *)
 
@@ -47,12 +48,15 @@ let hand7 = [ D 10; D 13; H 1; D 12; C 11; D 11; D 1 ] (* royal flush *)
 let card_tests =
   [
     n_random_card_test "n_random_card_test" new_deck 5 47;
-    highest_hand_test "highest_hand_test hand1 hand2 hand3"
-      [ hand1; hand2; hand3 ] hand3;
-    highest_hand_test "highest_hand_test hand3 hand4 hand5"
-      [ hand3; hand4; hand5 ] hand5;
-    highest_hand_test "highest_hand_test hand5 hand6 hand7"
-      [ hand5; hand6; hand7 ] hand7;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand1 hand2 hand3"
+      [ hand1; hand3; hand2 ] 1;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand3 hand4 hand5"
+      [ hand3; hand4; hand5 ] 2;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand5 hand6 hand7"
+      [ hand5; hand6; hand7 ] 2;
   ]
 
 let single_compare_test
