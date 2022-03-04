@@ -120,8 +120,6 @@ let pot_distributer g =
        |> list_to_queue);
   }
 
-let poker_game g = raise (Failure "Unimplemented")
-
 let betting_round (g : game) : game =
   if g.consecutive_calls = Queue.length g.player_queue then poker_game g
   else
@@ -132,3 +130,12 @@ let betting_round (g : game) : game =
          Queue.add (Queue.take q) q;
          q);
     }
+
+let rec poker_helper curr_round max_round game = 
+  if curr_round >= max_round then game 
+  else  
+    let game_after_bet = 
+      
+let poker_game game =  
+  let curr_round = 0 in 
+  let max_round = 2 in  
