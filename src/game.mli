@@ -4,8 +4,8 @@ type game
 (** The abstract type of values representing game. *)
 
 type command =
-  | Call
-  | Raise
+  | Call of int
+  | Raise of int
   | Fold
 
 val create_game : player list -> game
