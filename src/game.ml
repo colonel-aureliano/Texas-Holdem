@@ -1,3 +1,4 @@
+open Card
 open Player
 
 type game = {
@@ -39,7 +40,38 @@ let execute_command (g : game) (cmd : command) =
   }
 
 let drawing_card g = raise (Failure "Unimplemented")
-let pot_distributer g = raise (Failure "Unimplemented")
+
+let rec queue_to_list (q : player Queue.t) : player list =
+  if Queue.is_empty q then [] else Queue.take q :: queue_to_list q
+
+let reverse_args f x y = f y x
+
+let rec list_to_queue (p : player list) : player Queue.t =
+  let q = Queue.create () in
+  List.iter (reverse_args Queue.add q) (List.rev p);
+  q
+
+let check_index_match
+    (highest_index : int)
+    (cur_index : int)
+    (_ : player) : bool =
+  highest_index = cur_index
+
+let players_to_hands (p : player list) : Card.t list =
+  List.map (fun x -> cards x) p
+
+let pot_distributer g =
+  {
+    g with
+    player_queue =
+      (let q = g.player_queue |> queue_to_list in
+       List.filteri
+         (check_index_match
+            (q |> players_to_hands |> index_of_highest_hand))
+         q
+       |> list_to_queue);
+  }
+
 let poker_game g = raise (Failure "Unimplemented")
 
 let betting_round (g : game) : game =

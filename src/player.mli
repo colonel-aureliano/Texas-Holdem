@@ -1,6 +1,7 @@
 type player
 
 exception IllegalMove
+exception EmptyPlayer of player
 
 val create_player : string -> int -> Card.t -> player
 (** [create_player name wealth cards] returns a player with name as
