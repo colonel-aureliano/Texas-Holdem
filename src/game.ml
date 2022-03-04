@@ -71,7 +71,21 @@ let rec card_to_players queue deck num_dealed =
    queue;) new_deck num_dealed+1 *)
 (* end of helper functions for create game *)
 
-let create_game = raise NotImplemented
+let create_game players small_blind_amt = 
+  let init_players = list_to_queue players in  
+  let curr_small_blind = Queue.peek init_players in 
+  let players_with_card, curr_deck = card_to_players init_players new_deck 3 in 
+  let table_card, final_deck = n_random_card curr_deck 3 in 
+  let sb_shift_players = shift_for_blind players_with_card in 
+  let bb_shift_players = shift_for_blind sb_shift_players in 
+  { 
+    player_queue = bb_shift_players;
+    small_blind = curr_small_blind;
+    consecutive_calls  = 0;
+    pot = 3 * small_blind_amt;
+    current_deck = final_deck;
+    cards_on_table = final_deck;
+  }
 (* let create_game (players : player list) = let init_queue =
    list_to_queue players in let ordered_queue = rearrange init_queue in
    let dealed_queue, curr_deck = card_to_players ordered_queue
@@ -169,13 +183,11 @@ let rec poker_helper curr_round max_round game =
       }
     in
     poker_helper (curr_round + 1) max_round ordered_game
-(* let rec poker_helper curr_round max_round game = if curr_round >=
-   max_round then game else let game_after_bet = betting_round game in
-   let ordered_game = { game_after_bet with player_queue = rearrange
-   game_after_bet.player_queue game_after_bet.sb; } in poker_helper
-   (curr_round + 1) max_round ordered_game *)
 
 let poker_game game =
   let curr_round = 0 in
   let max_round = 2 in
-  poker_helper curr_round max_round game
+  let new_game = poker_helper curr_round max_round game in 
+  let game_after_last_bet = betting_round new_game in 
+  pot_distributer game_after_last_bet
+
