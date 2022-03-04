@@ -71,6 +71,7 @@ let pot_distributer g =
          (check_index_match
             (q |> players_to_hands |> index_of_highest_hand))
          q
+       |> List.map (reverse_args add g.pot)
        |> list_to_queue);
   }
 
