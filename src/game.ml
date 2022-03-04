@@ -5,6 +5,7 @@ exception MorePlayersNeeded
 
 type game = {
   player_queue : player Queue.t;
+  small_blind : player
   consecutive_calls : int;
   pot : int;
   current_deck : Card.t;
@@ -17,41 +18,48 @@ type command =
   | Fold
 
 (* beginning of helper functions for create game *)
+(** rearrange rotate the player queue until dealer is the last element*)
+let rec rearrange (queue : player Queue.t) (sb : player) = 
+  if Queue.peek_opt queue = sb then queue
+  else rearrange (Queue.add (Queue.take queue) queue;)
+
+(** convert player list to player queue*)
 let list_to_queue players = 
-  let order_after_blind = 
-    match players with 
-    | sm :: big :: [] -> players 
-    | sm :: big :: tail ->  tail @ [sm] @ [big]
-    | _ -> raise (MorePlayersNeeded) in 
-  let rec helper order_after_blind queue = 
-    match order_after_blind with
+  let rec helper players queue = 
+    match players with
     | [] -> queue
-    | h :: t -> helper t (Queue.add h queue; queue)
+    | h :: t -> helper t (Queue.add h queue;)
   in 
   let myqueue = Queue.create (); in 
-  helper order_after_blind myqueue
+  helper players myqueue
 
-let rec card_to_players players deck new_players = 
-  match players with 
-  | [] -> (new_players, deck)
-  | h :: t ->   
-      let cards, new_deck = n_random_card deck 3 in 
-      let new_player = set_cards h cards in  
-      card_to_players t new_deck (new_players @ [new_player])
+(** shift after small or big blind*)
+let shift_for_blind queue = 
+  (Queue.add (Queue.take queue) queue;)
+
+let rec card_to_players queue deck num_dealed = 
+  if num_dealed = Queue.length queue then (queue, deck) 
+  else 
+    let player = Queue.take queue in 
+    let cards, new_deck = n_random_card deck 3 in 
+    let new_player = set_cards player cards in  
+    card_to_players (Queue.add new_player queue;) new_deck num_dealed+1
 (* end of helper functions for create game *)
 
 let create_game (players : player list) = 
-  let (new_players, new_deck) =  card_to_players players Card.new_deck [] in 
-  let (table_card, final_deck) = n_random_card new_deck 3 in
-  let curr_queue = list_to_queue new_players in 
+  let init_queue = list_to_queue players in 
+  let ordered_queue = rearrange init_queue in 
+  let (dealed_queue, curr_deck) = card_to_players ordered_queue Card.new_deck [] in 
+  let (table_card, final_deck) = n_random_card curr_deck 3 in 
+  let sb_shift_queue = shift_for_blind dealed_queue in
+  let bb_shift_queue = shift_for_blind sb_shift_queue in
   {
-    player_queue = curr_queue;
+    player_queue = bb_shift_queue;
     consecutive_calls = 0;
     pot = 3;
     current_deck = final_deck;
     cards_on_table = table_card;
   }
-
 
 let player_move (cmd : command) (p : player) : player =
   match cmd with
@@ -126,22 +134,19 @@ let betting_round (g : game) : game =
   if g.consecutive_calls = Queue.length g.player_queue then
     drawing_card { g with consecutive_calls = 0 }
   else execute_command g get_command
-(* 
-    {
-      (drawing_card g) with
-      player_queue =
-        (let q = g.player_queue in
-         Queue.add (Queue.take q) q;
-         q);
-    } *)
 
 let rec poker_helper curr_round max_round game = 
   if curr_round >= max_round then game 
   else  
-    let game_after_bet = 
+    let game_after_bet = betting_round game in 
+    let ordered_game = {game_after_bet with player_queue = 
+      rearrange game_after_bet.player_queue game_after_bet.sb} in
+    poker_helper curr_round+1 max_round ordered_game
       
 let poker_game game =  
   let curr_round = 0 in 
   let max_round = 2 in  
+  poker_helper curr_round max_round game
+  
 
 
