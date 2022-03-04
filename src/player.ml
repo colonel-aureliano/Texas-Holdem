@@ -5,6 +5,7 @@ type player = {
 }
 
 exception IllegalMove
+exception EmptyPlayer of player
 
 let create_player
     (input_name : string)
