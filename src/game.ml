@@ -76,7 +76,15 @@ let execute_command (g : game) (cmd : command) =
       | _ -> g.consecutive_calls);
   }
 
-let drawing_card g = raise (Failure "Unimplemented")
+let drawing_card g = 
+  let (new_card, new_set) = n_random_card g.current_deck 1 in 
+  {
+    player_queue = g.player_queue;
+    consecutive_calls = g.consecutive_calls;
+    pot = g.pot;
+    current_deck = new_set;
+    cards_on_table = new_card @  g.cards_on_table
+  }
 
 (*BEGINNING OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
 let rec queue_to_list (q : player Queue.t) : player list =
