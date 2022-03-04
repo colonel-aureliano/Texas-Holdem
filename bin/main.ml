@@ -39,7 +39,7 @@ let rec create_players n i (ls : player list) =
 
 (** [setup] sets up the initial state of the game. *)
 let setup () =
-  print_endline "Please enter the name of players.\n";
+  print_endline "Please enter the number of players.\n";
   print_string "> ";
   let n =
     try read_line () |> int_of_string
@@ -49,7 +49,7 @@ let setup () =
       2
   in
   let players = create_players n 1 [] in
-  print_endline "\nPlease enter the amount of small blind.\n";
+  print_endline "Please enter the amount of small blind.\n";
   print_string "> ";
   let sb =
     try read_line () |> int_of_string
