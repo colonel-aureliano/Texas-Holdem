@@ -41,6 +41,7 @@ let execute_command (g : game) (cmd : command) =
 
 let drawing_card g = raise (Failure "Unimplemented")
 
+(*BEGINNING OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
 let rec queue_to_list (q : player Queue.t) : player list =
   if Queue.is_empty q then [] else Queue.take q :: queue_to_list q
 
@@ -60,6 +61,7 @@ let check_index_match
 let players_to_hands (p : player list) : Card.t list =
   List.map (fun x -> cards x) p
 
+(*END OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
 let pot_distributer g =
   {
     g with
