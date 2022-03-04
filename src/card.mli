@@ -19,16 +19,19 @@ val new_deck : t
 val n_random_card : t -> int -> t * t
 (** [n_random_card deck amount] returns [(cards, new_deck)] where
     [cards] is a list of distinct random cards from [deck] and
-    [new_deck] is [deck] with elements of [cards] removed. Requires:
-    [amount] >= 0 && [amount] <= (List.length [deck]). *)
+    [new_deck] is [deck] with elements of [cards] removed.
+
+    Requires: [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
 exception Tied of t list
 
 val index_of_highest_hand : t list -> int
 (** [index_of_highest_hand list_of_list_card] returns the index of the
     highest hand in [list_of_list_card], using texas holdem card ranking
-    rules. Raises: Tied of \[hand1, hand2 ... hand n\] if hand1, hand2
-    ... hand n are of the same rank. *)
+    rules.
+
+    Raises: [Tied] of \[hand1, hand2 ... hand n \] if hand1, hand2 ...
+    hand n are of the same rank. *)
 
 (********************************************************************
     Below are mainly for testing purposes.

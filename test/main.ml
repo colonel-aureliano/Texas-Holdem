@@ -30,6 +30,13 @@ let index_of_highest_hand_test
   name >:: fun _ ->
   assert_equal expected_output (index_of_highest_hand input)
 
+let index_of_highest_hand_fail_test
+    (name : string)
+    (input : card list list)
+    (expected_output : exn) =
+  name >:: fun _ ->
+  assert_raises expected_output (fun _ -> index_of_highest_hand input)
+
 let hand1 = [ C 5; D 2; H 2; S 6; C 3; C 2; S 10 ] (* three of a kind *)
 
 let hand2 = [ C 5; D 10; H 2; S 6; C 1; C 2; S 10 ] (* two pair *)
@@ -38,12 +45,18 @@ let hand3 = [ C 5; C 11; H 8; S 6; C 3; C 2; C 1 ] (* flush *)
 
 let hand4 = [ C 5; D 5; H 5; S 5; C 2; C 1; S 0 ] (* four of a kind *)
 
-let hand5 = [ C 10; C 11; C 12; C 13; C 1; S 8; D 3 ]
+let hand5 = [ C 9; C 10; C 11; C 12; C 13; S 8; D 3 ]
 (* straight flush *)
 
 let hand6 = [ C 1; D 1; H 1; S 11; C 11; H 9; S 8 ] (* full house *)
 
 let hand7 = [ D 10; D 13; H 1; D 12; C 11; D 11; D 1 ] (* royal flush *)
+
+let hand8 = [ D 10; S 3; H 1; D 12; C 8; H 2; D 4 ]
+(* nothing, high = 1 *)
+
+let hand9 = [ S 10; D 4; H 1; D 12; C 5; D 8; S 7 ]
+(* nothing, high = 1*)
 
 let card_tests =
   [
@@ -57,6 +70,9 @@ let card_tests =
     index_of_highest_hand_test
       "index_of_highest_hand_test hand5 hand6 hand7"
       [ hand5; hand6; hand7 ] 2;
+    index_of_highest_hand_fail_test
+      "index_of_highest_hand_fail_test hand8 hand9" [ hand8; hand9 ]
+      (Tied [ hand8; hand9 ]);
   ]
 
 let single_compare_test

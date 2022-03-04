@@ -290,7 +290,9 @@ let rec high_card_determine_tie lst tied_at =
       if fst h = tied_at then snd h :: high_card_determine_tie t tied_at
       else high_card_determine_tie t tied_at
 
-let refined_comparison (lst : t list) (rank : int) = lst
+let break_tie (lst : t list) (rank : int) =
+  (* elements in lst are tied at rank *)
+  failwith "break tie unimplemented"
 
 exception Tied of t list
 
@@ -324,15 +326,13 @@ let highest_hand_helper (lst : t list) =
       else
         raise (Tied (high_card_determine_tie lst (fst (List.hd lst))))
     else
+      let _ = print_int (fst (List.hd lst)) in
       let lst = List.filter (fun x -> fst x = fst (List.hd lst)) lst in
-      List.hd
-        (refined_comparison (snd (List.split lst)) (fst (List.hd lst)))
-
-exception NotFound
+      List.hd (break_tie (snd (List.split lst)) (fst (List.hd lst)))
 
 let rec find_index_of_element e list index =
   match list with
-  | [] -> raise NotFound
+  | [] -> -1
   | h :: t ->
       if h = e then index else find_index_of_element e t (index + 1)
 
