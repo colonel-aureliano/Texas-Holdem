@@ -93,7 +93,7 @@ let execute_command (g : game) (cmd : command) =
       (let q = g.player_queue in
        match cmd with
        | Fold ->
-           Queue.take q;
+           ignore (Queue.take q);
            q
        | _ ->
            Queue.add (Queue.take q |> player_move cmd) q;
