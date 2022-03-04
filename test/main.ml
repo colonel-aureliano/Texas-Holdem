@@ -23,28 +23,11 @@ let n_random_card_test
   name >:: fun _ ->
   assert_equal expected_output (List.length (snd output))
 
-let single_compare_test
+let highest_hand_test
     (name : string)
-    (input1 : card)
-    (input2 : card)
-    (expected_output : int) =
-  name >:: fun _ ->
-  assert_equal expected_output (single_compare input1 input2)
-
-let high_card_test
-    (name : string)
-    (input1 : card list)
-    (input2 : card list)
-    (expected_output : int) =
-  name >:: fun _ ->
-  assert_equal expected_output (high_card input1 input2)
-
-let f_test
-    (name : string)
-    (f : card list -> bool)
-    (input : card list)
-    (expected_output : bool) =
-  name >:: fun _ -> assert_equal expected_output (f input)
+    (input : card list list)
+    (expected_output : card list) =
+  name >:: fun _ -> assert_equal expected_output (highest_hand input)
 
 let hand1 = [ C 5; D 2; H 2; S 6; C 3; C 2; S 10 ] (* three of a kind *)
 
@@ -64,13 +47,44 @@ let hand7 = [ D 10; D 13; H 1; D 12; C 11; D 11; D 1 ] (* royal flush *)
 let card_tests =
   [
     n_random_card_test "n_random_card_test" new_deck 5 47;
+    highest_hand_test "highest_hand_test hand1 hand2 hand3"
+      [ hand1; hand2; hand3 ] hand3;
+    highest_hand_test "highest_hand_test hand3 hand4 hand5"
+      [ hand3; hand4; hand5 ] hand5;
+    highest_hand_test "highest_hand_test hand5 hand6 hand7"
+      [ hand5; hand6; hand7 ] hand7;
+  ]
+
+let single_compare_test
+    (name : string)
+    (input1 : card)
+    (input2 : card)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output (single_compare input1 input2)
+
+let high_card_test
+    (name : string)
+    (input : card list)
+    (expected_output : int) =
+  name >:: fun _ -> assert_equal expected_output (high_card input)
+
+let f_test
+    (name : string)
+    (f : card list -> bool)
+    (input : card list)
+    (expected_output : bool) =
+  name >:: fun _ -> assert_equal expected_output (f input)
+
+let card_impl_tests =
+  [
     single_compare_test "single_compare_test greater" (C 1) (H 2) 1;
     single_compare_test "single_compare_test lesser" (D 5) (S 13) ~-1;
     single_compare_test "single_compare_test equal 1" (H 13) (H 13) 0;
     single_compare_test "single_compare_test equal 2" (H 13) (C 13) 0;
-    high_card_test "high_card_test 1" hand3 hand1 1;
-    high_card_test "high_card_test 2" hand2 hand3 0;
-    high_card_test "high_card_test 3" hand1 hand2 ~-1;
+    high_card_test "high_card_test 1" hand1 10;
+    high_card_test "high_card_test 2" hand2 14;
+    high_card_test "high_card_test 3" hand3 14;
     f_test "has_pair_test hand1" has_pair hand1 true;
     f_test "has_pair_test hand2" has_pair hand2 true;
     f_test "has_pair_test hand3" has_pair hand3 false;
@@ -87,6 +101,19 @@ let card_tests =
       false;
     f_test "has_three_of_a_kind_test hand4" has_three_of_a_kind hand4
       true;
+    f_test "has_four_of_a_kind_test hand1" has_four_of_a_kind hand1
+      false;
+    f_test "has_four_of_a_kind_test hand2" has_four_of_a_kind hand2
+      false;
+    f_test "has_four_of_a_kind_test hand3" has_four_of_a_kind hand3
+      false;
+    f_test "has_four_of_a_kind_test hand4" has_four_of_a_kind hand4 true;
+    f_test "has_four_of_a_kind_test hand5" has_four_of_a_kind hand5
+      false;
+    f_test "has_four_of_a_kind_test hand6" has_four_of_a_kind hand6
+      false;
+    f_test "has_four_of_a_kind_test hand7" has_four_of_a_kind hand7
+      false;
     f_test "has_straight_test hand5" has_straight hand5 true;
     f_test "has_straight_test hand4" has_straight hand4 false;
     f_test "has_straight_test hand3" has_straight hand3 false;
@@ -107,6 +134,7 @@ let card_tests =
   ]
 
 let suite =
-  "test suite for texas_holdem" >::: List.flatten [ card_tests ]
+  "test suite for texas_holdem"
+  >::: List.flatten [ card_tests; card_impl_tests ]
 
 let _ = run_test_tt_main suite

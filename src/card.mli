@@ -1,5 +1,3 @@
-open Player
-
 type card =
   | S of int
   | H of int
@@ -24,10 +22,13 @@ val n_random_card : t -> int -> t * t
     [new_deck] is [deck] with elements of [cards] removed. Requires:
     [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
-val index_of_highest_hand : t list -> int
-(** [index_of_highest_hand list_of_list_card] returns the index of the
-    highest hand in [list_of_list_card], using texas holdem card ranking
-    rules. *)
+exception Tied of t list
+
+val highest_hand : t list -> t
+(** [highest_hand card_list_list] returns the highest hand in
+    [card_list_list], using texas holdem card ranking rules. Raises:
+    Tied of \[hand1, hand2 ... hand n\] if hand1, hand2 ... hand n are
+    of the same rank. *)
 
 (********************************************************************
     Below are mainly for testing purposes.
@@ -41,10 +42,9 @@ val single_compare : card -> card -> int
     - [compare (S 3) (S 5)] is [-1]
     - [compare (C 1) (H 12)] is [1] *)
 
-val high_card : t -> t -> int
-(** [group_compare_highest_card hand1 hand2] returns 1 if the highest
-    card of [hand1] is larger than the highest card of [hand2] (using
-    poker comparison rules), -1 if it's less than, 0 if they're equal. *)
+val high_card : t -> int
+(** [high_card hand] returns the highest card in [hand] (using poker
+    comparison rules). Returns 14 if the highest card is 1. *)
 
 val has_pair : t -> bool
 (** [has_pair hand] returns true if there is at least one pair in

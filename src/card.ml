@@ -1,5 +1,3 @@
-open Player
-
 type card =
   | S of int
   | H of int
@@ -54,12 +52,10 @@ let single_compare (card1 : card) (card2 : card) =
   | _, 1 -> -1
   | _ -> if x1 > x2 then 1 else if x1 < x2 then -1 else 0
 
-let high_card (hand1 : t) (hand2 : t) =
-  let hand1 = List.rev (List.sort single_compare hand1) in
-  let hand2 = List.rev (List.sort single_compare hand2) in
-  let h1 = List.hd hand1 in
-  let h2 = List.hd hand2 in
-  single_compare h1 h2
+let high_card (hand : t) =
+  let hand = List.rev (List.sort single_compare hand) in
+  let hand = List.map extract_value hand in
+  if List.hd hand = 1 then 14 else List.hd hand
 
 (** Returns an int list of non-unique elements found in [hand]. The
     actual number of cards of value v in [hand] is the number of
@@ -169,12 +165,13 @@ let has_full_house (hand : t) =
 
 let rec has_four_of_a_kind (hand : t) =
   let l = determine_pair hand in
-  match l with
-  | [] -> false
-  | h1 :: h2 :: t ->
-      (h1 = h2 && List.mem h1 (List.tl t))
-      || has_three_of_a_kind (List.tl hand)
-  | _ -> false
+  if List.length l < 3 then false
+  else
+    match l with
+    | h1 :: h2 :: t ->
+        (h1 = h2 && List.mem h1 (List.tl t))
+        || has_three_of_a_kind (List.tl hand)
+    | _ -> false
 
 let has_straight_flush (hand : t) =
   let suit = snd (has_flush_helper hand) in
@@ -262,5 +259,71 @@ let has_royal_flush (hand : t) =
   let hand = sort_and_group hand in
   has_royal_flush_helper hand
 
-let index_of_highest_hand (lst : t list) : int list =
-  failwith "unimplemented"
+let rec highest_hand_helper (lst : t list) =
+  match lst with
+  | [] -> []
+  | h :: t ->
+      let rank =
+        if has_royal_flush h then 9
+        else if has_straight_flush h then 8
+        else if has_four_of_a_kind h then 7
+        else if has_full_house h then 6
+        else if has_flush h then 5
+        else if has_straight h then 4
+        else if has_three_of_a_kind h then 3
+        else if has_two_pair h then 2
+        else if has_pair h then 1
+        else 0
+      in
+      (rank, h) :: highest_hand_helper t
+
+let rec high_card_extract (lst : t list) =
+  (* extracts the high card for each element of lst *)
+  match lst with
+  | [] -> []
+  | h :: t -> (high_card h, h) :: high_card_extract t
+
+let rec high_card_determine_tie lst tied_at =
+  match lst with
+  | [] -> []
+  | h :: t ->
+      if fst h = tied_at then snd h :: high_card_determine_tie t tied_at
+      else high_card_determine_tie t tied_at
+
+let refined_comparison (lst : t list) (rank : int) = lst
+
+exception Tied of t list
+
+let highest_hand (lst : t list) =
+  if List.length lst = 1 then List.hd lst
+  else
+    let lst = highest_hand_helper lst in
+    let lst =
+      List.rev
+        (List.sort
+           (fun x y ->
+             if fst x > fst y then 1
+             else if fst x = fst y then 0
+             else -1)
+           lst)
+    in
+    if fst (List.hd lst) != fst (List.nth lst 1) then snd (List.hd lst)
+    else if fst (List.hd lst) = 0 then
+      let lst = high_card_extract (snd (List.split lst)) in
+      let lst =
+        List.rev
+          (List.sort
+             (fun x y ->
+               if fst x > fst y then 1
+               else if fst x = fst y then 0
+               else -1)
+             lst)
+      in
+      if fst (List.hd lst) != fst (List.nth lst 1) then
+        snd (List.hd lst)
+      else
+        raise (Tied (high_card_determine_tie lst (fst (List.hd lst))))
+    else
+      let lst = List.filter (fun x -> fst x = fst (List.hd lst)) lst in
+      List.hd
+        (refined_comparison (snd (List.split lst)) (fst (List.hd lst)))
