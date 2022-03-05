@@ -6,8 +6,6 @@ type card =
 
 type t = card list
 
-exception Tied of t list
-
 let rec create_new_deck lst =
   match lst with
   | [] -> create_new_deck [ S 1 ]
@@ -88,24 +86,26 @@ let has_three_of_a_kind (hand : t) =
   has_three_of_a_kind_helper l
 
 let rec has_straight_helper l =
-  if List.length l < 5 then false
+  if List.length l < 5 then (false, -1)
   else
     let a = List.hd l in
     let b = a + 1 in
     let c = b + 1 in
     let d = c + 1 in
     let e = d + 1 in
-    List.nth l 1 = b
-    && List.nth l 2 = c
-    && List.nth l 3 = d
-    && List.nth l 4 = e
-    || has_straight_helper (List.tl l)
+    let bool =
+      List.nth l 1 = b
+      && List.nth l 2 = c
+      && List.nth l 3 = d
+      && List.nth l 4 = e
+    in
+    if bool then (bool, e) else has_straight_helper (List.tl l)
 
 let has_straight (hand : t) =
   let hand = List.stable_sort single_compare hand in
   let intlist = List.map extract_value hand in
   let intlist = List.map (fun x -> if x = 1 then 14 else x) intlist in
-  has_straight_helper intlist
+  fst (has_straight_helper intlist)
 
 let has_flush_helper (hand : t) =
   let s =
@@ -313,6 +313,8 @@ let rec find_index_of_element e list index =
   | h :: t ->
       if h = e then index else find_index_of_element e t (index + 1)
 
+exception Tied of t list
+
 let winning_factor (hand : t) (rank : int) =
   match rank with
   | 1 | 2 ->
@@ -321,13 +323,109 @@ let winning_factor (hand : t) (rank : int) =
   | 3 | 6 ->
       max_of_list
         (filter_by_occurrences (List.map extract_value hand) 3)
-  | 4 -> 2
-  | 5 -> 2
+  | 4 ->
+      let hand = List.stable_sort single_compare hand in
+      let intlist = List.map extract_value hand in
+      let intlist =
+        List.map (fun x -> if x = 1 then 14 else x) intlist
+      in
+      let curr_max = snd (has_straight_helper intlist) in
+      let tail = List.tl hand in
+      if has_straight tail then
+        let intlist = List.map extract_value tail in
+        let intlist =
+          List.map (fun x -> if x = 1 then 14 else x) intlist
+        in
+        let curr_max =
+          max curr_max (snd (has_straight_helper intlist))
+        in
+        let tail = List.tl tail in
+        if has_straight tail then
+          let intlist = List.map extract_value tail in
+          let intlist =
+            List.map (fun x -> if x = 1 then 14 else x) intlist
+          in
+          let curr_max =
+            max curr_max (snd (has_straight_helper intlist))
+          in
+          curr_max
+        else curr_max
+      else curr_max
+  | 5 -> (
+      let c = snd (has_flush_helper hand) in
+      match c with
+      | 'C' ->
+          let l =
+            List.filter
+              (fun x ->
+                match x with
+                | C x -> true
+                | _ -> false)
+              hand
+          in
+          high_card l
+      | 'D' ->
+          let l =
+            List.filter
+              (fun x ->
+                match x with
+                | D x -> true
+                | _ -> false)
+              hand
+          in
+          high_card l
+      | 'S' ->
+          let l =
+            List.filter
+              (fun x ->
+                match x with
+                | S x -> true
+                | _ -> false)
+              hand
+          in
+          high_card l
+      | 'H' ->
+          let l =
+            List.filter
+              (fun x ->
+                match x with
+                | H x -> true
+                | _ -> false)
+              hand
+          in
+          high_card l
+      | _ -> 0)
   | 7 ->
       max_of_list
         (filter_by_occurrences (List.map extract_value hand) 4)
-  | 8 -> 2
-  | 9 -> 2
+  | 8 ->
+      let hand = List.stable_sort single_compare hand in
+      let intlist = List.map extract_value hand in
+      let intlist =
+        List.map (fun x -> if x = 1 then 14 else x) intlist
+      in
+      let curr_max = snd (has_straight_helper intlist) in
+      let tail = List.tl hand in
+      if has_straight_flush tail then
+        let intlist = List.map extract_value tail in
+        let intlist =
+          List.map (fun x -> if x = 1 then 14 else x) intlist
+        in
+        let curr_max =
+          max curr_max (snd (has_straight_helper intlist))
+        in
+        let tail = List.tl tail in
+        if has_straight_flush tail then
+          let intlist = List.map extract_value tail in
+          let intlist =
+            List.map (fun x -> if x = 1 then 14 else x) intlist
+          in
+          let curr_max =
+            max curr_max (snd (has_straight_helper intlist))
+          in
+          curr_max
+        else curr_max
+      else curr_max
   | _ -> 0
 
 let two_pair_secondary_comparison (lst : t list) : t =
@@ -355,31 +453,27 @@ let rec check_unique (lst : int list) (ele : int) (seen : bool) =
 let rec break_tie (lst : t list) (rank : int) : t =
   (* elements in [lst] are tied at [rank], returns ele in [lst] that win
      out or raise Tied *)
-  match rank with
-  | 1 | 2 | 3 | 6 | 7 ->
-      let winning_factors =
-        List.map (fun x -> winning_factor x rank) lst
+  if rank = 9 then raise (Tied lst)
+  else
+    let winning_factors =
+      List.map (fun x -> winning_factor x rank) lst
+    in
+    let max = max_of_list winning_factors in
+    if check_unique winning_factors max false then
+      let index = find_index_of_element max winning_factors 0 in
+      List.nth lst index
+    else
+      let mapping_list = List.map (fun x -> x = max) winning_factors in
+      let rec list_matching_extract map l =
+        match (map, l) with
+        | h1 :: t1, h2 :: t2 ->
+            if h1 then h2 :: list_matching_extract t1 t2
+            else list_matching_extract t1 t2
+        | _ -> []
       in
-      let max = max_of_list winning_factors in
-      if check_unique winning_factors max false then
-        let index = find_index_of_element max winning_factors 0 in
-        List.nth lst index
-      else
-        let mapping_list =
-          List.map (fun x -> x = max) winning_factors
-        in
-        let rec list_matching_extract map l =
-          match (map, l) with
-          | h1 :: t1, h2 :: t2 ->
-              if h1 then h2 :: list_matching_extract t1 t2
-              else list_matching_extract t1 t2
-          | _ -> []
-        in
-        let extracted = list_matching_extract mapping_list lst in
-        if rank = 2 then two_pair_secondary_comparison extracted
-        else raise (Tied extracted)
-  | 9 -> raise (Tied lst)
-  | _ -> List.hd lst
+      let extracted = list_matching_extract mapping_list lst in
+      if rank = 2 then two_pair_secondary_comparison extracted
+      else raise (Tied extracted)
 
 let rec high_card_extract (lst : t list) =
   (* extracts the high card for each element of lst *)
@@ -427,6 +521,12 @@ let highest_hand_helper (lst : t list) =
       let lst = List.filter (fun x -> fst x = fst (List.hd lst)) lst in
       break_tie (snd (List.split lst)) (fst (List.hd lst))
 
+exception Tie of int list
+
 let index_of_highest_hand (lst : t list) =
-  let hand = highest_hand_helper lst in
-  find_index_of_element hand lst 0
+  try
+    let hand = highest_hand_helper lst in
+    find_index_of_element hand lst 0
+  with Tied list ->
+    let l = List.map (fun x -> find_index_of_element x lst 0) list in
+    raise (Tie l)

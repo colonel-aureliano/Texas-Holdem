@@ -23,22 +23,19 @@ val n_random_card : t -> int -> t * t
 
     Requires: [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
-exception Tied of t list
+exception Tie of int list
 
 val index_of_highest_hand : t list -> int
 (** [index_of_highest_hand list_of_list_card] returns the index of the
     highest hand in [list_of_list_card], using texas holdem card ranking
     rules.
 
-    Raises: [Tied] of \[hand1, hand2 ... hand n \] if hand1, hand2 ...
-    hand n are of the same rank. *)
+    Raises: [Tie] of \[i1,i2 ... in \] when hands of index i1, i2 ... in
+    in [list_of_list_card] are of the same rank. *)
 
 (********************************************************************
     Below are mainly for testing purposes.
  ********************************************************************)
-
-val filter_by_occurrences : int list -> int -> int list
-val check_unique : int list -> int -> bool -> bool
 
 val single_compare : card -> card -> int
 (** [compare card1 card2] returns 1 if [card1] is larger than [card2]

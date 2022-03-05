@@ -52,6 +52,9 @@ let hand2_match_1 = [ C 5; D 10; H 3; S 6; C 1; C 3; S 10 ]
 
 let hand3 = [ C 5; C 11; H 8; S 6; C 3; C 2; C 1 ] (* flush *)
 
+let hand3_match = [ C 5; C 13; H 8; S 6; C 3; C 2; C 4 ]
+(* flush, less than hand3 *)
+
 let hand4 = [ C 5; D 5; H 5; S 5; C 2; C 1; S 0 ] (* four of a kind *)
 
 let hand4_match = [ C 6; D 6; H 6; S 6; C 2; C 1; S 0 ]
@@ -60,9 +63,12 @@ let hand4_match = [ C 6; D 6; H 6; S 6; C 2; C 1; S 0 ]
 let hand5 = [ C 9; C 10; C 11; C 12; C 13; S 8; D 3 ]
 (* straight flush *)
 
+let hand5_match = [ D 8; D 9; D 10; D 11; D 12; D 2; D 3 ]
+(* straight flush, less than hand5 *)
+
 let hand6 = [ C 1; D 1; H 1; S 11; C 11; H 9; S 8 ] (* full house *)
 
-let hand6_match_0 = [ C 2; D 2; H 2; S 11; C 11; H 9; S 8 ]
+let hand6_match = [ C 2; D 2; H 2; S 11; C 11; H 9; S 8 ]
 (* full house, less than hand6 *)
 
 let hand7 = [ D 10; D 13; D 1; D 12; D 11; C 11; H 1 ] (* royal flush *)
@@ -84,9 +90,9 @@ let hand9_match_1 = [ H 11; S 11; H 10; S 9; H 3; D 6; D 4 ]
 let hand9_match_2 = [ D 1; C 1; H 10; S 9; H 3; D 6; D 4 ]
 (* a pair, the same as hand9 *)
 
-let hand10 = [ H 10; S 9; C 8; S 7; H 6; H 2; S 1 ] (* a straight *)
+let hand10 = [ H 10; S 9; C 8; S 7; H 2; H 11; S 12 ] (* a straight *)
 
-let hand10_match = [ H 10; S 9; C 8; S 7; H 6; H 11; S 1 ]
+let hand10_match = [ H 10; S 9; C 8; S 7; H 11; S 12; H 13 ]
 (* a straight, higher than hand10 *)
 
 let card_tests =
@@ -108,7 +114,7 @@ let card_tests =
     (* test of high card *)
     index_of_highest_hand_fail_test "0 tie_test hand8 hand9"
       [ hand8; hand8_match ]
-      (Tied [ hand8; hand8_match ]);
+      (Tie [ 0; 1 ]);
     (* test of pair *)
     index_of_highest_hand_test "1 tie_test hand9 hand9_match_1"
       [ hand9; hand9_match_1 ]
@@ -116,7 +122,7 @@ let card_tests =
     index_of_highest_hand_fail_test
       "1 tie_test hand9 hand9_match_1 hand9_match_2"
       [ hand9; hand9_match_1; hand9_match_2 ]
-      (Tied [ hand9_match_2; hand9 ]);
+      (Tie [ 2; 0 ]);
     (* test of two pair *)
     index_of_highest_hand_test "2 tie_test hand2 hand2_match_0"
       [ hand2; hand2_match_0 ]
@@ -134,25 +140,39 @@ let card_tests =
     index_of_highest_hand_fail_test
       "3 tie_test hand1 hand1_match hand1_match"
       [ hand1; hand1_match; hand1_match ]
-      (Tied [ hand1_match; hand1_match ]);
+      (Tie [ 1; 1 ]);
     (* test of straight *)
     index_of_highest_hand_test "4 tie_test hand10 hand10_match"
-      [ hand10; hand10_match ]
-      1;
+      [ hand10_match; hand10; hand1 ]
+      0;
+    index_of_highest_hand_fail_test "4 tie_test hand10 hand10"
+      [ hand10; hand10 ]
+      (Tie [ 0; 0 ]);
+    (* test of flush *)
+    index_of_highest_hand_test "5 tie_test hand3 hand3_match"
+      [ hand3; hand3_match ] 0;
+    index_of_highest_hand_fail_test "5 tie_test hand3 hand3"
+      [ hand3; hand3 ]
+      (Tie [ 0; 0 ]);
     (* test of four of a kind *)
     index_of_highest_hand_test "7 tie_test hand4 hand4_match"
       [ hand4; hand4_match ] 1;
     index_of_highest_hand_fail_test "7 tie_test hand1 hand4 hand4"
       [ hand1; hand4; hand4 ]
-      (Tied [ hand4; hand4 ]);
+      (Tie [ 1; 1 ]);
     (* test of full house *)
     index_of_highest_hand_test "6 tie_test hand6 hand6_match_0 "
-      [ hand6; hand6_match_0 ]
-      0;
+      [ hand6; hand6_match ] 0;
+    (* test of straight flush *)
+    index_of_highest_hand_test "8 tie_test hand5 hand5_match"
+      [ hand5; hand5_match ] 0;
+    index_of_highest_hand_fail_test "8 tie_test hand5 hand5"
+      [ hand5; hand5 ]
+      (Tie [ 0; 0 ]);
     (* test of royal flush *)
     index_of_highest_hand_fail_test "9 tie_test hand7 hand7_match"
       [ hand7; hand7_match ]
-      (Tied [ hand7_match; hand7 ]);
+      (Tie [ 1; 0 ]);
   ]
 
 let single_compare_test
@@ -233,34 +253,8 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand3" has_royal_flush hand3 false;
   ]
 
-let filter_by_occurrences_test
-    (name : string)
-    (input1 : int list)
-    (input2 : int)
-    (expected_output : int list) =
-  name >:: fun _ ->
-  assert_equal
-    (List.sort compare expected_output)
-    (List.sort compare (filter_by_occurrences input1 input2))
-
-let card_helper_tests =
-  [
-    filter_by_occurrences_test "filter_by_occurrences_test1"
-      [ 4; 4; 3; 3; 1 ] 2 [ 4; 3 ];
-    filter_by_occurrences_test "filter_by_occurrences_test2"
-      [ 4; 4; 3; 3; 3 ] 3 [ 3 ];
-    filter_by_occurrences_test "filter_by_occurrences_test3" [ 3; 3; 3 ]
-      3 [ 3 ];
-    filter_by_occurrences_test "filter_by_occurrences_test4" [ 1; 2; 3 ]
-      3 [];
-    filter_by_occurrences_test "filter_by_occurrences_test5"
-      [ 1; 1; 2; 3 ] 1 [ 2; 3 ];
-    ( "check_unique" >:: fun _ ->
-      assert_equal false (check_unique [ 5; 4; 5 ] 5 false) );
-  ]
-
 let suite =
   "test suite for texas_holdem"
-  >::: List.flatten [ card_tests; card_helper_tests; card_impl_tests ]
+  >::: List.flatten [ card_tests; card_impl_tests ]
 
 let _ = run_test_tt_main suite
