@@ -37,6 +37,9 @@ val index_of_highest_hand : t list -> int
     Below are mainly for testing purposes.
  ********************************************************************)
 
+val filter_by_occurrences : int list -> int -> int list
+val check_unique : int list -> int -> bool -> bool
+
 val single_compare : card -> card -> int
 (** [compare card1 card2] returns 1 if [card1] is larger than [card2]
     (using poker comparison rules), -1 if [card1] is less than [card2],
@@ -46,8 +49,8 @@ val single_compare : card -> card -> int
     - [compare (C 1) (H 12)] is [1] *)
 
 val high_card : t -> int
-(** [high_card hand] returns the highest card in [hand] (using poker
-    comparison rules). Returns 14 if the highest card is 1. *)
+(** [high_card hand] returns the value of the highest card in [hand]
+    (using poker comparison rules). Returns 14 if the highest card is 1. *)
 
 val has_pair : t -> bool
 (** [has_pair hand] returns true if there is at least one pair in
