@@ -2,17 +2,6 @@ open OUnit2
 open Texas_holdem
 open Card
 
-(* helper function *)
-let rec cards_to_string (hand : card list) =
-  match hand with
-  | [] -> ""
-  | h :: t -> (
-      match h with
-      | S x -> "S " ^ string_of_int x ^ "\n" ^ cards_to_string t
-      | C x -> "C " ^ string_of_int x ^ "\n" ^ cards_to_string t
-      | H x -> "H " ^ string_of_int x ^ "\n" ^ cards_to_string t
-      | D x -> "D " ^ string_of_int x ^ "\n" ^ cards_to_string t)
-
 let n_random_card_test
     (name : string)
     (input1 : card list)

@@ -13,6 +13,8 @@ type card =
 type t = card list
 (** Represents one deck of cards. *)
 
+val to_string : t -> string
+
 val new_deck : t
 (** Returns a new deck of cards. There are 52 cards in it. *)
 
