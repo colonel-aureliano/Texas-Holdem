@@ -11,10 +11,10 @@ let rec to_string (hand : t) : string =
   | [] -> ""
   | h :: t -> (
       match h with
-      | S x -> "Spade " ^ string_of_int x ^ "\n" ^ to_string t
-      | C x -> "Club " ^ string_of_int x ^ "\n" ^ to_string t
-      | H x -> "Heart " ^ string_of_int x ^ "\n" ^ to_string t
-      | D x -> "Diamond " ^ string_of_int x ^ "\n" ^ to_string t)
+      | S x -> string_of_int x ^ "♠" ^ "   " ^ to_string t
+      | C x -> string_of_int x ^ "♣" ^ "   " ^ to_string t
+      | H x -> string_of_int x ^ "♥" ^ "   " ^ to_string t
+      | D x -> string_of_int x ^ "♦" ^ "   " ^ to_string t)
 
 let rec create_new_deck lst =
   match lst with

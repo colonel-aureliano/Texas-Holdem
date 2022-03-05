@@ -14,9 +14,10 @@ type t = card list
 (** Represents one deck of cards. *)
 
 val to_string : t -> string
+(** [to_string hand] a string representation of [hand]. *)
 
 val new_deck : t
-(** Returns a new deck of cards. There are 52 cards in it. *)
+(** [new_deck] returns a new deck of poker cards. There are 52 cards. *)
 
 val n_random_card : t -> int -> t * t
 (** [n_random_card deck amount] returns [(cards, new_deck)] where
@@ -32,8 +33,11 @@ val index_of_highest_hand : t list -> int
     highest hand in [list_of_list_card], using texas holdem card ranking
     rules.
 
+    Requires: for any element e in [list_of_list_card], List.length e =
+    7
+
     Raises: [Tie] of \[i1,i2 ... in \] when hands of index i1, i2 ... in
-    in [list_of_list_card] are of the same rank. *)
+    in [list_of_list_card] are tied. *)
 
 (********************************************************************
     Below are mainly for testing purposes.
