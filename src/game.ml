@@ -15,6 +15,8 @@ type game = {
   small_blind_amt : int; 
   current_bet : int; 
   consecutive_calls : int;
+  betting_round : int;
+  game_over : bool;
 }
 
 type command =
@@ -22,7 +24,7 @@ type command =
   | Raise of int
   | Fold
 
-(* BEGINING OF HELPER FUNCTIONS FOR CREATE GAME *)
+(* BEGINING OF HELPER FUNCTIONS *)
 
 (** rearrange rotate the player queue until dealer is the last element*)
 let rec rearrange (queue : player Queue.t) (sb : player) =
@@ -93,8 +95,12 @@ let init_helper players_queue small_blind_amt =
     small_blind = Queue.peek players_queue; 
     small_blind_amt = small_blind_amt; 
     current_bet = 2 * small_blind_amt; 
+    betting_round = 0;
     consecutive_calls = 0;
+    game_over = false
   }
+
+(* END OF HELPER FUNCTIONS *)
 
 (** [create_game players small_blind_amt] initializes game based 
     on players and small_blind_amt. The first player in the queue 
@@ -112,7 +118,17 @@ let play_again game =
   let small_blind_amt = game.small_blind_amt in 
   init_helper new_player_queue small_blind_amt
 
-let player_move (cmd : command) (p : player) : player =
+(** [get_curr_player game] returns the player who is making the decision of
+pass/raise/fold *)
+let get_curr_player game = 
+  Queue.peek game.active_players
+
+(** [is_game_over game] returns a boolean that determines whether the game
+is finished *)
+let is_game_over game = game.game_over
+
+
+(* let player_move (cmd : command) (p : player) : player =
   match cmd with
   | Call x | Raise x -> deduct p x
   | _ -> raise IllegalMove
@@ -206,5 +222,5 @@ let poker_game game =
   let max_round = 2 in
   let new_game = poker_helper curr_round max_round game in 
   let game_after_last_bet = betting_round new_game in 
-  pot_distributer game_after_last_bet
+  pot_distributer game_after_last_bet *)
 
