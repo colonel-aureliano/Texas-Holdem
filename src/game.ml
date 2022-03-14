@@ -2,15 +2,19 @@ open Card
 open Player
 
 exception MorePlayersNeeded
-exception NotImplemented
+exception RepeatedName of string
+
 
 type game = {
-  player_queue : player Queue.t;
-  small_blind : player;
-  consecutive_calls : int;
-  pot : int;
+  players : player Queue.t;
+  active_players : player Queue.t;
   current_deck : Card.t;
   cards_on_table : Card.t;
+  pot : int;
+  small_blind : player; 
+  small_blind_amt : int; 
+  current_bet : int; 
+  consecutive_calls : int;
 }
 
 type command =
@@ -18,7 +22,7 @@ type command =
   | Raise of int
   | Fold
 
-(* beginning of helper functions for create game *)
+(* BEGINING OF HELPER FUNCTIONS FOR CREATE GAME *)
 
 (** rearrange rotate the player queue until dealer is the last element*)
 let rec rearrange (queue : player Queue.t) (sb : player) =
@@ -28,11 +32,8 @@ let rec rearrange (queue : player Queue.t) (sb : player) =
       (Queue.add (Queue.take queue) queue;
        queue)
       sb
-(* let rec rearrange (queue : player Queue.t) (sb : player) = if
-   Queue.peek_opt queue = sb then queue else rearrange (Queue.add
-   (Queue.take queue) queue;) *)
 
-(** convert player list to player queue*)
+(** [list_to_queue players] converts the list of players to a queue *)
 let list_to_queue players =
   let rec helper players queue =
     match players with
@@ -44,16 +45,15 @@ let list_to_queue players =
   in
   let myqueue = Queue.create () in
   helper players myqueue
-(* let list_to_queue players = let rec helper players queue = match
-   players with | [] -> queue | h :: t -> helper t (Queue.add h queue;)
-   in let myqueue = Queue.create (); in helper players myqueue *)
 
-(** shift after small or big blind*)
+(** [shift_for_blind queue] pop the top element on the queue and push it
+    to the back of it *)
 let shift_for_blind queue =
   Queue.add (Queue.take queue) queue;
   queue
-(* let shift_for_blind queue = Queue.add (Queue.take queue) queue *)
 
+(** [card_to_players queue deck num_dealed] deal 3 cards randomly to players
+    in the queue *)  
 let rec card_to_players queue deck num_dealed =
   if num_dealed = Queue.length queue then (queue, deck)
   else
@@ -64,36 +64,53 @@ let rec card_to_players queue deck num_dealed =
       (Queue.add new_player queue;
        queue)
       new_deck (num_dealed + 1)
-(* let rec card_to_players queue deck num_dealed = if num_dealed =
-   Queue.length queue then (queue, deck) else let player = Queue.take
-   queue in let cards, new_deck = n_random_card deck 3 in let new_player
-   = set_cards player cards in card_to_players (Queue.add new_player
-   queue;) new_deck num_dealed+1 *)
-(* end of helper functions for create game *)
 
-let create_game players small_blind_amt = 
-  let init_players = list_to_queue players in  
-  let curr_small_blind = Queue.peek init_players in 
-  let players_with_card, curr_deck = card_to_players init_players new_deck 3 in 
+(** [dup_name player_names] check if there exits duplicated names 
+    in player_names. Return false if no duplicate exits and raise
+    ReapeadtedName error if found duplicates *)
+let rec dup_name player_names = 
+  match player_names with
+  | [] -> false
+  | hd :: tl -> 
+    if List.exists ((=) hd) tl then raise (RepeatedName hd)
+    else dup_name tl;;
+
+(** [init_helper players_queue small_blind_amt] initialize game 
+    based on players_queue and small_blind_amt. Returns the game
+    of players queue with big blind in the last place and each
+    player with 3 cards and the table has 3 cards *)
+let init_helper players_queue small_blind_amt =  
+  let players_with_card, curr_deck = card_to_players players_queue new_deck 3 in  
   let table_card, final_deck = n_random_card curr_deck 3 in 
   let sb_shift_players = shift_for_blind players_with_card in 
   let bb_shift_players = shift_for_blind sb_shift_players in 
-  { 
-    player_queue = bb_shift_players;
-    small_blind = curr_small_blind;
-    consecutive_calls  = 0;
-    pot = 3 * small_blind_amt;
+  {
+    players = players_queue;
+    active_players = bb_shift_players;
     current_deck = final_deck;
-    cards_on_table = final_deck;
+    cards_on_table = table_card;
+    pot = 3 * small_blind_amt;
+    small_blind = Queue.peek players_queue; 
+    small_blind_amt = small_blind_amt; 
+    current_bet = 2 * small_blind_amt; 
+    consecutive_calls = 0;
   }
-(* let create_game (players : player list) = let init_queue =
-   list_to_queue players in let ordered_queue = rearrange init_queue in
-   let dealed_queue, curr_deck = card_to_players ordered_queue
-   Card.new_deck [] in let table_card, final_deck = n_random_card
-   curr_deck 3 in let sb_shift_queue = shift_for_blind dealed_queue in
-   let bb_shift_queue = shift_for_blind sb_shift_queue in { player_queue
-   = bb_shift_queue; consecutive_calls = 0; pot = 3; current_deck =
-   final_deck; cards_on_table = table_card; } *)
+
+(** [create_game players small_blind_amt] initializes game based 
+    on players and small_blind_amt. The first player in the queue 
+    will automatically be the small_blind *)   
+let create_game players small_blind_amt = 
+  let player_names = List.map (fun x -> name x) players in 
+  let _ = dup_name player_names in 
+  let players_queue = list_to_queue players in init_helper players_queue small_blind_amt
+
+(** [play_again game] restarts the game with same set of players but
+    shifting the small_blind to the next person *)
+let play_again game = 
+  let old_player_queue = game.players in 
+  let new_player_queue = shift_for_blind old_player_queue in 
+  let small_blind_amt = game.small_blind_amt in 
+  init_helper new_player_queue small_blind_amt
 
 let player_move (cmd : command) (p : player) : player =
   match cmd with
@@ -148,8 +165,8 @@ let check_index_match
 
 let players_to_hands (p : player list) : Card.t list =
   List.map (fun x -> cards x) p
-
 (*END OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
+
 let pot_distributer g =
   {
     g with
