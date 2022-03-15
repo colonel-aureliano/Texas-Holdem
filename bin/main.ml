@@ -3,7 +3,13 @@ open Game
 open Player
 open Card
 
-let play game = print_endline "\nsetup completed"
+(** [play] loops through plyaers, displaying relevant information and
+    asks for command*)
+let play game =
+  let p = get_curr_player game in
+  "The next player is " ^ name p |> print_endline;
+  "Your current wealth is $" ^ string_of_int (wealth p) |> print_endline;
+  "Your cards are " ^ to_string (cards p) |> print_endline
 
 (** [create_players n i ls] adds [n] players to [ls]. Prompts each
     player to enter in their names and initial wealth. Default player
@@ -59,8 +65,8 @@ let setup () =
       50
   in
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
-  players |> play
-(* create_game players sb |> play *)
+  print_endline "\nsetup completed";
+  create_game players sb |> play
 
 (** Exectue game enegine *)
 let () =

@@ -114,7 +114,7 @@ let rec dup_name player_names =
     the table has 3 cards *)
 let init_helper players_queue small_blind_amt =
   let players_with_card, curr_deck =
-    card_to_players players_queue new_deck 3
+    card_to_players players_queue new_deck 0
   in
   let table_card, final_deck = n_random_card curr_deck 3 in
   let sb_shift_players = shift_for_blind players_with_card in

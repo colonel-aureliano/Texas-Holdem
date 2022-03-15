@@ -15,6 +15,7 @@ let create_player
 
 let name player = player.name
 let wealth player = player.wealth
+let amount_placed_on_table player = failwith "not Implemented"
 let cards player = player.cards
 let set_cards player cards = { player with cards }
 let remove_cards player = { player with cards = [] }
