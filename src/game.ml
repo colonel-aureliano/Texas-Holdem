@@ -35,18 +35,14 @@ let mutable_pop q =
   ignore (Queue.pop q);
   q
 
+let shift q =
+  let qu = Queue.copy q in
+  let hd = Queue.pop q in
+  mutable_push hd (mutable_pop qu)
+
 (** [reverse_arg_order] swaps the argument orders for a function with 2
     arguments*)
 let reverse_arg_order f x y = f y x
-
-(** rearrange rotate the player queue until dealer is the last element*)
-let rec rearrange (queue : player Queue.t) (sb : player) =
-  if Player.name (Queue.peek queue) = Player.name sb then queue
-  else
-    rearrange
-      (Queue.add (Queue.take queue) queue;
-       queue)
-      sb
 
 (** [list_to_queue players] converts the list of players to a queue *)
 let list_to_queue players =
@@ -84,6 +80,11 @@ let check_index_match
 let shift_for_blind queue =
   Queue.add (Queue.take queue) queue;
   queue
+
+(** rearrange rotate the player queue until dealer is the last element*)
+let rec rearrange (queue : player Queue.t) (sb : player) =
+  if Player.name (Queue.peek queue) = Player.name sb then queue
+  else rearrange (shift_for_blind queue) sb
 
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
@@ -133,17 +134,6 @@ let init_helper players_queue small_blind_amt =
     game_over = false;
   }
 
-(** [winner_player_with_pot_added] returns the winning player with the
-    pot added to his wealth*)
-let winner_player_with_pot_added g =
-  let player_list = g.active_players |> queue_to_list in
-  let highest_hand_index =
-    player_list |> players_to_hands |> index_of_highest_hand
-  in
-  List.filteri (check_index_match highest_hand_index) player_list
-  |> List.map (reverse_arg_order add g.pot)
-  |> list_to_queue |> Queue.pop
-
 (** [draw_card] draws a card from the current deck and places it on the
     table*)
 let draw_card g =
@@ -190,6 +180,22 @@ let get_curr_player game = Queue.peek game.active_players
 
 let table game = game.cards_on_table
 
+(** [winner_player_with_pot_added] returns the winning player with the
+    pot added to his wealth*)
+let winner_player_with_pot_added g =
+  if Queue.length g.active_players = 1 then
+    add (Queue.pop g.active_players) g.pot
+  else
+    let player_list = g.active_players |> queue_to_list in
+    let highest_hand_index =
+      player_list |> players_to_hands |> index_of_highest_hand
+    in
+    List.filteri (check_index_match highest_hand_index) player_list
+    |> List.hd
+    |> reverse_arg_order add g.pot
+(* |> List.map (reverse_arg_order add g.pot) |> list_to_queue |>
+   Queue.pop *)
+
 (** [pot distrubutor g] distributes the pot to the winning player in
     game g*)
 let pot_distributer g =
@@ -198,8 +204,13 @@ let pot_distributer g =
     game_over = true;
     players =
       (let winner = winner_player_with_pot_added g in
-       let arranged_players = rearrange g.players winner in
-       mutable_push winner (mutable_pop arranged_players));
+       if Queue.length g.players = 0 then failwith "sk"
+       else
+         let arranged_players = rearrange g.players winner in
+         g.players
+         (* mutable_push winner (mutable_pop arranged_players) *)
+         (* Queue.add winner (ignore (Queue.pop arranged_players);
+            arranged_players); arranged_players *));
   }
 
 (** [betting_round g] returns the game state after executing the
@@ -209,22 +220,24 @@ let betting_round (g : game) (cmd : command) : game =
   | Call ->
       let cur_player = get_curr_player g in
       let x = g.current_bet - Player.amount_placed cur_player in
-
-      let updated_g =
-        { (execute_player_spending g x) with pot = g.pot + x }
-      in
-      if updated_g.consecutive_calls = Queue.length g.active_players
-      then
-        if List.length g.cards_on_table = 5 then
-          { (pot_distributer updated_g) with game_over = true }
-        else draw_card { updated_g with consecutive_calls = 0 }
+      if Player.wealth cur_player < x then raise InsufficientFund
       else
-        { updated_g with consecutive_calls = g.consecutive_calls + 1 }
+        let updated_g =
+          { (execute_player_spending g x) with pot = g.pot + x }
+        in
+        if updated_g.consecutive_calls = Queue.length g.active_players
+        then
+          if List.length g.cards_on_table = 5 then
+            { (pot_distributer updated_g) with game_over = true }
+          else draw_card { updated_g with consecutive_calls = 0 }
+        else
+          { updated_g with consecutive_calls = g.consecutive_calls + 1 }
   | Raise x ->
       {
         (execute_player_spending g x) with
         current_bet = g.current_bet + x;
         pot = g.pot + x;
+        consecutive_calls = 0;
       }
   | Fold ->
       let updated_g =

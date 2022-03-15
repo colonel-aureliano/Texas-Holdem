@@ -12,6 +12,9 @@ val wealth : player -> int
 val amount_placed : player -> int
 val cards : player -> Card.t
 
+val equal : player -> player -> bool
+(** if 2 players have the same name*)
+
 val set_cards : player -> Card.t -> player
 (** [set_cards player cards] returns [player] possessed with [cards]. *)
 

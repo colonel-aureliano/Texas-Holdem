@@ -31,3 +31,4 @@ let deduct player amount =
   else { player with wealth = player.wealth - amount }
 
 let add player amount = { player with wealth = player.wealth + amount }
+let equal p1 p2 = p1.name = p2.name
