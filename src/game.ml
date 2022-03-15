@@ -173,6 +173,13 @@ let play_again game =
     of pass/raise/fold *)
 let get_curr_player game = Queue.peek game.active_players
 
+(** [get_winner game] returns the player who won. Precondition: game had
+    ended *)
+let get_winner game = Queue.peek game.players
+
+(** [get_all_players game] returns all the players in the game*)
+let get_all_players game = game.players
+
 let table game = game.cards_on_table
 
 (** [winner_player_with_pot_added] returns the winning player with the

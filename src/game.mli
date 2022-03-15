@@ -38,3 +38,14 @@ val get_curr_player : game -> player
 val execute_command : game -> command -> game
 (** [betting_round g] returns the game state after executing the
     player's next move*)
+
+val get_curr_player : game -> player
+(** [get_curr_player game] returns the player who is making the decision
+    of pass/raise/fold *)
+
+val get_winner : game -> player
+(** [get_winner game] returns the player who won. Precondition: game had
+    ended *)
+
+val get_all_players : game -> player Queue.t
+(** [get_all_players game] returns all the players in the game*)
