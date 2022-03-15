@@ -218,7 +218,8 @@ let betting_round (g : game) (cmd : command) : game =
         if List.length g.cards_on_table = 5 then
           { (pot_distributer updated_g) with game_over = true }
         else draw_card { updated_g with consecutive_calls = 0 }
-      else updated_g
+      else
+        { updated_g with consecutive_calls = g.consecutive_calls + 1 }
   | Fold ->
       let updated_g =
         { g with active_players = mutable_pop g.active_players }
