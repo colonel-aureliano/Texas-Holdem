@@ -1,6 +1,6 @@
 type player
 
-exception IllegalMove
+exception InsufficientFund
 exception EmptyPlayer of player
 
 val create_player : string -> int -> Card.t -> player
@@ -20,8 +20,8 @@ val remove_cards : player -> player
 
 val deduct : player -> int -> player
 (** [deduct player amount] returns [player] with [amount] deducted from
-    their wealth. Raises [IllegalMove] if player's wealth is less than
-    [amount].*)
+    their wealth. Raises [InsufficientFund] if player's wealth is less
+    than [amount].*)
 
 val add : player -> int -> player
 (** [add player amount] returns [player] with [amount] added to their

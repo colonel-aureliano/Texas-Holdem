@@ -5,9 +5,8 @@ type player = {
   amount_placed_on_table : int;
 }
 
-exception IllegalMove
+exception InsufficientFund
 exception EmptyPlayer of player
-exception NotEnoughMoney
 
 let create_player
     (input_name : string)
@@ -28,7 +27,7 @@ let set_cards player cards = { player with cards }
 let remove_cards player = { player with cards = [] }
 
 let deduct player amount =
-  if player.wealth < amount then raise IllegalMove
+  if player.wealth < amount then raise InsufficientFund
   else { player with wealth = player.wealth - amount }
 
 let add player amount = { player with wealth = player.wealth + amount }

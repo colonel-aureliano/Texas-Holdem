@@ -209,18 +209,17 @@ let betting_round (g : game) (cmd : command) : game =
   | Call ->
       let cur_player = get_curr_player g in
       let x = g.current_bet - Player.amount_placed cur_player in
-      if Player.wealth cur_player < x then raise IllegalMove
+
+      let updated_g =
+        { (execute_player_spending g x) with pot = g.pot + x }
+      in
+      if updated_g.consecutive_calls = Queue.length g.active_players
+      then
+        if List.length g.cards_on_table = 5 then
+          { (pot_distributer updated_g) with game_over = true }
+        else draw_card { updated_g with consecutive_calls = 0 }
       else
-        let updated_g =
-          { (execute_player_spending g x) with pot = g.pot + x }
-        in
-        if updated_g.consecutive_calls = Queue.length g.active_players
-        then
-          if List.length g.cards_on_table = 5 then
-            { (pot_distributer updated_g) with game_over = true }
-          else draw_card { updated_g with consecutive_calls = 0 }
-        else
-          { updated_g with consecutive_calls = g.consecutive_calls + 1 }
+        { updated_g with consecutive_calls = g.consecutive_calls + 1 }
   | Raise x ->
       {
         (execute_player_spending g x) with

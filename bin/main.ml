@@ -3,6 +3,8 @@ open Game
 open Player
 open Card
 
+exception Exit
+
 (** [prompt] asks user to enter a parseable command*)
 let parse x : command =
   match
@@ -10,8 +12,9 @@ let parse x : command =
       read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
   with
   | [ "fold" ] -> Fold
-  | [ "call" ] -> Call
+  | [ "call"; n ] -> Call (int_of_string n)
   | [ "raise"; n ] -> Raise (int_of_string n)
+  | [ "exit" ] -> raise Exit
   | _ -> failwith "Invalid Move"
 
 (** Prompts for command until get a valid command*)
@@ -21,9 +24,13 @@ let rec get_command game : game =
   try
     let command = parse 0 in
     betting_round game command
-  with Failure _ ->
-    print_endline "Invalid Move";
-    get_command game
+  with
+  | Failure _ ->
+      print_endline "Invalid Move";
+      get_command game
+  | InsufficientFund ->
+      print_endline "Invalid Move";
+      get_command game
 
 (** [end_game] shows the result of the game and asks whether to play
     again *)
@@ -47,7 +54,8 @@ let rec play game =
     else
       "Current highest bet is $" ^ string_of_int game.current_bet ^ "."
       |> print_endline;
-    get_command game |> play
+    try get_command game |> play
+    with Exit -> print_endline "exit game 0"
 
 (** [create_players n i ls] adds [n] players to [ls]. Prompts each
     player to enter in their names and initial wealth. Default player
