@@ -42,6 +42,7 @@ let rec play game =
     "\nHello, " ^ name p ^ "!" |> print_endline;
     "Your Hand: " ^ to_string (cards p) |> print_endline;
     "Your wealth is $" ^ string_of_int (wealth p) ^ "." |> print_endline;
+    "The pot is $" ^ string_of_int game.pot ^ "." |> print_endline;
     if p = game.small_blind then print_endline "You are small blind."
     else
       "Current highest bet is $" ^ string_of_int game.current_bet ^ "."
