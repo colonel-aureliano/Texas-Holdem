@@ -14,7 +14,7 @@ type game = {
   small_blind_amt : int;
   current_bet : int;
   consecutive_calls : int;
-  betting_round : int;
+  (* betting_round : int; *)
   game_over : bool;
 }
 
@@ -124,7 +124,7 @@ let init_helper players_queue small_blind_amt =
     small_blind = Queue.peek players_queue;
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
-    betting_round = 0;
+    (* betting_round = 0; *)
     consecutive_calls = 0;
     game_over = false;
   }
@@ -188,8 +188,6 @@ let winner_player_with_pot_added g =
     List.filteri (check_index_match highest_hand_index) player_list
     |> List.hd
     |> reverse_arg_order add g.pot
-(* |> List.map (reverse_arg_order add g.pot) |> list_to_queue |>
-   Queue.pop *)
 
 (** [pot distrubutor g] distributes the pot to the winning player in
     game g*)
@@ -199,18 +197,15 @@ let pot_distributer g =
     game_over = true;
     players =
       (let winner = winner_player_with_pot_added g in
-       (* if Queue.length g.players = 0 then raise InsufficientFund
-          else *)
        let arranged_players = rearrange g.players winner in
-
        rearrange
          (mutable_push winner (mutable_pop arranged_players))
          winner);
   }
 
-(** [betting_round g] returns the game state after executing the
+(** [execute_command g] returns the game state after executing the
     player's next move*)
-let betting_round (g : game) (cmd : command) : game =
+let execute_command (g : game) (cmd : command) : game =
   match cmd with
   | Call ->
       let cur_player = get_curr_player g in
@@ -241,56 +236,3 @@ let betting_round (g : game) (cmd : command) : game =
       if Queue.length updated_g.active_players = 1 then
         { (pot_distributer updated_g) with game_over = true }
       else updated_g
-
-(* let player_move (cmd : command) (p : player) : player = match cmd
-   with | Call x | Raise x -> deduct p x | _ -> raise IllegalMove
-
-   let execute_command (g : game) (cmd : command) = { g with
-   player_queue = (let q = g.player_queue in match cmd with | Fold ->
-   ignore (Queue.take q); q | _ -> Queue.add (Queue.take q |>
-   player_move cmd) q; q); consecutive_calls = (match cmd with | Call _
-   -> g.consecutive_calls + 1 | _ -> g.consecutive_calls); }
-
-   let drawing_card g = let new_card, new_set = n_random_card
-   g.current_deck 1 in { player_queue = g.player_queue;
-   consecutive_calls = g.consecutive_calls; pot = g.pot; current_deck =
-   new_set; cards_on_table = new_card @ g.cards_on_table; small_blind =
-   raise NotImplemented (*TODO: IMPLEMENT*); }
-
-   (*BEGINNING OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*) let rec
-   queue_to_list (q : player Queue.t) : player list = if Queue.is_empty
-   q then [] else Queue.take q :: queue_to_list q
-
-   let reverse_args f x y = f y x
-
-   let rec list_to_queue (p : player list) : player Queue.t = let q =
-   Queue.create () in List.iter (reverse_args Queue.add q) (List.rev p);
-   q
-
-   let check_index_match (highest_index : int) (cur_index : int) (_ :
-   player) : bool = highest_index = cur_index
-
-   let players_to_hands (p : player list) : Card.t list = List.map (fun
-   x -> cards x) p (*END OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
-
-   let pot_distributer g = { g with player_queue = (let q =
-   g.player_queue |> queue_to_list in List.filteri (check_index_match (q
-   |> players_to_hands |> index_of_highest_hand)) q |> List.map
-   (reverse_args add g.pot) |> list_to_queue); }
-
-   let get_command : command = raise (Failure "Unimplemented")
-
-   let betting_round (g : game) : game = if g.consecutive_calls =
-   Queue.length g.player_queue then drawing_card { g with
-   consecutive_calls = 0 } else execute_command g get_command
-
-   let rec poker_helper curr_round max_round game = if curr_round >=
-   max_round then game else let game_after_bet = betting_round game in
-   let ordered_game = { game_after_bet with player_queue = rearrange
-   game_after_bet.player_queue game_after_bet.small_blind; } in
-   poker_helper (curr_round + 1) max_round ordered_game
-
-   let poker_game game = let curr_round = 0 in let max_round = 2 in let
-   new_game = poker_helper curr_round max_round game in let
-   game_after_last_bet = betting_round new_game in pot_distributer
-   game_after_last_bet *)

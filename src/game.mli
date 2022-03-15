@@ -10,7 +10,7 @@ type game = {
   small_blind_amt : int;
   current_bet : int;
   consecutive_calls : int;
-  betting_round : int;
+  (* betting_round : int; *)
   game_over : bool;
 }
 (** The abstract type of values representing game. *)
@@ -35,6 +35,6 @@ val get_curr_player : game -> player
 (** [get_curr_player] returns the player who is making the decision of
     pass/raise/fold *)
 
-val betting_round : game -> command -> game
+val execute_command : game -> command -> game
 (** [betting_round g] returns the game state after executing the
     player's next move*)
