@@ -178,7 +178,7 @@ let get_curr_player game = Queue.peek game.active_players
 let get_winner game = Queue.peek game.players
 
 (** [get_all_players game] returns all the players in the game*)
-let get_all_players game = game.players
+let get_all_players game = game.players |> queue_to_list
 
 let table game = game.cards_on_table
 
