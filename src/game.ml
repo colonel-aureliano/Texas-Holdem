@@ -210,7 +210,10 @@ let betting_round (g : game) (cmd : command) : game =
   match cmd with
   | Call x | Raise x ->
       let updated_g =
-        { (execute_player_spending g x) with current_bet = x }
+        {
+          (execute_player_spending g x) with
+          current_bet = g.current_bet + x;
+        }
       in
       if updated_g.consecutive_calls = Queue.length g.active_players
       then draw_card { updated_g with consecutive_calls = 0 }
