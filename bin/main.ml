@@ -43,7 +43,7 @@ let rec player_result = function
 (** [end_game] shows the result of the game and asks whether to play
     again *)
 let rec end_game game =
-  print_endline "This game is over.";
+  print_endline "\n\nThis game is over.";
   let winner = get_winner game in
   "The winner is: " ^ name winner ^ "!" |> print_endline;
   (* let players = get_all_players game |> List.rev in player_result
@@ -65,7 +65,7 @@ and play game =
     "\nThe next player is " ^ name p ^ "." |> print_endline;
     print_endline "Press Enter to confirm.";
     print_string (read_line ());
-    "\n\n\n\n\nTable: " ^ to_string game.cards_on_table |> print_endline;
+    "\n\n\n\nTable: " ^ to_string game.cards_on_table |> print_endline;
     "\nHello, " ^ name p ^ "!" |> print_endline;
     "Your Hand: " ^ to_string (cards p) |> print_endline;
     "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
@@ -81,7 +81,7 @@ and play game =
     |> print_endline;
     try
       let game = get_command game in
-      print_endline "successul";
+      print_endline "successful";
       play game
     with Exit -> print_endline "exit code 0"
 
