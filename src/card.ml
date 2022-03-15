@@ -6,15 +6,21 @@ type card =
 
 type t = card list
 
+let string_of_rank = function
+  | 11 -> "J"
+  | 12 -> "Q"
+  | 13 -> "K"
+  | x -> string_of_int x
+
 let rec to_string (hand : t) : string =
   match hand with
   | [] -> ""
   | h :: t -> (
       match h with
-      | S x -> string_of_int x ^ "♠" ^ "   " ^ to_string t
-      | C x -> string_of_int x ^ "♣" ^ "   " ^ to_string t
-      | H x -> string_of_int x ^ "♥" ^ "   " ^ to_string t
-      | D x -> string_of_int x ^ "♦" ^ "   " ^ to_string t)
+      | S x -> string_of_rank x ^ "♠" ^ "   " ^ to_string t
+      | C x -> string_of_rank x ^ "♣" ^ "   " ^ to_string t
+      | H x -> string_of_rank x ^ "♥" ^ "   " ^ to_string t
+      | D x -> string_of_rank x ^ "♦" ^ "   " ^ to_string t)
 
 let rec create_new_deck lst =
   match lst with

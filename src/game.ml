@@ -85,13 +85,13 @@ let shift_for_blind queue =
   Queue.add (Queue.take queue) queue;
   queue
 
-(** [card_to_players queue deck num_dealed] deal 3 cards randomly to
+(** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
 let rec card_to_players queue deck num_dealed =
   if num_dealed = Queue.length queue then (queue, deck)
   else
     let player = Queue.take queue in
-    let cards, new_deck = n_random_card deck 3 in
+    let cards, new_deck = n_random_card deck 2 in
     let new_player = set_cards player cards in
     card_to_players
       (Queue.add new_player queue;
@@ -188,9 +188,7 @@ let play_again game =
     of pass/raise/fold *)
 let get_curr_player game = Queue.peek game.active_players
 
-(** [is_game_over game] returns a boolean that determines whether the
-    game is finished *)
-let is_game_over game = game.game_over
+let table game = game.cards_on_table
 
 (** [pot distrubutor g] distributes the pot to the winning player in
     game g*)

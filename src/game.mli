@@ -35,14 +35,6 @@ val get_curr_player : game -> player
 (** [get_curr_player] returns the player who is making the decision of
     pass/raise/fold *)
 
-val is_game_over : game -> bool
-(** [is_game_over] returns a boolean that determines whether the game is
-    finished *)
-
-val pot_distributer : game -> game
-(** [pot distrubutor g] distributes the pot to the winning player in
-    game g*)
-
 val betting_round : game -> command -> game
 (** [betting_round g] returns the game state after executing the
     player's next move*)

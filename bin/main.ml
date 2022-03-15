@@ -3,13 +3,50 @@ open Game
 open Player
 open Card
 
+(** [prompt] asks user to enter a parseable command*)
+let parse x : command =
+  match
+    String.(
+      read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
+  with
+  | [ "fold" ] -> Fold
+  | [ "call"; n ] -> Call (int_of_string n)
+  | [ "raise"; n ] -> Raise (int_of_string n)
+  | _ -> failwith "Invalid Move"
+
+(** Prompts for command until get a valid command*)
+let rec get_command game : game =
+  print_endline "\nEnter your move: ";
+  print_string "> ";
+  try
+    let command = parse 0 in
+    betting_round game command
+  with Failure _ ->
+    print_endline "Invalid Move";
+    get_command game
+
+(** [end_game] shows the result of the game and asks whether to play
+    again *)
+let end_game game = print_endline "This game is over."
+
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
-let play game =
-  let p = get_curr_player game in
-  "The next player is " ^ name p |> print_endline;
-  "Your current wealth is $" ^ string_of_int (wealth p) |> print_endline;
-  "Your cards are " ^ to_string (cards p) |> print_endline
+let rec play game =
+  if game.game_over = true then end_game game
+  else
+    let p = get_curr_player game in
+    "\nThe next player is " ^ name p ^ "." |> print_endline;
+    print_endline "Press Enter to confirm.";
+    print_string (read_line ());
+    "Table: " ^ to_string game.cards_on_table |> print_endline;
+    "\nHello, " ^ name p ^ "!" |> print_endline;
+    "Your Hand: " ^ to_string (cards p) |> print_endline;
+    "Your wealth is $" ^ string_of_int (wealth p) ^ "." |> print_endline;
+    if p = game.small_blind then print_endline "You are small blind."
+    else
+      "Current highest bet is $" ^ string_of_int game.current_bet ^ "."
+      |> print_endline;
+    get_command game |> play
 
 (** [create_players n i ls] adds [n] players to [ls]. Prompts each
     player to enter in their names and initial wealth. Default player
