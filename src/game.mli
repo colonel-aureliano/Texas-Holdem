@@ -47,5 +47,5 @@ val get_winner : game -> player
 (** [get_winner game] returns the player who won. Precondition: game had
     ended *)
 
-val get_all_players : game -> player Queue.t
+val get_all_players : game -> player list
 (** [get_all_players game] returns all the players in the game*)
