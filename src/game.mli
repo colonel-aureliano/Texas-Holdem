@@ -16,7 +16,7 @@ type game = {
 (** The abstract type of values representing game. *)
 
 type command =
-  | Call of int
+  | Call
   | Raise of int
   | Fold
 

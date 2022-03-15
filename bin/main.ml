@@ -10,7 +10,7 @@ let parse x : command =
       read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
   with
   | [ "fold" ] -> Fold
-  | [ "call"; n ] -> Call (int_of_string n)
+  | [ "call" ] -> Call
   | [ "raise"; n ] -> Raise (int_of_string n)
   | _ -> failwith "Invalid Move"
 
