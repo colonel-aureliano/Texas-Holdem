@@ -43,6 +43,6 @@ val pot_distributer : game -> game
 (** [pot distrubutor g] distributes the pot to the winning player in
     game g*)
 
-val betting_round : game -> game
+val betting_round : game -> command -> game
 (** [betting_round g] returns the game state after executing the
     player's next move*)
