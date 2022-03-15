@@ -216,9 +216,18 @@ let betting_round (g : game) (cmd : command) : game =
         }
       in
       if updated_g.consecutive_calls = Queue.length g.active_players
-      then draw_card { updated_g with consecutive_calls = 0 }
+      then
+        if List.length g.cards_on_table = 5 then
+          { (pot_distributer updated_g) with game_over = true }
+        else draw_card { updated_g with consecutive_calls = 0 }
       else updated_g
-  | Fold -> { g with active_players = mutable_pop g.active_players }
+  | Fold ->
+      let updated_g =
+        { g with active_players = mutable_pop g.active_players }
+      in
+      if Queue.length updated_g.active_players = 1 then
+        { (pot_distributer updated_g) with game_over = true }
+      else updated_g
 
 (* let player_move (cmd : command) (p : player) : player = match cmd
    with | Call x | Raise x -> deduct p x | _ -> raise IllegalMove
