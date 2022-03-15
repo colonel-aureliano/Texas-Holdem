@@ -29,7 +29,7 @@ let rec get_command game : game =
       print_endline "Invalid Move";
       get_command game
   | InsufficientFund ->
-      print_endline "Invalid Move";
+      print_endline "Insufficient Fund";
       get_command game
 
 (** [end_game] shows the result of the game and asks whether to play
