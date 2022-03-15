@@ -65,17 +65,25 @@ and play game =
     "\nThe next player is " ^ name p ^ "." |> print_endline;
     print_endline "Press Enter to confirm.";
     print_string (read_line ());
-    "\n\n\nTable: " ^ to_string game.cards_on_table |> print_endline;
+    "\n\n\n\n\nTable: " ^ to_string game.cards_on_table |> print_endline;
     "\nHello, " ^ name p ^ "!" |> print_endline;
     "Your Hand: " ^ to_string (cards p) |> print_endline;
-    "Your wealth is $" ^ string_of_int (wealth p) ^ "." |> print_endline;
-    "The pot is $" ^ string_of_int game.pot ^ "." |> print_endline;
+    "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
+    |> print_endline;
+    "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
     if p = game.small_blind then print_endline "You are small blind."
-    else
-      "Current highest bet is $" ^ string_of_int game.current_bet ^ "."
-      |> print_endline;
-    try get_command game |> play
-    with Exit -> print_endline "exit game 0"
+    else print_string "";
+    "Highest bet on the table is $"
+    ^ string_of_int game.current_bet
+    ^ "."
+    |> print_endline;
+    "Your current bet is $" ^ string_of_int (amount_placed p) ^ "."
+    |> print_endline;
+    try
+      let game = get_command game in
+      print_endline "successul";
+      play game
+    with Exit -> print_endline "exit code 0"
 
 (** [create_players n i ls] adds [n] players to [ls]. Prompts each
     player to enter in their names and initial wealth. Default player
@@ -127,8 +135,8 @@ let setup () =
     try read_line () |> int_of_string
     with Failure _ ->
       print_endline
-        "Warning: small blind is now set to 50 by default. \n";
-      50
+        "Warning: small blind is now set to $5 by default. \n";
+      5
   in
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
   print_endline "\nsetup completed";

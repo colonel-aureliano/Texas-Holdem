@@ -28,7 +28,12 @@ let remove_cards player = { player with cards = [] }
 
 let deduct player amount =
   if player.wealth < amount then raise InsufficientFund
-  else { player with wealth = player.wealth - amount }
+  else
+    {
+      player with
+      wealth = player.wealth - amount;
+      amount_placed_on_table = player.amount_placed_on_table + amount;
+    }
 
 let add player amount = { player with wealth = player.wealth + amount }
 let equal p1 p2 = p1.name = p2.name
