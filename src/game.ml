@@ -35,11 +35,6 @@ let mutable_pop q =
   ignore (Queue.pop q);
   q
 
-let shift q =
-  let qu = Queue.copy q in
-  let hd = Queue.pop q in
-  mutable_push hd (mutable_pop qu)
-
 (** [reverse_arg_order] swaps the argument orders for a function with 2
     arguments*)
 let reverse_arg_order f x y = f y x
@@ -121,7 +116,7 @@ let init_helper players_queue small_blind_amt =
   let sb_shift_players = shift_for_blind players_with_card in
   let bb_shift_players = shift_for_blind sb_shift_players in
   {
-    players = players_queue;
+    players = Queue.copy players_queue;
     active_players = bb_shift_players;
     current_deck = final_deck;
     cards_on_table = table_card;
@@ -204,13 +199,13 @@ let pot_distributer g =
     game_over = true;
     players =
       (let winner = winner_player_with_pot_added g in
-       if Queue.length g.players = 0 then failwith "sk"
-       else
-         let arranged_players = rearrange g.players winner in
-         g.players
-         (* mutable_push winner (mutable_pop arranged_players) *)
-         (* Queue.add winner (ignore (Queue.pop arranged_players);
-            arranged_players); arranged_players *));
+       (* if Queue.length g.players = 0 then raise InsufficientFund
+          else *)
+       let arranged_players = rearrange g.players winner in
+
+       mutable_push winner (mutable_pop arranged_players)
+       (* Queue.add winner (ignore (Queue.pop arranged_players);
+          arranged_players); arranged_players *));
   }
 
 (** [betting_round g] returns the game state after executing the
