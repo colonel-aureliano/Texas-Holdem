@@ -203,9 +203,9 @@ let pot_distributer g =
           else *)
        let arranged_players = rearrange g.players winner in
 
-       mutable_push winner (mutable_pop arranged_players)
-       (* Queue.add winner (ignore (Queue.pop arranged_players);
-          arranged_players); arranged_players *));
+       rearrange
+         (mutable_push winner (mutable_pop arranged_players))
+         winner);
   }
 
 (** [betting_round g] returns the game state after executing the
