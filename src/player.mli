@@ -9,6 +9,7 @@ val create_player : string -> int -> Card.t -> player
 
 val name : player -> string
 val wealth : player -> int
+val amount_placed_on_table : player -> int
 val cards : player -> Card.t
 
 val set_cards : player -> Card.t -> player
