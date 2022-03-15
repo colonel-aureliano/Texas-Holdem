@@ -5,14 +5,16 @@ open Card
 
 exception Exit
 
-(** [prompt] asks user to enter a parseable command*)
+(** [prompt] asks user to enter a parseable command. input of "exit"
+    exits the game*)
 let parse x : command =
+  print_string "> ";
   match
     String.(
       read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
   with
   | [ "fold" ] -> Fold
-  | [ "call" ] -> Call
+  | [ "call" ] (*| [ "raise"; "0" ]*) -> Call
   | [ "raise"; n ] -> Raise (int_of_string n)
   | [ "exit" ] -> raise Exit
   | _ -> failwith "Invalid Move"
@@ -20,32 +22,50 @@ let parse x : command =
 (** Prompts for command until get a valid command*)
 let rec get_command game : game =
   print_endline "\nEnter your move: ";
-  print_string "> ";
   try
     let command = parse 0 in
-    betting_round game command
+    execute_command game command
   with
   | Failure _ ->
-      print_endline "Invalid Move";
+      print_endline "Illegal Command";
       get_command game
   | InsufficientFund ->
       print_endline "Insufficient Fund";
       get_command game
 
+(** [player_result] prints the naeme and wealth of all players *)
+let rec player_result = function
+  | [] -> print_string "fin"
+  | h :: t ->
+      player_result t;
+      name h ^ ": " ^ string_of_int (wealth h) |> print_endline
+
 (** [end_game] shows the result of the game and asks whether to play
     again *)
-let end_game game = print_endline "This game is over."
+let rec end_game game =
+  print_endline "This game is over.";
+  let winner = get_winner game in
+  "The winner is: " ^ name winner ^ "!" |> print_endline;
+  (* let players = get_all_players game |> List.rev in player_result
+     players; *)
+  print_endline "\nWould you like to start another game?";
+  print_string "> ";
+  match String.(read_line () |> trim |> lowercase_ascii) with
+  | "y" ->
+      print_endline "new game started";
+      play (play_again game)
+  | _ -> print_endline "\nbye"
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
-let rec play game =
+and play game =
   if game.game_over = true then end_game game
   else
     let p = get_curr_player game in
     "\nThe next player is " ^ name p ^ "." |> print_endline;
     print_endline "Press Enter to confirm.";
     print_string (read_line ());
-    "Table: " ^ to_string game.cards_on_table |> print_endline;
+    "\n\n\nTable: " ^ to_string game.cards_on_table |> print_endline;
     "\nHello, " ^ name p ^ "!" |> print_endline;
     "Your Hand: " ^ to_string (cards p) |> print_endline;
     "Your wealth is $" ^ string_of_int (wealth p) ^ "." |> print_endline;
