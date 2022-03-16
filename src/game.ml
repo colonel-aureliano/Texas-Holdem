@@ -155,6 +155,12 @@ let get_all_players game = game.players |> queue_to_list
 
 let table game = game.cards_on_table
 
+let rec print_player_list_names = function
+  | [] -> ()
+  | h :: t ->
+      print_string (Player.name h ^ " ");
+      print_player_list_names t
+
 (** [winner_player_with_pot_added] returns the winning player with the
     pot added to his wealth*)
 let winner_player_with_pot_added g =
@@ -165,6 +171,12 @@ let winner_player_with_pot_added g =
     let highest_hand_index =
       player_list |> players_to_hands |> index_of_highest_hand
     in
+    print_string (string_of_int highest_hand_index);
+    print_endline
+      " determined by index_of_highest_hand for Debugging winner \
+       determination.\n";
+    print_player_list_names player_list;
+    print_endline "is order of players in player_list.\n";
     List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 
@@ -176,6 +188,10 @@ let pot_distributer g =
     game_over = true;
     players =
       (let winner = winner_player_with_pot_added g in
+       print_string (Player.name winner);
+       print_endline
+         " determined by winner_player_with_pot_added for Debugging \
+          winner determination.\n";
        let arranged_players = rearrange g.players winner in
        rearrange
          (mutable_push winner (mutable_pop arranged_players))
