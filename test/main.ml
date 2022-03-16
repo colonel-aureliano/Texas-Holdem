@@ -239,8 +239,14 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand3" has_royal_flush hand3 false;
   ]
 
+let h1 = [ S 3; S 6; C 11; H 6; S 5; H 10; S 7 ]
+let h2 = [ S 3; S 6; C 11; H 6; S 5; S 3; D 5 ]
+
+let card_debug_tests =
+  [ index_of_highest_hand_test "h1 h2" [ h1; h2 ] 1 ]
+
 let suite =
   "test suite for texas_holdem"
-  >::: List.flatten [ card_tests; card_impl_tests ]
+  >::: List.flatten [ card_tests; card_impl_tests; card_debug_tests ]
 
 let _ = run_test_tt_main suite
