@@ -78,8 +78,8 @@ let rec card_to_players queue deck num_dealed =
 
 (** [init_helper players_queue small_blind_amt] initialize game based on
     players_queue and small_blind_amt. Returns the game of players queue
-    with big blind in the last place and each player with 3 cards and
-    the table has 3 cards *)
+    with big blind in the last place and each player with 2 cards and
+    the table has 0 cards *)
 let init_helper players_queue small_blind_amt =
   let players_with_card, curr_deck =
     card_to_players players_queue new_deck 0
@@ -191,16 +191,6 @@ let winner_player_with_pot_added g =
       |> List.map (fun x -> Player.cards x @ g.cards_on_table)
       |> index_of_highest_hand
     in
-    (* print_string (string_of_int highest_hand_index); print_endline "
-       determined by index_of_highest_hand for Debugging winner \
-       determination.\n"; print_player_list_names player_list;
-       print_endline "is order of players in player_list.\n";
-       print_endline " card orders are.\n"; print_card_list (player_list
-       |> List.map (fun x -> g.cards_on_table @ Player.cards x));
-       print_endline " card on table are \n"; print_string
-       (Card.to_string g.cards_on_table); print_endline " number of
-       cards on table are \n"; print_string (string_of_int (List.length
-       g.cards_on_table)); print_endline " end of prints \n"; *)
     List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 
@@ -271,9 +261,6 @@ let execute_command (g : game) (cmd : command) : game =
         consecutive_calls = 1;
       }
   | Fold ->
-      let updated_q =
-        update_player_status g.players (Queue.peek g.active_players)
-      in
       let curr_player = Queue.peek g.active_players in
       let new_active_players = mutable_pop g.active_players in
       let new_sb =
@@ -284,7 +271,6 @@ let execute_command (g : game) (cmd : command) : game =
       let updated_g =
         {
           g with
-          players = updated_q;
           active_players = new_active_players;
           small_blind = new_sb;
         }
