@@ -212,6 +212,8 @@ let pot_distributer g =
          winner);
   }
 
+(** [update_fold_state g] returns the game state after shifting the
+    small_blind by a player and removing the player who folded*)
 let update_fold_state (g : game) : game =
   let curr_player = Queue.peek g.active_players in
   let new_active_players = mutable_pop g.active_players in

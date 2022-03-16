@@ -301,6 +301,7 @@ let rec list_to_queue players queue =
 
 let queue = Queue.create ()
 let players_queue = list_to_queue [ player_a; player_b ] queue
+let players_queue_with_b_only = list_to_queue [ player_b ] queue
 
 let g =
   {
@@ -322,10 +323,14 @@ let game_equal (g1 : game) (g2 : game) : bool =
     (fun x y -> Player.name x = Player.name y)
     (g1.players |> Game.queue_to_list)
     (g2.players |> Game.queue_to_list)
+  && Player.name (Queue.peek g1.players)
+     = Player.name (Queue.peek g2.players)
   && List.equal
        (fun x y -> Player.name x = Player.name y)
        (g1.active_players |> Game.queue_to_list)
        (g2.active_players |> Game.queue_to_list)
+  && Player.name (Queue.peek g1.active_players)
+     = Player.name (Queue.peek g2.active_players)
   && List.equal (fun x y -> x = y) g1.current_deck g2.current_deck
   && List.equal (fun x y -> x = y) g1.cards_on_table g2.cards_on_table
   && g1.pot = g2.pot
@@ -385,11 +390,11 @@ let update_fold_state_tests =
         small_blind = player_b;
         active_players = Queue.copy g.active_players;
       };
-    update_fold_state_test "2-player" g true
+    update_fold_state_test "2-player, a folds as sb" g true
       {
         g with
         small_blind = player_b;
-        active_players = Game.mutable_pop (Queue.copy g.active_players);
+        active_players = players_queue_with_b_only;
       };
   ]
 
