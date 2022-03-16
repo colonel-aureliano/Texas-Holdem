@@ -286,8 +286,8 @@ let h2 = [ H 10; H 5; C 4; S 3; S 2; S 1; D 9 ]
 let card_debug_tests =
   [ index_of_highest_hand_test "h1 h2" [ h1; h2 ] 0 ]
 
-let player_a = Player.create_player "b" 0 [ D 1; H 5 ]
-let player_b = Player.create_player "a" 0 [ D 2; S 5 ]
+let player_a = Player.create_player "b" 20 [ D 1; H 5 ]
+let player_b = Player.create_player "a" 20 [ D 2; S 5 ]
 let player_c = Player.create_player "c" 30 []
 let player_d = Player.create_player "d" 30 []
 
@@ -350,12 +350,22 @@ let update_fold_state_test
   assert_equal pass
     (game_equal expected_output (Game.update_fold_state input))
 
-let player_list = [ player_c; player_d; player_a ]
+let create_game_test
+    (name: string)
+    (input : Player.player list)
+    (pass : bool)
+    (expected_output : game) =
+    name >:: fun _ ->
+      assert_equal pass
+        (game_equal expected_output (Game.create_game input 1)) 
+
+
+let player_list = [ player_a; player_b ]
 let g_by_init = create_game player_list 5
 
 let get_small_blind_tests =
   [
-    get_small_blind_test "use game init" g_by_init "c";
+    get_small_blind_test "use game init" g_by_init "b";
     get_small_blind_test "use game created by hard coding" g "b";
   ]
 
@@ -367,6 +377,9 @@ let get_curr_player_tests =
 
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
+
+let create_game_tests = 
+  [create_game_test "2-players create game" player_list true g]
 
 let update_fold_state_tests =
   [
@@ -395,7 +408,8 @@ let suite =
            card_debug_tests;
            winner_tests;
            get_small_blind_tests;
-           update_fold_state_tests;
+           (* update_fold_state_tests; *)
+           create_game_tests;
          ]
 
 let _ = run_test_tt_main suite
