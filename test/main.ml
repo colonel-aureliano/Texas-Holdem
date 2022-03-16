@@ -307,8 +307,8 @@ let g =
   {
     players = Queue.copy players_queue;
     active_players = players_queue;
-    current_deck = [ S 2; H 7; C 12; H 12; C 9 ];
-    cards_on_table = [];
+    current_deck = [];
+    cards_on_table = [ S 2; H 7; C 12; H 12; C 9 ];
     pot = 5;
     small_blind = player_a;
     small_blind_amt = 5;
@@ -318,6 +318,7 @@ let g =
     game_over = false;
   }
 
+<<<<<<< HEAD
 let player_list = [player_c; player_d; player_a]  
 let g_by_init = create_game player_list 5
 
@@ -331,6 +332,9 @@ let get_curr_player_tests = [
   get_curr_player_test "use game created by hard coding" g "b"
 ]
 
+=======
+let curr_sb_tests = []
+>>>>>>> 0929abe54d7a4bf41026b323778f33f0b0357a02
 
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]

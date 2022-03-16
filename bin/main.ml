@@ -147,9 +147,11 @@ let setup () =
       5
   in
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
+  let game = create_game players sb in
   print_endline "\n\nsetup completed";
-  print_endline "the small blind and big blind are placed by dealer\n";
-  create_game players sb |> play
+  "small blind : " ^ name game.small_blind |> print_endline;
+  print_endline "the blinds are placed by dealer\n";
+  play game
 
 (** Exectue game enegine *)
 let () =
