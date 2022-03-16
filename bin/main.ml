@@ -46,21 +46,21 @@ let rec player_result = function
     again *)
 let rec end_game game =
   print_endline "\n\nThis game is over.";
-  try
-    let winner = get_winner game in
-    "The winner is: " ^ name winner |> print_endline;
-    print_endline "\nPlayer Status";
-    let players = get_all_players game |> List.rev in
-    player_result players
-  with Tie _ -> (
-    print_endline "Tie in Game. Feature to be implemented.";
-    print_endline "\nWould you like to start another game? (Y/N)";
-    print_string "> ";
-    match String.(read_line () |> trim |> lowercase_ascii) with
-    | "y" ->
-        print_endline "new game started";
-        play (play_again game)
-    | _ -> print_endline "\nbye")
+  let winner = get_winner game in
+  "The winner is: " ^ name winner |> print_endline;
+  print_endline "\nPlayer Status";
+  let players = get_all_players game |> List.rev in
+  player_result players;
+  print_endline "\nWould you like to start another game? (Y/N)";
+  print_string "> ";
+  match String.(read_line () |> trim |> lowercase_ascii) with
+  | "y" ->
+      let game = play_again game in
+      print_endline "\n\nnew game started";
+      "small blind : " ^ name game.small_blind |> print_endline;
+      print_endline "the blinds are placed by dealer\n";
+      play game
+  | _ -> print_endline "\nbye"
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
@@ -87,7 +87,9 @@ and play game =
       let game = get_command game in
       print_endline "successful";
       play game
-    with Exit -> print_endline "exit code 0"
+    with
+    | Exit -> print_endline "exit code 0"
+    | Tie _ -> print_endline "Tie in Game. Feature to be implemented."
 
 (** [create_players n i ls namels] adds [n] players to [ls]. Prompts
     each player to enter in their names and initial wealth. Default
