@@ -83,13 +83,8 @@ let rec card_to_players queue deck num_dealed =
 let init_helper players_queue small_blind_amt =
   let players_with_card, curr_deck =
     card_to_players players_queue new_deck 0
-<<<<<<< HEAD
   in 
   let original_queue = Queue.copy players_with_card in 
-=======
-  in
-  let sb = Queue.peek players_with_card in
->>>>>>> 0929abe54d7a4bf41026b323778f33f0b0357a02
   let queue_sb = player_shift players_with_card small_blind_amt in
   let queue_bb = player_shift queue_sb (2 * small_blind_amt) in
   {
@@ -98,11 +93,7 @@ let init_helper players_queue small_blind_amt =
     current_deck = curr_deck;
     cards_on_table = [];
     pot = 3 * small_blind_amt;
-<<<<<<< HEAD
     small_blind = Queue.peek original_queue;
-=======
-    small_blind = sb;
->>>>>>> 0929abe54d7a4bf41026b323778f33f0b0357a02
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
     consecutive_calls = 0;

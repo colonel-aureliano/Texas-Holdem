@@ -318,7 +318,6 @@ let g =
     game_over = false;
   }
 
-<<<<<<< HEAD
 let player_list = [player_c; player_d; player_a]  
 let g_by_init = create_game player_list 5
 
@@ -332,9 +331,6 @@ let get_curr_player_tests = [
   get_curr_player_test "use game created by hard coding" g "b"
 ]
 
-=======
-let curr_sb_tests = []
->>>>>>> 0929abe54d7a4bf41026b323778f33f0b0357a02
 
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
