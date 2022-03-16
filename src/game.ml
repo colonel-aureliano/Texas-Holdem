@@ -213,7 +213,7 @@ let pot_distributer g =
 
 let update_fold_state (g : game) : game =
   let curr_player = Queue.peek g.active_players in
-  let new_active_players = mutable_pop g.active_players in
+  let new_active_players = mutable_pop (Queue.copy g.active_players) in
   let new_sb =
     if curr_player = g.small_blind then Queue.peek new_active_players
     else g.small_blind

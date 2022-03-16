@@ -54,3 +54,6 @@ val update_fold_state : game -> game
 
 val queue_to_list : 'a Queue.t -> 'a list
 (** only for degugging, delete after done*)
+
+val mutable_pop : 'a Queue.t -> 'a Queue.t
+(** only for degugging, delete after done*)
