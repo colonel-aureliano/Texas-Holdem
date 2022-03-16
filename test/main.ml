@@ -74,11 +74,18 @@ let hand10 = [ H 10; S 9; C 8; S 7; H 2; H 11; S 12 ] (* a straight *)
 let hand10_match = [ H 10; S 9; C 8; S 7; H 11; S 12; H 13 ]
 (* a straight, higher than hand10 *)
 
+(* tests for game*)
+
+let test1 = [ H 3; C 6; H 8; H 5; S 2; D 10; S 7 ]
+let test2 = [ H 3; H 2; H 5; H 8; C 7; S 2; C 6 ]
+let test3 = [ H 3; H 4; H 5; H 8; D 12; S 2; C 6 ]
 let hand_straight_0 = [ C 2; S 3; C 4; D 4; H 5; C 6; D 1 ]
 let hand_straight_1 = [ H 2; S 3; D 4; C 4; H 5; D 10; D 1 ]
 
 let card_tests =
   [
+    index_of_highest_hand_test "testing game outputs"
+      [ test1; test2; test3 ] 2;
     index_of_highest_hand_test
       "index_of_highest_hand_test hand_straight_0 hand_straight_1"
       [ hand_straight_0; hand_straight_1 ]
@@ -92,6 +99,8 @@ let card_tests =
     index_of_highest_hand_test
       "index_of_highest_hand_test hand5 hand6 hand7"
       [ hand5; hand6; hand7 ] 2;
+    index_of_highest_hand_test "a small pair and a high"
+      [ hand8; hand9 ] 1;
     index_of_highest_hand_test "index_of_highest_hand_test hand1-8"
       [ hand1; hand2; hand3; hand4; hand5; hand6; hand7; hand8 ]
       6;
