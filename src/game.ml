@@ -119,11 +119,21 @@ let execute_player_spending g x =
    mutable_push (deduct (Queue.pop g.active_players) x)
    g.active_players; } *)
 
-(** [update_player_wealth] update player's wealth in the queue; will be
+(** [update_player_status] update player's wealth and cards in the queue; will be
     used when player folds *)
-let update_player_wealth queue player =
-  let rotated_q = rearrange queue player in
-  mutable_push (set_wealth (Queue.pop rotated_q) (wealth player)) queue
+let update_player_status queue player =
+  let rotated_q = rearrange queue player in 
+  let curr_player = Queue.pop rotated_q in 
+  let updated_wealth_player = set_wealth curr_player (wealth player)  in 
+  let updated_cards_player = remove_cards updated_wealth_player in 
+  mutable_push updated_cards_player queue 
+
+let rec update_active_players_status queue active_players = 
+  if Queue.length active_players = 0 then queue
+  else 
+    let curr_player = Queue.pop active_players in
+    let new_queue = update_player_status queue curr_player in 
+    update_active_players_status new_queue active_players
 
 (* END OF HELPER FUNCTIONS *)
 
@@ -137,9 +147,10 @@ let create_game players small_blind_amt =
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
-let play_again game =
-  let old_players_q = game.players in
-  let new_players_q = player_shift old_players_q 0 in
+let play_again game = 
+  let old_players_q = game.players in 
+  let updated_status_q = update_active_players_status old_players_q game.active_players in
+  let new_players_q = player_shift updated_status_q 0 in
   init_helper new_players_q game.small_blind_amt
 
 (** [get_curr_player game] returns the player who is making the decision
@@ -252,7 +263,7 @@ let execute_command (g : game) (cmd : command) : game =
       }
   | Fold ->
       let updated_q =
-        update_player_wealth g.players (Queue.peek g.active_players)
+        update_player_status g.players (Queue.peek g.active_players)
       in 
       let curr_player = Queue.peek g.active_players in 
       let new_active_players = mutable_pop g.active_players in 
