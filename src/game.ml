@@ -216,11 +216,13 @@ let pot_distributer g =
     small_blind by a player and removing the player who folded*)
 let update_fold_state (g : game) : game =
   let curr_player = Queue.peek g.active_players in
-  let new_active_players = mutable_pop g.active_players in
+  let new_active_players = mutable_pop (Queue.copy g.active_players) in
   let new_sb =
     if curr_player = g.small_blind then Queue.peek new_active_players
     else g.small_blind
   in
+  print_endline "next player after fold is ";
+  print_string (Player.name (Queue.peek new_active_players));
   { g with active_players = new_active_players; small_blind = new_sb }
 
 (** [execute_command g] returns the game state after executing the

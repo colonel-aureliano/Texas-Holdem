@@ -302,6 +302,7 @@ let rec list_to_queue players queue =
 let queue = Queue.create ()
 let players_queue = list_to_queue [ player_a; player_b ] queue
 let players_queue_with_b_only = list_to_queue [ player_b ] queue
+let players_queue_with_a_only = list_to_queue [ player_a ] queue
 
 let g =
   {
