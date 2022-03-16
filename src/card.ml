@@ -10,6 +10,7 @@ let string_of_rank = function
   | 11 -> "J"
   | 12 -> "Q"
   | 13 -> "K"
+  | 1 -> "A"
   | x -> string_of_int x
 
 let rec to_string (hand : t) : string =
@@ -521,6 +522,8 @@ let highest_hand_helper (lst : t list) =
   if List.length lst = 1 then List.hd lst
   else
     let lst = rank_hands lst in
+    (*let _ = print_endline ("Ranks of hands: " ^ String.concat ", "
+      (List.map string_of_int (fst (List.split lst)))) in*)
     let lst =
       List.rev
         (List.sort
