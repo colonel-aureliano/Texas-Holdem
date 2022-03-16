@@ -308,6 +308,7 @@ let players_queue2 = list_to_queue [ player_b; player_c; player_d; player_a] que
 let queue3 = Queue.create ()
 let players_queue3 = list_to_queue [ player_c; player_d; player_a; player_b; ] queue3
 let players_queue_with_b_only = list_to_queue [ player_b ] queue
+let players_queue_with_a_only = list_to_queue [ player_a ] queue
 
 let g =
   {
