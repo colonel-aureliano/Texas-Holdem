@@ -114,7 +114,7 @@ let draw_card g num =
 (** [execute_player_spending] returns the game state after the current
     player has spent amount x of his wealth*)
 let execute_player_spending g x =
-  { g with active_players = player_shift g.players x }
+  { g with active_players = player_shift g.active_players x }
 (* let execute_player_spending g x = { g with active_players =
    mutable_push (deduct (Queue.pop g.active_players) x)
    g.active_players; } *)
