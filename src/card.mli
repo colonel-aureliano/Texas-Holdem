@@ -26,6 +26,10 @@ val n_random_card : t -> int -> t * t
 
     Requires: [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
+val equal : card -> card -> bool
+(** [equal c1 c2] returns true if suit of c1 equals suit of c2 and
+    number of c1 equals number of c2, false otherwise. *)
+
 exception Tie of int list
 
 val index_of_highest_hand : t list -> int

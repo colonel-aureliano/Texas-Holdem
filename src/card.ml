@@ -69,6 +69,11 @@ let single_compare (card1 : card) (card2 : card) =
   | _, 1 -> -1
   | _ -> if x1 > x2 then 1 else if x1 < x2 then -1 else 0
 
+let equal (card1 : card) (card2 : card) =
+  match (card1, card2) with
+  | C x1, C x2 | D x1, D x2 | H x1, H x2 | S x1, S x2 -> x1 = x2
+  | _ -> false
+
 let high_card (hand : t) =
   let hand = List.rev (List.sort single_compare hand) in
   let hand = List.map extract_value hand in
