@@ -190,7 +190,7 @@ let winner_player_with_pot_added g =
       (player_list
       |> List.map (fun x -> g.cards_on_table @ Player.cards x));
     print_endline " card on table are \n";
-    print_card_list [ g.cards_on_table ];
+    print_string (Card.to_string g.cards_on_table);
     print_endline " number of cards on table are \n";
     print_string (string_of_int (List.length g.cards_on_table));
     print_endline " end of prints \n";
