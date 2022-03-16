@@ -211,6 +211,15 @@ let pot_distributer g =
          winner);
   }
 
+let update_fold_state (g : game) : game =
+  let curr_player = Queue.peek g.active_players in
+  let new_active_players = mutable_pop g.active_players in
+  let new_sb =
+    if curr_player = g.small_blind then Queue.peek new_active_players
+    else g.small_blind
+  in
+  { g with active_players = new_active_players; small_blind = new_sb }
+
 (** [execute_command g] returns the game state after executing the
     player's next move*)
 let execute_command (g : game) (cmd : command) : game =
@@ -261,20 +270,7 @@ let execute_command (g : game) (cmd : command) : game =
         consecutive_calls = 1;
       }
   | Fold ->
-      let curr_player = Queue.peek g.active_players in
-      let new_active_players = mutable_pop g.active_players in
-      let new_sb =
-        if curr_player = g.small_blind then
-          Queue.peek new_active_players
-        else g.small_blind
-      in
-      let updated_g =
-        {
-          g with
-          active_players = new_active_players;
-          small_blind = new_sb;
-        }
-      in
+      let updated_g = update_fold_state g in
       if Queue.length updated_g.active_players = 1 then
         { (pot_distributer updated_g) with game_over = true }
       else if

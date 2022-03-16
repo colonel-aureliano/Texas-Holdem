@@ -317,6 +317,32 @@ let g =
     game_over = false;
   }
 
+let game_equal (g1 : game) (g2 : game) : bool =
+  List.equal
+    (fun x y -> Player.name x = Player.name y)
+    (g1.players |> Game.queue_to_list)
+    (g2.players |> Game.queue_to_list)
+  && List.equal
+       (fun x y -> Player.name x = Player.name y)
+       (g1.active_players |> Game.queue_to_list)
+       (g2.active_players |> Game.queue_to_list)
+  && List.equal (fun x y -> x = y) g1.current_deck g2.current_deck
+  && List.equal (fun x y -> x = y) g1.cards_on_table g2.cards_on_table
+  && g1.pot = g2.pot
+  (* && Player.name g1.small_blind = Player.name g2.small_blind *)
+  && g1.small_blind_amt = g2.small_blind_amt
+  && g1.current_bet = g2.current_bet
+  && g1.consecutive_calls = g2.consecutive_calls
+  && g1.game_over = g2.game_over
+
+let update_fold_state_test
+    (name : string)
+    (input : game)
+    (expected_output : game) =
+  name >:: fun _ ->
+  assert_equal true
+    (game_equal expected_output (Game.update_fold_state input))
+
 let player_list = [ player_c; player_d; player_a ]
 let g_by_init = create_game player_list 5
 
@@ -335,6 +361,8 @@ let get_curr_player_tests =
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
 
+let update_fold_state_tests = [ update_fold_state_test "identity" g g ]
+
 let suite =
   "test suite for texas_holdem"
   >::: List.flatten
@@ -344,6 +372,7 @@ let suite =
            card_debug_tests;
            winner_tests;
            get_small_blind_tests;
+           update_fold_state_tests;
          ]
 
 let _ = run_test_tt_main suite

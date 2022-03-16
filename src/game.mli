@@ -48,3 +48,9 @@ val get_all_players : game -> player list
 
 val winner_player_with_pot_added : game -> player
 (** only for degugging, delete after done*)
+
+val update_fold_state : game -> game
+(** only for degugging, delete after done*)
+
+val queue_to_list : 'a Queue.t -> 'a list
+(** only for degugging, delete after done*)
