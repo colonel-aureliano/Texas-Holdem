@@ -98,13 +98,13 @@ let has_pair (hand : t) = determine_pair hand <> []
 let has_two_pair (hand : t) =
   List.length (List.sort_uniq compare (determine_pair hand)) > 1
 
-let rec has_three_of_a_kind_helper l =
-  match l with
-  | [] -> false
-  | h :: t -> List.mem h t || has_three_of_a_kind_helper t
-
 let has_three_of_a_kind (hand : t) =
   let l = determine_pair hand in
+  let rec has_three_of_a_kind_helper l =
+    match l with
+    | [] -> false
+    | h :: t -> List.mem h t || has_three_of_a_kind_helper t
+  in
   has_three_of_a_kind_helper l
 
 let rec has_straight_helper l =
@@ -194,18 +194,18 @@ let has_full_house (hand : t) =
   let l = determine_pair hand in
   has_full_house_helper l false
 
-let rec has_four_of_a_kind_helper l =
-  if List.length l < 3 then false
-  else
-    match l with
-    | [] -> false
-    | h :: t ->
-        (List.mem h t && List.mem h (List.tl t))
-        || has_four_of_a_kind_helper t
-
 let has_four_of_a_kind (hand : t) =
   let l = determine_pair hand in
   let l = List.stable_sort compare l in
+  let rec has_four_of_a_kind_helper l =
+    if List.length l < 3 then false
+    else
+      match l with
+      | [] -> false
+      | h :: t ->
+          (List.mem h t && List.mem h (List.tl t))
+          || has_four_of_a_kind_helper t
+  in
   has_four_of_a_kind_helper l
 
 let has_straight_flush (hand : t) =
@@ -280,18 +280,18 @@ let sort_and_group hand =
   let d = List.rev (List.stable_sort single_compare d) in
   s @ h @ c @ d
 
-let rec has_royal_flush_helper hand =
-  match hand with
-  | S 1 :: S 13 :: S 12 :: S 11 :: S 10 :: _ -> true
-  | H 1 :: H 13 :: H 12 :: H 11 :: H 10 :: _ -> true
-  | C 1 :: C 13 :: C 12 :: C 11 :: C 10 :: _ -> true
-  | D 1 :: D 13 :: D 12 :: D 11 :: D 10 :: _ -> true
-  | _ ->
-      if List.length hand < 5 then false
-      else has_royal_flush_helper (List.tl hand)
-
 let has_royal_flush (hand : t) =
   let hand = sort_and_group hand in
+  let rec has_royal_flush_helper hand =
+    match hand with
+    | S 1 :: S 13 :: S 12 :: S 11 :: S 10 :: _ -> true
+    | H 1 :: H 13 :: H 12 :: H 11 :: H 10 :: _ -> true
+    | C 1 :: C 13 :: C 12 :: C 11 :: C 10 :: _ -> true
+    | D 1 :: D 13 :: D 12 :: D 11 :: D 10 :: _ -> true
+    | _ ->
+        if List.length hand < 5 then false
+        else has_royal_flush_helper (List.tl hand)
+  in
   has_royal_flush_helper hand
 
 let rec rank_hands (lst : t list) =
