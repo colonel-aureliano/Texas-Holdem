@@ -74,6 +74,8 @@ and play game =
     "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
     |> print_endline;
     "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
+    if p = get_small_blind game then print_endline "You are small blind."
+    else print_string "";
     "Highest bet on the table is $"
     ^ string_of_int game.current_bet
     ^ "."
