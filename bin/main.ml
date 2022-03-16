@@ -6,7 +6,7 @@ open Card
 exception Exit
 
 (** [prompt] asks user to enter a parseable command. input of "exit"
-    exits the game*)
+    exits the game. Empty input is Call. *)
 let parse x : command =
   print_string "> ";
   match
@@ -14,7 +14,7 @@ let parse x : command =
       read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
   with
   | [ "fold" ] -> Fold
-  | [ "call" ] | [ "raise"; "0" ] -> Call
+  | [ "call" ] | [ "raise"; "0" ] | [ "" ] -> Call
   | [ "raise"; n ] ->
       let n = int_of_string n in
       if n > 0 then Raise n else failwith "Illegal Command"
@@ -37,20 +37,21 @@ let rec get_command game : game =
 
 (** [player_result] prints the naeme and wealth of all players *)
 let rec player_result = function
-  | [] -> print_string "fin"
+  | [] -> print_string ""
   | h :: t ->
       player_result t;
-      name h ^ ": " ^ string_of_int (wealth h) |> print_endline
+      name h ^ ": $" ^ string_of_int (wealth h) |> print_endline
 
 (** [end_game] shows the result of the game and asks whether to play
     again *)
 let rec end_game game =
   print_endline "\n\nThis game is over.";
   let winner = get_winner game in
-  "The winner is: " ^ name winner ^ "!" |> print_endline;
-  (* let players = get_all_players game |> List.rev in player_result
-     players; *)
-  print_endline "\nWould you like to start another game?";
+  "The winner is: " ^ name winner |> print_endline;
+  print_endline "\nPlayer Status";
+  let players = get_all_players game |> List.rev in
+  player_result players;
+  print_endline "\nWould you like to start another game? (Y/N)";
   print_string "> ";
   match String.(read_line () |> trim |> lowercase_ascii) with
   | "y" ->
@@ -112,7 +113,7 @@ let rec create_players n i (ls : player list) =
       try read_line () |> int_of_string
       with Failure _ ->
         print_endline "Warning: wealth must be an integer.";
-        50
+        100
     in
     "Your initial wealth is $" ^ string_of_int wealth ^ "."
     |> print_endline;
@@ -141,7 +142,8 @@ let setup () =
       5
   in
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
-  print_endline "\nsetup completed";
+  print_endline "\n\nsetup completed";
+  print_endline "the small blind and big blind are placed by dealer\n";
   create_game players sb |> play
 
 (** Exectue game enegine *)

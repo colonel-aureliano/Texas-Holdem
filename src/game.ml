@@ -56,15 +56,6 @@ let queue_to_list q = List.rev (Queue.fold (fun x y -> y :: x) [] q)
 let players_to_hands (p : player list) : Card.t list =
   List.map (fun x -> cards x) p
 
-(** [check_index_match] is whether [highest_index] is the same as
-    [cur_index]*)
-let check_index_match
-    (highest_index : int)
-    (cur_index : int)
-    (_ : player) : bool =
-  highest_index = cur_index
-(*END OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
-
 (** [player_shift] pop the top element on the queue, deduct amount x
     from its wealth and push it to the back of the queue *)
 let player_shift queue amt =
@@ -190,8 +181,7 @@ let winner_player_with_pot_added g =
     let highest_hand_index =
       player_list |> players_to_hands |> index_of_highest_hand
     in
-    List.filteri (check_index_match highest_hand_index) player_list
-    |> List.hd
+    List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 
 (** [pot distrubutor g] distributes the pot to the winning player in
@@ -232,10 +222,12 @@ let execute_command (g : game) (cmd : command) : game =
         else
           { updated_g with consecutive_calls = g.consecutive_calls + 1 }
   | Raise x ->
+      let cur_player = get_curr_player g in
+      let y = x + g.current_bet - amount_placed cur_player in
       {
-        (execute_player_spending g x) with
+        (execute_player_spending g y) with
         current_bet = g.current_bet + x;
-        pot = g.pot + x;
+        pot = g.pot + y;
         consecutive_calls = 1;
       }
   | Fold ->
