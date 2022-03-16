@@ -76,8 +76,8 @@ let player_shift queue amt =
   (deduct (Queue.pop queue) amt) 
   queue
 
-(** rearrange rotate the player queue until dealer is the last element*)
-let rec rearrange (queue : player Queue.t) (sb : player) =
+(** rearrange rotate the players in the queue until the first element is sb *)
+let rec rearrange queue sb =
   if Player.name (Queue.peek queue) = Player.name sb then queue
   else rearrange (player_shift queue 0) sb
 
@@ -153,6 +153,15 @@ let execute_player_spending g x =
         g.active_players;
   } *)
 
+(** [update_player_wealth] update player's wealth in the queue;
+will be used when player folds *)
+let update_player_wealth queue player = 
+  let rotated_q = rearrange queue player in 
+  mutable_push 
+  (set_wealth (Queue.pop rotated_q) (wealth player))
+  queue
+
+
 (* END OF HELPER FUNCTIONS *)
 
 (** [create_game players small_blind_amt] initializes game based on
@@ -167,10 +176,9 @@ let create_game players small_blind_amt =
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
 let play_again game =
-  let old_player_queue = game.players in
-  let new_player_queue = player_shift old_player_queue 0 in
-  let small_blind_amt = game.small_blind_amt in
-  init_helper new_player_queue small_blind_amt
+  let old_players_q = game.players in 
+  let new_players_q = player_shift old_players_q 0 in 
+  init_helper new_players_q game.small_blind_amt
 
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
@@ -242,8 +250,13 @@ let execute_command (g : game) (cmd : command) : game =
         consecutive_calls = 0;
       }
   | Fold ->
+      let updated_q = update_player_wealth g.players 
+        (Queue.peek g.active_players) in 
       let updated_g =
-        { g with active_players = mutable_pop g.active_players }
+        { g with 
+          players = updated_q;
+          active_players = mutable_pop g.active_players 
+        }
       in
       if Queue.length updated_g.active_players = 1 then
         { (pot_distributer updated_g) with game_over = true }

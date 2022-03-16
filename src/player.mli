@@ -21,6 +21,9 @@ val set_cards : player -> Card.t -> player
 val remove_cards : player -> player
 (** [remove_cards player] returns [player] with no cards. *)
 
+val set_wealth : player -> int -> player
+(** [set_wealth player] returns [player] with [amount] of wealth *)
+
 val deduct : player -> int -> player
 (** [deduct player amount] returns [player] with [amount] deducted from
     their wealth. Raises [InsufficientFund] if player's wealth is less

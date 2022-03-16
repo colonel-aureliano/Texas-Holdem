@@ -24,6 +24,13 @@ let wealth player = player.wealth
 let amount_placed player = player.amount_placed_on_table
 let cards player = player.cards
 let set_cards player cards = { player with cards }
+
+let set_wealth player amount = 
+  {
+    player with 
+    wealth = amount;
+  }
+    
 let remove_cards player = { player with cards = [] }
 
 let deduct player amount =
