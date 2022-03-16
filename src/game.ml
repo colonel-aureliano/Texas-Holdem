@@ -40,17 +40,13 @@ let mutable_pop q =
 let reverse_arg_order f x y = f y x
 
 (** [list_to_queue players] converts the list of players to a queue *)
-let list_to_queue players =
-  let rec helper players queue =
+let rec list_to_queue players queue =
     match players with
     | [] -> queue
     | h :: t ->
-        helper t
+      list_to_queue t
           (Queue.add h queue;
            queue)
-  in
-  let myqueue = Queue.create () in
-  helper players myqueue
 
 (** [queue_to_list players] converts the queue of players to a list *)
 let queue_to_list q = List.rev (Queue.fold (fun x y -> y :: x) [] q)
@@ -98,9 +94,9 @@ let rec card_to_players queue deck num_dealed =
     ReapeadtedName error if found duplicates *)
 let rec dup_name player_names =
   match player_names with
-  | [] -> false
+  | [] -> (false, "")
   | hd :: tl ->
-      if List.exists (( = ) hd) tl then raise (RepeatedName hd)
+      if List.exists (( = ) hd) tl then (true, hd)
       else dup_name tl
 
 (** [init_helper players_queue small_blind_amt] initialize game based on
@@ -119,8 +115,8 @@ let init_helper players_queue small_blind_amt =
     current_deck = curr_deck;
     cards_on_table = [];
     pot = 3 * small_blind_amt;
-    small_blind = Queue.peek players_queue;
-    small_blind_amt;
+    small_blind = Queue.peek players_with_card;
+    small_blind_amt = small_blind_amt;
     current_bet = 2 * small_blind_amt;
     (* betting_round = 0; *)
     consecutive_calls = 0;
@@ -158,9 +154,12 @@ let update_player_wealth queue player =
     automatically be the small_blind *)
 let create_game players small_blind_amt =
   let player_names = List.map (fun x -> name x) players in
-  let _ = dup_name player_names in
-  let players_queue = list_to_queue players in
-  init_helper players_queue small_blind_amt
+  let dup, name = dup_name player_names in 
+  if dup then raise (RepeatedName name)
+  else 
+    let queue = Queue.create () in 
+    let players_queue = list_to_queue players queue in
+    init_helper players_queue small_blind_amt 
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
