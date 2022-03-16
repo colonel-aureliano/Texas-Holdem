@@ -188,15 +188,19 @@ let has_full_house (hand : t) =
   let l = determine_pair hand in
   has_full_house_helper l false
 
-let rec has_four_of_a_kind (hand : t) =
-  let l = determine_pair hand in
+let rec has_four_of_a_kind_helper l =
   if List.length l < 3 then false
   else
     match l with
-    | h1 :: h2 :: t ->
-        (h1 = h2 && List.mem h1 (List.tl t))
-        || has_three_of_a_kind (List.tl hand)
-    | _ -> false
+    | [] -> false
+    | h :: t ->
+        (List.mem h t && List.mem h (List.tl t))
+        || has_four_of_a_kind_helper t
+
+let has_four_of_a_kind (hand : t) =
+  let l = determine_pair hand in
+  let l = List.stable_sort compare l in
+  has_four_of_a_kind_helper l
 
 let has_straight_flush (hand : t) =
   let suit = snd (has_flush_helper hand) in

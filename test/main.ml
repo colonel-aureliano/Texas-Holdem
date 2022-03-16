@@ -48,6 +48,7 @@ let hand4 = [ C 5; D 5; H 5; S 5; C 2; C 1; S 0 ] (* four of a kind *)
 let hand4_match = [ C 6; D 6; H 6; S 6; C 2; C 1; S 0 ]
 (* four of a kind, higher than hand4 *)
 
+let hand4_debug = [ C 1; D 1; S 9; H 3; C 9; D 9; H 11 ]
 let hand5 = [ C 9; C 10; C 11; C 12; C 13; S 8; D 3 ]
 (* straight flush *)
 
@@ -242,6 +243,8 @@ let card_impl_tests =
       false;
     f_test "has_four_of_a_kind_test hand7" has_four_of_a_kind hand7
       false;
+    f_test "has_four_of_a_kind_test hand4_debug" has_four_of_a_kind
+      hand4_debug false;
     f_test "has_straight_test hand5" has_straight hand5 true;
     f_test "has_straight_test hand4" has_straight hand4 false;
     f_test "has_straight_test hand3" has_straight hand3 false;
@@ -262,11 +265,11 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand3" has_royal_flush hand3 false;
   ]
 
-let h1 = [ S 3; S 6; C 11; H 6; S 5; H 10; S 7 ]
-let h2 = [ S 3; S 6; C 11; H 6; S 5; S 3; D 5 ]
+let h1 = [ C 1; D 1; S 9; H 3; C 9; H 1; S 3 ]
+let h2 = [ C 1; D 1; S 9; H 3; C 9; D 9; H 11 ]
 
 let card_debug_tests =
-  [ index_of_highest_hand_test "h1 h2" [ h1; h2 ] 1 ]
+  [ index_of_highest_hand_test "h1 h2" [ h1; h2 ] 0 ]
 
 let player_a = Player.create_player "b" 0 [ D 1; H 5 ]
 let player_b = Player.create_player "a" 0 [ D 2; S 5 ]
