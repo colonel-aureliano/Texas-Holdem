@@ -70,16 +70,17 @@ let check_index_match
   highest_index = cur_index
 (*END OF HELPER FUNCTIONS FOR POT DISTRIBUTOR*)
 
-(** [shift_for_blind queue] pop the top element on the queue and push it
-    to the back of it *)
-let shift_for_blind queue =
-  Queue.add (Queue.take queue) queue;
+(** [player_shift] pop the top element on the queue, deduct amount x 
+from its wealth and push it to the back of the queue *)
+let player_shift queue amt =
+  mutable_push 
+  (deduct (Queue.pop queue) amt) 
   queue
 
 (** rearrange rotate the player queue until dealer is the last element*)
 let rec rearrange (queue : player Queue.t) (sb : player) =
   if Player.name (Queue.peek queue) = Player.name sb then queue
-  else rearrange (shift_for_blind queue) sb
+  else rearrange (player_shift queue 0) sb
 
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
@@ -109,17 +110,15 @@ let rec dup_name player_names =
     with big blind in the last place and each player with 3 cards and
     the table has 3 cards *)
 let init_helper players_queue small_blind_amt =
-  let players_with_card, curr_deck =
-    card_to_players players_queue new_deck 0
-  in
-  let table_card, final_deck = n_random_card curr_deck 3 in
-  let sb_shift_players = shift_for_blind players_with_card in
-  let bb_shift_players = shift_for_blind sb_shift_players in
+  let players_with_card, curr_deck = 
+    card_to_players players_queue new_deck 0 in 
+  let queue_sb = player_shift players_with_card small_blind_amt in 
+  let queue_bb = player_shift queue_sb (2*small_blind_amt) in  
   {
     players = Queue.copy players_queue;
-    active_players = bb_shift_players;
-    current_deck = final_deck;
-    cards_on_table = table_card;
+    active_players = queue_bb;
+    current_deck = curr_deck;
+    cards_on_table = [];
     pot = 3 * small_blind_amt;
     small_blind = Queue.peek players_queue;
     small_blind_amt;
@@ -129,10 +128,10 @@ let init_helper players_queue small_blind_amt =
     game_over = false;
   }
 
-(** [draw_card] draws a card from the current deck and places it on the
+(** [draw_card] draws num of cards from the current deck and places it on the
     table*)
-let draw_card g =
-  let next_card, updated_deck = n_random_card g.current_deck 1 in
+let draw_card g num =
+  let next_card, updated_deck = n_random_card g.current_deck num in
   {
     g with
     current_deck = updated_deck;
@@ -144,11 +143,16 @@ let draw_card g =
 let execute_player_spending g x =
   {
     g with
+    active_players = player_shift g.players x
+  }
+(* let execute_player_spending g x =
+  {
+    g with
     active_players =
       mutable_push
         (deduct (Queue.pop g.active_players) x)
         g.active_players;
-  }
+  } *)
 
 (* END OF HELPER FUNCTIONS *)
 
@@ -165,7 +169,7 @@ let create_game players small_blind_amt =
     shifting the small_blind to the next person *)
 let play_again game =
   let old_player_queue = game.players in
-  let new_player_queue = shift_for_blind old_player_queue in
+  let new_player_queue = player_shift old_player_queue 0 in
   let small_blind_amt = game.small_blind_amt in
   init_helper new_player_queue small_blind_amt
 
@@ -226,7 +230,9 @@ let execute_command (g : game) (cmd : command) : game =
         then
           if List.length g.cards_on_table = 5 then
             { (pot_distributer updated_g) with game_over = true }
-          else draw_card { updated_g with consecutive_calls = 0 }
+          else if List.length g.cards_on_table = 0 then 
+            draw_card { updated_g with consecutive_calls = 0 } 3
+          else draw_card { updated_g with consecutive_calls = 0 } 1
         else
           { updated_g with consecutive_calls = g.consecutive_calls + 1 }
   | Raise x ->
@@ -243,3 +249,35 @@ let execute_command (g : game) (cmd : command) : game =
       if Queue.length updated_g.active_players = 1 then
         { (pot_distributer updated_g) with game_over = true }
       else updated_g
+
+(* let execute_command (g : game) (cmd : command) : game =
+  match cmd with
+  | Call ->
+      let cur_player = get_curr_player g in
+      let x = g.current_bet - Player.amount_placed cur_player in
+      if Player.wealth cur_player < x then raise InsufficientFund
+      else
+        let updated_g =
+          { (execute_player_spending g x) with pot = g.pot + x }
+        in
+        if updated_g.consecutive_calls = Queue.length g.active_players
+        then
+          if List.length g.cards_on_table = 5 then
+            { (pot_distributer updated_g) with game_over = true }
+          else draw_card { updated_g with consecutive_calls = 0 }
+        else
+          { updated_g with consecutive_calls = g.consecutive_calls + 1 }
+  | Raise x ->
+      {
+        (execute_player_spending g x) with
+        current_bet = g.current_bet + x;
+        pot = g.pot + x;
+        consecutive_calls = 0;
+      }
+  | Fold ->
+      let updated_g =
+        { g with active_players = mutable_pop g.active_players }
+      in
+      if Queue.length updated_g.active_players = 1 then
+        { (pot_distributer updated_g) with game_over = true }
+      else updated_g *)
