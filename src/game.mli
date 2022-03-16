@@ -57,3 +57,10 @@ val queue_to_list : 'a Queue.t -> 'a list
 
 val mutable_pop : 'a Queue.t -> 'a Queue.t
 (** only for degugging, delete after done*)
+
+val card_to_players : player Queue.t -> Card.t -> int -> player Queue.t * Card.t
+(** only for degugging, delete after done*)
+
+val player_shift : player Queue.t -> int -> player Queue.t
+
+val init_helper : player Queue.t -> int -> game
