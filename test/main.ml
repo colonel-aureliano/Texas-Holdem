@@ -11,21 +11,20 @@ let winner_player_with_pot_added_test
   assert_equal expected_output
     (Player.name (Game.winner_player_with_pot_added input))
 
-let get_small_blind_test 
+let get_small_blind_test
     (name : string)
     (input : game)
     (expected_output : string) =
-    name >:: fun _ ->
-      assert_equal expected_output
-        (Player.name (Game.get_small_blind input)) 
+  name >:: fun _ ->
+  assert_equal expected_output (Player.name input.small_blind)
 
 let get_curr_player_test
     (name : string)
     (input : game)
     (expected_output : string) =
-    name >:: fun _ ->
-      assert_equal expected_output
-        (Player.name (Game.get_curr_player input)) 
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.name (Game.get_curr_player input))
 
 let index_of_highest_hand_test
     (name : string)
@@ -281,8 +280,8 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand3" has_royal_flush hand3 false;
   ]
 
-let h1 = [ C 1; D 1; S 9; H 3; C 9; H 1; S 3 ]
-let h2 = [ C 1; D 1; S 9; H 3; C 9; D 9; H 11 ]
+let h1 = [ H 6; H 5; H 4; S 3; S 2; S 1; S 5 ]
+let h2 = [ H 10; H 5; C 4; S 3; S 2; S 1; D 9 ]
 
 let card_debug_tests =
   [ index_of_highest_hand_test "h1 h2" [ h1; h2 ] 0 ]
@@ -318,19 +317,20 @@ let g =
     game_over = false;
   }
 
-let player_list = [player_c; player_d; player_a]  
+let player_list = [ player_c; player_d; player_a ]
 let g_by_init = create_game player_list 5
 
-let get_small_blind_tests = [ 
-  get_small_blind_test "use game init" g_by_init "c";
-  get_small_blind_test "use game created by hard coding" g "b"
-]
+let get_small_blind_tests =
+  [
+    get_small_blind_test "use game init" g_by_init "c";
+    get_small_blind_test "use game created by hard coding" g "b";
+  ]
 
-let get_curr_player_tests = [
-  get_curr_player_test "use game init" g_by_init "b";
-  get_curr_player_test "use game created by hard coding" g "b"
-]
-
+let get_curr_player_tests =
+  [
+    get_curr_player_test "use game init" g_by_init "b";
+    get_curr_player_test "use game created by hard coding" g "b";
+  ]
 
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
@@ -338,6 +338,12 @@ let winner_tests =
 let suite =
   "test suite for texas_holdem"
   >::: List.flatten
-         [ card_tests; card_impl_tests; card_debug_tests; winner_tests; get_small_blind_tests;]
+         [
+           card_tests;
+           card_impl_tests;
+           card_debug_tests;
+           winner_tests;
+           get_small_blind_tests;
+         ]
 
 let _ = run_test_tt_main suite
