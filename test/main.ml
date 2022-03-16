@@ -11,6 +11,22 @@ let winner_player_with_pot_added_test
   assert_equal expected_output
     (Player.name (Game.winner_player_with_pot_added input))
 
+let get_small_blind_test 
+    (name : string)
+    (input : game)
+    (expected_output : string) =
+    name >:: fun _ ->
+      assert_equal expected_output
+        (Player.name (Game.get_small_blind input)) 
+
+let get_curr_player_test
+    (name : string)
+    (input : game)
+    (expected_output : string) =
+    name >:: fun _ ->
+      assert_equal expected_output
+        (Player.name (Game.get_curr_player input)) 
+
 let index_of_highest_hand_test
     (name : string)
     (input : card list list)
@@ -273,6 +289,8 @@ let card_debug_tests =
 
 let player_a = Player.create_player "b" 0 [ D 1; H 5 ]
 let player_b = Player.create_player "a" 0 [ D 2; S 5 ]
+let player_c = Player.create_player "c" 30 []
+let player_d = Player.create_player "d" 30 []
 
 let rec list_to_queue players queue =
   match players with
@@ -300,7 +318,19 @@ let g =
     game_over = false;
   }
 
-let curr_sb_tests = [ ]
+let player_list = [player_c; player_d; player_a]  
+let g_by_init = create_game player_list 5
+
+let get_small_blind_tests = [ 
+  get_small_blind_test "use game init" g_by_init "c";
+  get_small_blind_test "use game created by hard coding" g "b"
+]
+
+let get_curr_player_tests = [
+  get_curr_player_test "use game init" g_by_init "b";
+  get_curr_player_test "use game created by hard coding" g "b"
+]
+
 
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
@@ -308,6 +338,6 @@ let winner_tests =
 let suite =
   "test suite for texas_holdem"
   >::: List.flatten
-         [ card_tests; card_impl_tests; card_debug_tests; winner_tests ]
+         [ card_tests; card_impl_tests; card_debug_tests; winner_tests; get_small_blind_tests;]
 
 let _ = run_test_tt_main suite

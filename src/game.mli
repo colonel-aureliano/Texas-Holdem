@@ -31,9 +31,7 @@ val play_again : game -> game
     previous game but shift the small blind to the next person. Also
     deals the cards similar to create game *)
 
-val get_curr_player : game -> player
-(** [get_curr_player] returns the player who is making the decision of
-    pass/raise/fold *)
+val get_small_blind : game -> player
 
 val execute_command : game -> command -> game
 (** [betting_round g] returns the game state after executing the

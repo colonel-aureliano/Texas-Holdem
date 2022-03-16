@@ -84,16 +84,17 @@ let rec card_to_players queue deck num_dealed =
 let init_helper players_queue small_blind_amt =
   let players_with_card, curr_deck =
     card_to_players players_queue new_deck 0
-  in
+  in 
+  let original_queue = Queue.copy players_with_card in 
   let queue_sb = player_shift players_with_card small_blind_amt in
   let queue_bb = player_shift queue_sb (2 * small_blind_amt) in
   {
-    players = Queue.copy players_queue;
+    players = original_queue;
     active_players = queue_bb;
     current_deck = curr_deck;
     cards_on_table = [];
     pot = 3 * small_blind_amt;
-    small_blind = Queue.peek players_with_card;
+    small_blind = Queue.peek original_queue;
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
     (* betting_round = 0; *)
@@ -152,6 +153,8 @@ let play_again game =
   let updated_status_q = update_active_players_status old_players_q game.active_players in
   let new_players_q = player_shift updated_status_q 0 in
   init_helper new_players_q game.small_blind_amt
+
+let get_small_blind game = game.small_blind
 
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
