@@ -118,10 +118,17 @@ let rec has_straight_helper l =
     if bool then (bool, e) else has_straight_helper (List.tl l)
 
 let has_straight (hand : t) =
-  let hand = List.stable_sort single_compare hand in
+  let hand = List.sort_uniq single_compare hand in
   let intlist = List.map extract_value hand in
-  let intlist = List.map (fun x -> if x = 1 then 14 else x) intlist in
-  fst (has_straight_helper intlist)
+  let intlist_to_14 =
+    List.map (fun x -> if x = 1 then 14 else x) intlist
+  in
+  let res1 = fst (has_straight_helper intlist_to_14) in
+  if res1 then res1
+  else
+    let intlist = List.stable_sort compare intlist in
+    let res2 = fst (has_straight_helper intlist) in
+    res2
 
 let has_flush_helper (hand : t) =
   let s =
@@ -340,22 +347,15 @@ let winning_factor (hand : t) (rank : int) =
       max_of_list
         (filter_by_occurrences (List.map extract_value hand) 3)
   | 4 ->
-      let hand = List.stable_sort single_compare hand in
+      let hand = List.sort_uniq single_compare hand in
       let intlist = List.map extract_value hand in
       let intlist =
         List.map (fun x -> if x = 1 then 14 else x) intlist
       in
-      let curr_max = snd (has_straight_helper intlist) in
-      let tail = List.tl hand in
-      if has_straight tail then
-        let intlist = List.map extract_value tail in
-        let intlist =
-          List.map (fun x -> if x = 1 then 14 else x) intlist
-        in
-        let curr_max =
-          max curr_max (snd (has_straight_helper intlist))
-        in
-        let tail = List.tl tail in
+      if not (fst (has_straight_helper intlist)) then 5
+      else
+        let curr_max = snd (has_straight_helper intlist) in
+        let tail = List.tl hand in
         if has_straight tail then
           let intlist = List.map extract_value tail in
           let intlist =
@@ -364,9 +364,18 @@ let winning_factor (hand : t) (rank : int) =
           let curr_max =
             max curr_max (snd (has_straight_helper intlist))
           in
-          curr_max
+          let tail = List.tl tail in
+          if has_straight tail then
+            let intlist = List.map extract_value tail in
+            let intlist =
+              List.map (fun x -> if x = 1 then 14 else x) intlist
+            in
+            let curr_max =
+              max curr_max (snd (has_straight_helper intlist))
+            in
+            curr_max
+          else curr_max
         else curr_max
-      else curr_max
   | 5 -> (
       let c = snd (has_flush_helper hand) in
       match c with

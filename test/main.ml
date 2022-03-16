@@ -2,16 +2,6 @@ open OUnit2
 open Texas_holdem
 open Card
 
-let n_random_card_test
-    (name : string)
-    (input1 : card list)
-    (input2 : int)
-    (expected_output : int) =
-  let output = n_random_card input1 input2 in
-  (*let _ = print_string (cards_to_string (fst output)) in*)
-  name >:: fun _ ->
-  assert_equal expected_output (List.length (snd output))
-
 let index_of_highest_hand_test
     (name : string)
     (input : card list list)
@@ -84,9 +74,15 @@ let hand10 = [ H 10; S 9; C 8; S 7; H 2; H 11; S 12 ] (* a straight *)
 let hand10_match = [ H 10; S 9; C 8; S 7; H 11; S 12; H 13 ]
 (* a straight, higher than hand10 *)
 
+let hand_straight_0 = [ C 2; S 3; C 4; D 4; H 5; C 6; D 1 ]
+let hand_straight_1 = [ H 2; S 3; D 4; C 4; H 5; D 10; D 1 ]
+
 let card_tests =
   [
-    n_random_card_test "n_random_card_test" new_deck 5 47;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand_straight_0 hand_straight_1"
+      [ hand_straight_0; hand_straight_1 ]
+      0;
     index_of_highest_hand_test
       "index_of_highest_hand_test hand1 hand2 hand3"
       [ hand1; hand3; hand2 ] 1;
@@ -228,6 +224,7 @@ let card_impl_tests =
     f_test "has_straight_test hand3" has_straight hand3 false;
     f_test "has_straight_test hand2" has_straight hand2 false;
     f_test "has_straight_test hand1" has_straight hand1 false;
+    f_test "has_straight" has_straight hand_straight_1 true;
     f_test "has_flush_test hand3" has_flush hand3 true;
     f_test "has_flush_test hand2" has_flush hand2 false;
     f_test "has_flush_test hand1" has_flush hand1 false;
