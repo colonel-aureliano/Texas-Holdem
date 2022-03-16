@@ -191,21 +191,16 @@ let winner_player_with_pot_added g =
       |> List.map (fun x -> Player.cards x @ g.cards_on_table)
       |> index_of_highest_hand
     in
-    print_string (string_of_int highest_hand_index);
-    print_endline
-      " determined by index_of_highest_hand for Debugging winner \
-       determination.\n";
-    print_player_list_names player_list;
-    print_endline "is order of players in player_list.\n";
-    print_endline " card orders are.\n";
-    print_card_list
-      (player_list
-      |> List.map (fun x -> g.cards_on_table @ Player.cards x));
-    print_endline " card on table are \n";
-    print_string (Card.to_string g.cards_on_table);
-    print_endline " number of cards on table are \n";
-    print_string (string_of_int (List.length g.cards_on_table));
-    print_endline " end of prints \n";
+    (* print_string (string_of_int highest_hand_index); print_endline "
+       determined by index_of_highest_hand for Debugging winner \
+       determination.\n"; print_player_list_names player_list;
+       print_endline "is order of players in player_list.\n";
+       print_endline " card orders are.\n"; print_card_list (player_list
+       |> List.map (fun x -> g.cards_on_table @ Player.cards x));
+       print_endline " card on table are \n"; print_string
+       (Card.to_string g.cards_on_table); print_endline " number of
+       cards on table are \n"; print_string (string_of_int (List.length
+       g.cards_on_table)); print_endline " end of prints \n"; *)
     List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 
@@ -217,10 +212,9 @@ let pot_distributer g =
     game_over = true;
     players =
       (let winner = winner_player_with_pot_added g in
-       print_string (Player.name winner);
-       print_endline
-         " determined by winner_player_with_pot_added for Debugging \
-          winner determination.\n";
+       (* print_string (Player.name winner); print_endline " determined
+          by winner_player_with_pot_added for Debugging \ winner
+          determination.\n"; *)
        let arranged_players = rearrange g.players winner in
        rearrange
          (mutable_push winner (mutable_pop arranged_players))
@@ -247,7 +241,13 @@ let execute_command (g : game) (cmd : command) : game =
             rearrange updated_g.active_players updated_g.small_blind
           in
           if List.length g.cards_on_table = 5 then
-            { (pot_distributer updated_g) with game_over = true }
+            {
+              (* let _ = 0 in print_endline " card on table are \n";
+                 print_string (Card.to_string g.cards_on_table); *)
+              (pot_distributer updated_g)
+              with
+              game_over = true;
+            }
           else
             let num_card =
               if List.length g.cards_on_table = 0 then 3 else 1

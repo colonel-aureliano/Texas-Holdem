@@ -289,8 +289,8 @@ let g =
   {
     players = Queue.copy players_queue;
     active_players = players_queue;
-    current_deck = [ S 2; H 7; C 12; H 12; C 9 ];
-    cards_on_table = [];
+    current_deck = [];
+    cards_on_table = [ S 2; H 7; C 12; H 12; C 9 ];
     pot = 5;
     small_blind = player_a;
     small_blind_amt = 5;
@@ -300,7 +300,7 @@ let g =
     game_over = false;
   }
 
-let curr_sb_tests = [ ]
+let curr_sb_tests = []
 
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
