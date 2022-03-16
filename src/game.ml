@@ -11,7 +11,6 @@ type game = {
   small_blind_amt : int;
   current_bet : int;
   consecutive_calls : int;
-  (* betting_round : int; *)
   game_over : bool;
 }
 
@@ -85,6 +84,7 @@ let init_helper players_queue small_blind_amt =
   let players_with_card, curr_deck =
     card_to_players players_queue new_deck 0
   in
+  let sb = Queue.peek players_with_card in
   let queue_sb = player_shift players_with_card small_blind_amt in
   let queue_bb = player_shift queue_sb (2 * small_blind_amt) in
   {
@@ -93,10 +93,9 @@ let init_helper players_queue small_blind_amt =
     current_deck = curr_deck;
     cards_on_table = [];
     pot = 3 * small_blind_amt;
-    small_blind = Queue.peek players_with_card;
+    small_blind = sb;
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
-    (* betting_round = 0; *)
     consecutive_calls = 0;
     game_over = false;
   }
@@ -260,4 +259,12 @@ let execute_command (g : game) (cmd : command) : game =
       in
       if Queue.length updated_g.active_players = 1 then
         { (pot_distributer updated_g) with game_over = true }
+      else if
+        updated_g.consecutive_calls = Queue.length g.active_players
+      then
+        if List.length g.cards_on_table = 5 then
+          { (pot_distributer updated_g) with game_over = true }
+        else if List.length g.cards_on_table = 0 then
+          draw_card { updated_g with consecutive_calls = 0 } 3
+        else draw_card { updated_g with consecutive_calls = 0 } 1
       else updated_g
