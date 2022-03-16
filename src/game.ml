@@ -60,7 +60,7 @@ let player_shift queue amt =
 (** rearrange rotate the players in the queue until the first element is
     sb *)
 let rec rearrange queue sb =
-  if Player.name (Queue.peek queue) = Player.name sb then queue
+  if Queue.peek queue = sb then queue
   else rearrange (player_shift queue 0) sb
 
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
@@ -118,11 +118,21 @@ let execute_player_spending g x =
    mutable_push (deduct (Queue.pop g.active_players) x)
    g.active_players; } *)
 
-(** [update_player_wealth] update player's wealth in the queue; will be
+(** [update_player_status] update player's wealth and cards in the queue; will be
     used when player folds *)
-let update_player_wealth queue player =
-  let rotated_q = rearrange queue player in
-  mutable_push (set_wealth (Queue.pop rotated_q) (wealth player)) queue
+let update_player_status queue player =
+  let rotated_q = rearrange queue player in 
+  let curr_player = Queue.pop rotated_q in 
+  let updated_wealth_player = set_wealth curr_player (wealth player)  in 
+  let updated_cards_player = remove_cards updated_wealth_player in 
+  mutable_push updated_cards_player queue 
+
+let rec update_active_players_status queue active_players = 
+  if Queue.length active_players = 0 then queue
+  else 
+    let curr_player = Queue.pop active_players in
+    let new_queue = update_player_status queue curr_player in 
+    update_active_players_status new_queue active_players
 
 (* END OF HELPER FUNCTIONS *)
 
@@ -136,9 +146,10 @@ let create_game players small_blind_amt =
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
-let play_again game =
-  let old_players_q = game.players in
-  let new_players_q = player_shift old_players_q 0 in
+let play_again game = 
+  let old_players_q = game.players in 
+  let updated_status_q = update_active_players_status old_players_q game.active_players in
+  let new_players_q = player_shift updated_status_q 0 in
   init_helper new_players_q game.small_blind_amt
 
 (** [get_curr_player game] returns the player who is making the decision
@@ -229,12 +240,15 @@ let execute_command (g : game) (cmd : command) : game =
         if
           updated_g.consecutive_calls
           = Queue.length g.active_players - 1
-        then
+        then 
+          let rearranged_p = rearrange updated_g.active_players updated_g.small_blind in 
           if List.length g.cards_on_table = 5 then
             { (pot_distributer updated_g) with game_over = true }
-          else if List.length g.cards_on_table = 0 then
-            draw_card { updated_g with consecutive_calls = 0 } 3
-          else draw_card { updated_g with consecutive_calls = 0 } 1
+          else let num_card = 
+            if List.length g.cards_on_table = 0 then 3 else 1 in
+            draw_card { updated_g with 
+            active_players = rearranged_p;
+            consecutive_calls = 0} num_card
         else
           { updated_g with consecutive_calls = g.consecutive_calls + 1 }
   | Raise x ->
@@ -248,13 +262,20 @@ let execute_command (g : game) (cmd : command) : game =
       }
   | Fold ->
       let updated_q =
-        update_player_wealth g.players (Queue.peek g.active_players)
+        update_player_status g.players (Queue.peek g.active_players)
+      in 
+      let curr_player = Queue.peek g.active_players in 
+      let new_active_players = mutable_pop g.active_players in 
+      let new_sb = 
+        if curr_player = g.small_blind then Queue.peek new_active_players
+        else g.small_blind
       in
       let updated_g =
         {
           g with
           players = updated_q;
-          active_players = mutable_pop g.active_players;
+          active_players = new_active_players;
+          small_blind = new_sb;
         }
       in
       if Queue.length updated_g.active_players = 1 then
