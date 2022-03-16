@@ -53,8 +53,7 @@ let list_to_queue players =
   helper players myqueue
 
 (** [queue_to_list players] converts the queue of players to a list *)
-let rec queue_to_list (q : player Queue.t) : player list =
-  if Queue.is_empty q then [] else Queue.take q :: queue_to_list q
+let queue_to_list q = Queue.fold (fun x y -> y :: x) [] q
 
 (** [players_to_hands] returns a list containing the hands of each
     player in [p] *)
