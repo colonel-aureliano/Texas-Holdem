@@ -176,7 +176,7 @@ let winner_player_with_pot_added g =
     let player_list = g.active_players |> queue_to_list in
     let highest_hand_index =
       player_list
-      |> List.map (fun x -> Player.cards x)
+      |> List.map (fun x -> Player.cards x @ g.cards_on_table)
       |> index_of_highest_hand
     in
     print_string (string_of_int highest_hand_index);
@@ -186,7 +186,14 @@ let winner_player_with_pot_added g =
     print_player_list_names player_list;
     print_endline "is order of players in player_list.\n";
     print_endline " card orders are.\n";
-    print_card_list (player_list |> List.map (fun x -> Player.cards x));
+    print_card_list
+      (player_list
+      |> List.map (fun x -> g.cards_on_table @ Player.cards x));
+    print_endline " card on table are \n";
+    print_card_list [ g.cards_on_table ];
+    print_endline " number of cards on table are \n";
+    print_string (string_of_int (List.length g.cards_on_table));
+    print_endline " end of prints \n";
     List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 
