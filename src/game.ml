@@ -28,8 +28,9 @@ let mutable_push x q =
 
 (** [mutable_pop] is Queue.pop but returns the Queue instead of a unit*)
 let mutable_pop q =
-  ignore (Queue.pop q);
-  q
+  let myq = Queue.copy q in
+  ignore (Queue.pop myq);
+  myq
 
 (** [reverse_arg_order] swaps the argument orders for a function with 2
     arguments*)
@@ -213,7 +214,7 @@ let pot_distributer g =
 
 let update_fold_state (g : game) : game =
   let curr_player = Queue.peek g.active_players in
-  let new_active_players = mutable_pop (Queue.copy g.active_players) in
+  let new_active_players = mutable_pop g.active_players in
   let new_sb =
     if curr_player = g.small_blind then Queue.peek new_active_players
     else g.small_blind
