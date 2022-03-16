@@ -1,9 +1,6 @@
 open Card
 open Player
 
-exception MorePlayersNeeded
-exception RepeatedName of string
-
 type game = {
   players : player Queue.t;
   active_players : player Queue.t;
@@ -80,15 +77,6 @@ let rec card_to_players queue deck num_dealed =
        queue)
       new_deck (num_dealed + 1)
 
-(** [dup_name player_names] check if there exits duplicated names in
-    player_names. Return false if no duplicate exits and raise
-    ReapeadtedName error if found duplicates *)
-let rec dup_name player_names =
-  match player_names with
-  | [] -> (false, "")
-  | hd :: tl ->
-      if List.exists (( = ) hd) tl then (true, hd) else dup_name tl
-
 (** [init_helper players_queue small_blind_amt] initialize game based on
     players_queue and small_blind_amt. Returns the game of players queue
     with big blind in the last place and each player with 3 cards and
@@ -143,13 +131,9 @@ let update_player_wealth queue player =
     players and small_blind_amt. The first player in the queue will
     automatically be the small_blind *)
 let create_game players small_blind_amt =
-  let player_names = List.map (fun x -> name x) players in
-  let dup, name = dup_name player_names in
-  if dup then raise (RepeatedName name)
-  else
-    let queue = Queue.create () in
-    let players_queue = list_to_queue players queue in
-    init_helper players_queue small_blind_amt
+  let queue = Queue.create () in
+  let players_queue = list_to_queue players queue in
+  init_helper players_queue small_blind_amt
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
@@ -244,19 +228,3 @@ let execute_command (g : game) (cmd : command) : game =
       if Queue.length updated_g.active_players = 1 then
         { (pot_distributer updated_g) with game_over = true }
       else updated_g
-
-(* let execute_command (g : game) (cmd : command) : game = match cmd
-   with | Call -> let cur_player = get_curr_player g in let x =
-   g.current_bet - Player.amount_placed cur_player in if Player.wealth
-   cur_player < x then raise InsufficientFund else let updated_g = {
-   (execute_player_spending g x) with pot = g.pot + x } in if
-   updated_g.consecutive_calls = Queue.length g.active_players then if
-   List.length g.cards_on_table = 5 then { (pot_distributer updated_g)
-   with game_over = true } else draw_card { updated_g with
-   consecutive_calls = 0 } else { updated_g with consecutive_calls =
-   g.consecutive_calls + 1 } | Raise x -> { (execute_player_spending g
-   x) with current_bet = g.current_bet + x; pot = g.pot + x;
-   consecutive_calls = 0; } | Fold -> let updated_g = { g with
-   active_players = mutable_pop g.active_players } in if Queue.length
-   updated_g.active_players = 1 then { (pot_distributer updated_g) with
-   game_over = true } else updated_g *)

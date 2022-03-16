@@ -6,7 +6,7 @@ open Card
 exception Exit
 
 (** [prompt] asks user to enter a parseable command. input of "exit"
-    exits the game. Empty input is Call. *)
+    exits the game. Empty input and Raise 0 are parsed as Call. *)
 let parse x : command =
   print_string "> ";
   match
@@ -88,10 +88,11 @@ and play game =
       play game
     with Exit -> print_endline "exit code 0"
 
-(** [create_players n i ls] adds [n] players to [ls]. Prompts each
-    player to enter in their names and initial wealth. Default player
-    name: player[i]. Default wealth: 50. Default cards: a full deck. *)
-let rec create_players n i (ls : player list) =
+(** [create_players n i ls namels] adds [n] players to [ls]. Prompts
+    each player to enter in their names and initial wealth. Default
+    player name: player[i]. Default wealth: 100. Default cards: a full
+    deck. Checks that the new name cannot be in namels *)
+let rec create_players n i (ls : player list) (namels : string list) =
   if i > n then ls
   else
     let _ =
@@ -104,7 +105,11 @@ let rec create_players n i (ls : player list) =
       | "" ->
           print_endline "Warning: name cannot be empty.";
           "player" ^ string_of_int i
-      | name -> name
+      | name ->
+          if List.mem name namels then (
+            print_endline "Warning: duplicate name.";
+            "player" ^ string_of_int i)
+          else name
     in
     "Hello " ^ name ^ "!" |> print_endline;
     print_endline "\nEnter your wealth: ";
@@ -118,7 +123,7 @@ let rec create_players n i (ls : player list) =
     "Your initial wealth is $" ^ string_of_int wealth ^ "."
     |> print_endline;
     let player = create_player name wealth new_deck in
-    create_players n (i + 1) (player :: ls)
+    create_players n (i + 1) (player :: ls) (name :: namels)
 
 (** [setup] sets up the initial state of the game. *)
 let setup () =
@@ -131,7 +136,7 @@ let setup () =
         "Warning: number of players is now set to 2 by default. \n";
       2
   in
-  let players = create_players n 1 [] in
+  let players = create_players n 1 [] [] in
   print_endline "\nPlease enter the amount of small blind.\n";
   print_string "> ";
   let sb =
