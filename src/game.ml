@@ -100,8 +100,7 @@ let rec dup_name player_names =
   match player_names with
   | [] -> (false, "")
   | hd :: tl ->
-      if List.exists (( = ) hd) tl then (true, hd)
-      else dup_name tl
+      if List.exists (( = ) hd) tl then (true, hd) else dup_name tl
 
 (** [init_helper players_queue small_blind_amt] initialize game based on
     players_queue and small_blind_amt. Returns the game of players queue
@@ -158,11 +157,11 @@ let update_player_wealth queue player =
     automatically be the small_blind *)
 let create_game players small_blind_amt =
   let player_names = List.map (fun x -> name x) players in
-  let dup, name = dup_name player_names in 
+  let dup, name = dup_name player_names in
   if dup then raise (RepeatedName name)
-  else 
+  else
     let players_queue = list_to_queue players in
-    init_helper players_queue small_blind_amt 
+    init_helper players_queue small_blind_amt
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
@@ -240,7 +239,7 @@ let execute_command (g : game) (cmd : command) : game =
         (execute_player_spending g x) with
         current_bet = g.current_bet + x;
         pot = g.pot + x;
-        consecutive_calls = 0;
+        consecutive_calls = 1;
       }
   | Fold ->
       let updated_q =

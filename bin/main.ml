@@ -14,10 +14,12 @@ let parse x : command =
       read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
   with
   | [ "fold" ] -> Fold
-  | [ "call" ] (*| [ "raise"; "0" ]*) -> Call
-  | [ "raise"; n ] -> Raise (int_of_string n)
+  | [ "call" ] | [ "raise"; "0" ] -> Call
+  | [ "raise"; n ] ->
+      let n = int_of_string n in
+      if n > 0 then Raise n else failwith "Illegal Command"
   | [ "exit" ] -> raise Exit
-  | _ -> failwith "Invalid Move"
+  | _ -> failwith "Illegal Command"
 
 (** Prompts for command until get a valid command*)
 let rec get_command game : game =
