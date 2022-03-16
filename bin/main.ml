@@ -46,18 +46,21 @@ let rec player_result = function
     again *)
 let rec end_game game =
   print_endline "\n\nThis game is over.";
-  let winner = get_winner game in
-  "The winner is: " ^ name winner |> print_endline;
-  print_endline "\nPlayer Status";
-  let players = get_all_players game |> List.rev in
-  player_result players;
-  print_endline "\nWould you like to start another game? (Y/N)";
-  print_string "> ";
-  match String.(read_line () |> trim |> lowercase_ascii) with
-  | "y" ->
-      print_endline "new game started";
-      play (play_again game)
-  | _ -> print_endline "\nbye"
+  try
+    let winner = get_winner game in
+    "The winner is: " ^ name winner |> print_endline;
+    print_endline "\nPlayer Status";
+    let players = get_all_players game |> List.rev in
+    player_result players
+  with Tie _ -> (
+    print_endline "Tie in Game. Feature to be implemented.";
+    print_endline "\nWould you like to start another game? (Y/N)";
+    print_string "> ";
+    match String.(read_line () |> trim |> lowercase_ascii) with
+    | "y" ->
+        print_endline "new game started";
+        play (play_again game)
+    | _ -> print_endline "\nbye")
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
@@ -74,8 +77,6 @@ and play game =
     "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
     |> print_endline;
     "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
-    if p = get_small_blind game then print_endline "You are small blind."
-    else print_string "";
     "Highest bet on the table is $"
     ^ string_of_int game.current_bet
     ^ "."
