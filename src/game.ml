@@ -161,6 +161,12 @@ let rec print_player_list_names = function
       print_string (Player.name h ^ " ");
       print_player_list_names t
 
+let rec print_card_list = function
+  | [] -> ()
+  | h :: t ->
+      print_string (Card.to_string h ^ " and ");
+      print_card_list t
+
 (** [winner_player_with_pot_added] returns the winning player with the
     pot added to his wealth*)
 let winner_player_with_pot_added g =
@@ -169,7 +175,9 @@ let winner_player_with_pot_added g =
   else
     let player_list = g.active_players |> queue_to_list in
     let highest_hand_index =
-      player_list |> players_to_hands |> index_of_highest_hand
+      player_list
+      |> List.map (fun x -> Player.cards x)
+      |> index_of_highest_hand
     in
     print_string (string_of_int highest_hand_index);
     print_endline
@@ -177,6 +185,8 @@ let winner_player_with_pot_added g =
        determination.\n";
     print_player_list_names player_list;
     print_endline "is order of players in player_list.\n";
+    print_endline " card orders are.\n";
+    print_card_list (player_list |> List.map (fun x -> Player.cards x));
     List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 

@@ -49,3 +49,6 @@ val get_winner : game -> player
 
 val get_all_players : game -> player list
 (** [get_all_players game] returns all the players in the game*)
+
+val winner_player_with_pot_added : game -> player
+(** only for degugging, delete after done*)

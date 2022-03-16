@@ -1,6 +1,15 @@
 open OUnit2
 open Texas_holdem
 open Card
+open Game
+
+let winner_player_with_pot_added_test
+    (name : string)
+    (input : game)
+    (expected_output : string) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.name (Game.winner_player_with_pot_added input))
 
 let index_of_highest_hand_test
     (name : string)
@@ -81,9 +90,14 @@ let test2 = [ H 3; H 2; H 5; H 8; C 7; S 2; C 6 ]
 let test3 = [ H 3; H 4; H 5; H 8; D 12; S 2; C 6 ]
 let hand_straight_0 = [ C 2; S 3; C 4; D 4; H 5; C 6; D 1 ]
 let hand_straight_1 = [ H 2; S 3; D 4; C 4; H 5; D 10; D 1 ]
+let buggy_hand_0 = [ S 2; H 7; C 12; H 12; C 9; D 1; H 5 ]
+let buggy_hand_1 = [ S 2; H 7; C 12; H 12; C 9; D 2; S 5 ]
 
 let card_tests =
   [
+    index_of_highest_hand_test "testing buggy hands"
+      [ buggy_hand_0; buggy_hand_1 ]
+      1;
     index_of_highest_hand_test "testing game outputs"
       [ test1; test2; test3 ] 2;
     index_of_highest_hand_test
@@ -254,8 +268,41 @@ let h2 = [ S 3; S 6; C 11; H 6; S 5; S 3; D 5 ]
 let card_debug_tests =
   [ index_of_highest_hand_test "h1 h2" [ h1; h2 ] 1 ]
 
+let player_a = Player.create_player "b" 0 [ D 1; H 5 ]
+let player_b = Player.create_player "a" 0 [ D 2; S 5 ]
+
+let rec list_to_queue players queue =
+  match players with
+  | [] -> queue
+  | h :: t ->
+      list_to_queue t
+        (Queue.add h queue;
+         queue)
+
+let queue = Queue.create ()
+let players_queue = list_to_queue [ player_a; player_b ] queue
+
+let g =
+  {
+    players = Queue.copy players_queue;
+    active_players = players_queue;
+    current_deck = [ S 2; H 7; C 12; H 12; C 9 ];
+    cards_on_table = [];
+    pot = 5;
+    small_blind = player_a;
+    small_blind_amt = 5;
+    current_bet = 10;
+    (* betting_round = 0; *)
+    consecutive_calls = 0;
+    game_over = false;
+  }
+
+let winner_tests =
+  [ winner_player_with_pot_added_test "buggy hands" g "a" ]
+
 let suite =
   "test suite for texas_holdem"
-  >::: List.flatten [ card_tests; card_impl_tests; card_debug_tests ]
+  >::: List.flatten
+         [ card_tests; card_impl_tests; card_debug_tests; winner_tests ]
 
 let _ = run_test_tt_main suite
