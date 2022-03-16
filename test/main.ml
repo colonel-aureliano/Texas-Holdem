@@ -300,6 +300,8 @@ let g =
     game_over = false;
   }
 
+let curr_sb_tests = [ ]
+
 let winner_tests =
   [ winner_player_with_pot_added_test "buggy hands" g "a" ]
 
