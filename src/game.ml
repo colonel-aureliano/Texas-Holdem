@@ -36,7 +36,8 @@ let mutable_pop q =
     arguments*)
 let reverse_arg_order f x y = f y x
 
-(** [list_to_queue players] converts the list of players to a queue *)
+(** [list_to_queue players] converts the list of players to a queue. Use
+    queue = Queue.create () for initialization. *)
 let rec list_to_queue players queue =
   match players with
   | [] -> queue
@@ -124,13 +125,19 @@ let execute_player_spending g x =
     players and small_blind_amt. The first player in the queue will
     automatically be the small_blind *)
 let create_game players small_blind_amt =
-  let queue = Queue.create () in
-  let players_queue = list_to_queue players queue in
+  let players_queue = list_to_queue players (Queue.create ()) in
   init_helper players_queue small_blind_amt
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
-let play_again game = game
+let play_again game =
+  let players_queue =
+    list_to_queue
+      (queue_to_list game.active_players
+      @ queue_to_list game.fold_collection)
+      (Queue.create ())
+  in
+  init_helper players_queue game.small_blind_amt
 
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
@@ -225,7 +232,8 @@ let execute_command (g : game) (cmd : command) : game =
       if Queue.length updated_g.active_players = 1 then
         pot_distributer updated_g
       else if
-        updated_g.consecutive_calls = Queue.length g.active_players
+        updated_g.consecutive_calls
+        = Queue.length updated_g.active_players
       then new_betting_round updated_g
       else
         {
