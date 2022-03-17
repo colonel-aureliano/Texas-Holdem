@@ -300,13 +300,22 @@ let rec list_to_queue players queue =
          queue)
 
 let queue = Queue.create ()
-let players_queue = list_to_queue [ player_a; player_b; ] queue
+let players_queue = list_to_queue [ player_a; player_b ] queue
 let queue1 = Queue.create ()
-let players_queue1 = list_to_queue [ player_a; player_b; player_c; player_d] queue1
+
+let players_queue1 =
+  list_to_queue [ player_a; player_b; player_c; player_d ] queue1
+
 let queue2 = Queue.create ()
-let players_queue2 = list_to_queue [ player_b; player_c; player_d; player_a] queue2
+
+let players_queue2 =
+  list_to_queue [ player_b; player_c; player_d; player_a ] queue2
+
 let queue3 = Queue.create ()
-let players_queue3 = list_to_queue [ player_c; player_d; player_a; player_b; ] queue3
+
+let players_queue3 =
+  list_to_queue [ player_c; player_d; player_a; player_b ] queue3
+
 let players_queue_with_b_only = list_to_queue [ player_b ] queue
 let players_queue_with_a_only = list_to_queue [ player_a ] queue
 
@@ -326,7 +335,7 @@ let g =
     garbage_collection = Queue.create ()
   }
 
-let player_queue_equal q1 q2 : bool = 
+let player_queue_equal q1 q2 : bool =
   List.equal
     (fun x y -> Player.name x = Player.name y)
     (q1 |> Game.queue_to_list)
@@ -354,53 +363,56 @@ let update_fold_state_test
     (game_equal expected_output (Game.update_fold_state input))
 
 let create_game_test
-    (name: string)
+    (name : string)
     (input : Player.player list)
     (pass : bool)
     (expected_output : game) =
-    name >:: fun _ ->
-      assert_equal pass
-        (player_queue_equal expected_output.players (Game.create_game input 1).players
-        && player_queue_equal expected_output.active_players (Game.create_game input 1).active_players) 
+  name >:: fun _ ->
+  assert_equal pass
+    (player_queue_equal expected_output.players
+       (Game.create_game input 1).players
+    && player_queue_equal expected_output.active_players
+         (Game.create_game input 1).active_players)
 
 let init_helper_test
-    (name: string)
+    (name : string)
     (input : Player.player Queue.t)
     (pass : bool)
     (expected_output : game) =
-    name >:: fun _ ->
-      assert_equal pass
-        (player_queue_equal expected_output.players (Game.init_helper input 1).players
-        && player_queue_equal expected_output.active_players (Game.init_helper input 1).active_players) 
-      
+  name >:: fun _ ->
+  assert_equal pass
+    (player_queue_equal expected_output.players
+       (Game.init_helper input 1).players
+    && player_queue_equal expected_output.active_players
+         (Game.init_helper input 1).active_players)
+
 let card_to_players_test
-    (name: string)
+    (name : string)
     (input : Player.player Queue.t)
     (pass : bool)
     (expected_output : Player.player Queue.t) =
-    name >:: fun _ ->
-      let (queue, _) = Game.card_to_players input new_deck 0 in 
-      assert_equal pass
-      (player_queue_equal expected_output queue)
+  name >:: fun _ ->
+  let queue, _ = Game.card_to_players input new_deck 0 in
+  assert_equal pass (player_queue_equal expected_output queue)
 
 let player_shift_test
-    (name: string)
+    (name : string)
     (input : Player.player Queue.t)
     (pass : bool)
-    (expected_output : Player.player Queue.t) = 
-    name >:: fun _ ->
-      assert_equal pass 
-      (player_queue_equal expected_output (Game.player_shift input 0))
+    (expected_output : Player.player Queue.t) =
+  name >:: fun _ ->
+  assert_equal pass
+    (player_queue_equal expected_output (Game.player_shift input 0))
+
 let player_double_shift_test
-    (name: string)
+    (name : string)
     (input : Player.player Queue.t)
     (pass : bool)
-    (expected_output : Player.player Queue.t) = 
-    name >:: fun _ ->
-      let queue1 = Game.player_shift input 0 in 
-      let queue2 = Game.player_shift queue1 0 in
-      assert_equal pass 
-      (player_queue_equal expected_output queue2)
+    (expected_output : Player.player Queue.t) =
+  name >:: fun _ ->
+  let queue1 = Game.player_shift input 0 in
+  let queue2 = Game.player_shift queue1 0 in
+  assert_equal pass (player_queue_equal expected_output queue2)
 
 let player_list = [ player_a; player_b ]
 let g_by_init = create_game player_list 5
@@ -418,11 +430,12 @@ let get_curr_player_tests =
   ]
 
 let winner_tests =
-  [ winner_player_with_pot_added_test "buggy hands" g "a" ]
+  [ (*winner_player_with_pot_added_test "buggy hands" g "a"*) ]
 
-let create_game_tests = 
-  [ 
-    init_helper_test "2 player game init" players_queue true g
+let create_game_tests =
+  [
+    (*create_game_test "2-players create game" player_list true g;*)
+    init_helper_test "2 player game init" players_queue true g;
   ]
 
 let update_fold_state_tests =
@@ -442,19 +455,22 @@ let update_fold_state_tests =
         active_players = players_queue_with_b_only;
       };
   ]
-let card_to_players_tests = 
-  [
-    card_to_players_test "card distribution" players_queue true players_queue
-  ] 
 
-let player_shift_tests = 
+let card_to_players_tests =
   [
-    player_shift_test "player shift wrong" players_queue false players_queue1;
-    player_shift_test "player shift correct" players_queue1 true players_queue2;
-    player_double_shift_test "shift twice" players_queue1 true players_queue3
+    card_to_players_test "card distribution" players_queue true
+      players_queue;
   ]
 
-
+let player_shift_tests =
+  [
+    player_shift_test "player shift wrong" players_queue false
+      players_queue1;
+    player_shift_test "player shift correct" players_queue1 true
+      players_queue2;
+    player_double_shift_test "shift twice" players_queue1 true
+      players_queue3;
+  ]
 
 let suite =
   "test suite for texas_holdem"
@@ -468,7 +484,7 @@ let suite =
            (* update_fold_state_tests; *)
            create_game_tests;
            card_to_players_tests;
-           player_shift_tests
+           player_shift_tests;
          ]
 
 let _ = run_test_tt_main suite
