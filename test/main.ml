@@ -112,6 +112,8 @@ let hand9_match = [ C 10; C 13; C 1; C 12; C 11; D 11; D 1 ]
   S 2; C 6 ] let buggy_hand_0 = [ S 2; H 7; C 12; H 12; C 9; D 1; H 5 ]
   let buggy_hand_1 = [ S 2; H 7; C 12; H 12; C 9; D 2; S 5 ]*)
 
+let temp_tests = []
+
 let card_tests =
   [
     (*index_of_highest_hand_test "testing buggy hands" [ buggy_hand_0;
@@ -154,19 +156,14 @@ let card_tests =
     index_of_highest_hand_test
       "index_of_highest_hand_test hand1 hand1_kicker"
       [ hand1; hand1_kicker ] 1;
-    index_of_highest_hand_test
-      "index_of_highest_hand_test hand2 hand2_kicker"
-      [ hand2; hand2_kicker ] 0;
-    index_of_highest_hand_test
-      "index_of_highest_hand_test hand3 hand3_kicker"
-      [ hand3; hand3_kicker ] 1;
-    index_of_highest_hand_test
-      "index_of_highest_hand_test hand5_match hand5_kicker"
-      [ hand5_match; hand5_kicker ]
-      1;
-    index_of_highest_hand_test
-      "index_of_highest_hand_test hand7 hand7_kicker"
-      [ hand7; hand7_kicker ] 0;
+    (*index_of_highest_hand_test "index_of_highest_hand_test hand2
+      hand2_kicker" [ hand2; hand2_kicker ] 0;
+      index_of_highest_hand_test "index_of_highest_hand_test hand3
+      hand3_kicker" [ hand3; hand3_kicker ] 1;
+      index_of_highest_hand_test "index_of_highest_hand_test hand5_match
+      hand5_kicker" [ hand5_match; hand5_kicker ] 1;
+      index_of_highest_hand_test "index_of_highest_hand_test hand7
+      hand7_kicker" [ hand7; hand7_kicker ] 0;*)
     (* Below are tests for tie or tie breakers. *)
     (* test of high card *)
     index_of_highest_hand_fail_test "0 tie_test hand0 hand0_match"
@@ -451,6 +448,7 @@ let suite =
   "test suite for texas_holdem"
   >::: List.flatten
          [
+           temp_tests;
            card_tests
            (*card_impl_tests*)
            (* winner_tests; get_small_blind_tests; (*
