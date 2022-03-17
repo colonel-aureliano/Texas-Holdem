@@ -2,20 +2,21 @@ type player
 
 exception InsufficientFund
 
-val create_player : string -> int -> Card.t -> player
-(** [create_player name wealth cards] returns a player with name as
-    [name], wealth as [wealth], cards as [cards]. *)
+val create_player : string -> int -> Card.t -> int -> player
+(** [create_player name wealth cards position] returns a player with
+    name as [name], wealth as [wealth], cards as [cards]. *)
 
 val name : player -> string
 val wealth : player -> int
 val amount_placed : player -> int
 val cards : player -> Card.t
+val position : player -> int
 
 val set_cards : player -> Card.t -> player
 (** [set_cards player cards] returns [player] possessed with [cards]. *)
 
-val remove_cards : player -> player
-(** [remove_cards player] returns [player] with no cards. *)
+val reset_player : player -> player
+(** [reset_player] removes all cards and set amount on table as 0. *)
 
 val set_wealth : player -> int -> player
 (** [set_wealth player] returns [player] with [amount] of wealth *)

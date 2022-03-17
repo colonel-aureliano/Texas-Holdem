@@ -11,6 +11,7 @@ type game = {
   consecutive_calls : int;
   game_over : bool;
   fold_collection : player Queue.t;
+  position : int;
 }
 (** The abstract type of values representing game. *)
 
@@ -57,6 +58,3 @@ val mutable_pop : 'a Queue.t -> 'a Queue.t
 val card_to_players :
   player Queue.t -> Card.t -> int -> player Queue.t * Card.t
 (** only for degugging, delete after done*)
-
-val player_shift : player Queue.t -> int -> player Queue.t
-val init_helper : player Queue.t -> int -> game

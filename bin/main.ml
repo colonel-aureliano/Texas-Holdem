@@ -118,14 +118,16 @@ let rec create_players n i (ls : player list) (namels : string list) =
     print_endline "\nEnter your wealth: ";
     print_string "> ";
     let wealth =
-      try read_line () |> int_of_string
+      try
+        let raw = read_line () |> int_of_string in
+        if raw < 0 then failwith "negative" else raw
       with Failure _ ->
-        print_endline "Warning: wealth must be an integer.";
+        print_endline "Warning: wealth must be a nonnegative integer.";
         100
     in
     "Your initial wealth is $" ^ string_of_int wealth ^ "."
     |> print_endline;
-    let player = create_player name wealth new_deck in
+    let player = create_player name wealth new_deck i in
     create_players n (i + 1) (player :: ls) (name :: namels)
 
 (** [setup] sets up the initial state of the game. *)
@@ -133,7 +135,9 @@ let setup () =
   print_endline "Please enter the number of players.\n";
   print_string "> ";
   let n =
-    try read_line () |> int_of_string
+    try
+      let raw = read_line () |> int_of_string in
+      if raw <= 0 then failwith "nonpositive" else raw
     with Failure _ ->
       print_endline
         "Warning: number of players is now set to 2 by default. \n";
@@ -143,14 +147,16 @@ let setup () =
   print_endline "\nPlease enter the amount of small blind.\n";
   print_string "> ";
   let sb =
-    try read_line () |> int_of_string
+    try
+      let raw = read_line () |> int_of_string in
+      if raw < 0 then failwith "negative" else raw
     with Failure _ ->
       print_endline
         "Warning: small blind is now set to $5 by default. \n";
       5
   in
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
-  let game = create_game players sb in
+  let game = create_game (List.rev players) sb in
   print_endline "\n\nsetup completed";
   "small blind : " ^ name game.small_blind |> print_endline;
   print_endline "the blinds are placed by dealer\n";

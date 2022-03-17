@@ -12,6 +12,7 @@ type game = {
   consecutive_calls : int;
   game_over : bool;
   fold_collection : player Queue.t;
+  position : int;
 }
 
 type command =
@@ -66,6 +67,13 @@ let rec rearrange queue sb =
   if name (Queue.peek queue) = name sb then queue
   else rearrange (player_shift queue 0) sb
 
+(** [rearrangepos queue pos] rotate the players in the queue until the
+    first element is has the position pos. Precondition: such player
+    exists. *)
+let rec rearrangepos queue pos =
+  if position (Queue.peek queue) = pos then queue
+  else rearrangepos (player_shift queue 0) pos
+
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
 let rec card_to_players queue deck num_dealed =
@@ -79,28 +87,33 @@ let rec card_to_players queue deck num_dealed =
        queue)
       new_deck (num_dealed + 1)
 
-(** [init_helper players_queue small_blind_amt] initialize game based on
-    players_queue and small_blind_amt. Small blind is first player in
-    the queue. Returns the game of players queue with big blind in the
-    last place and each player with 2 cards and the table has 0 cards *)
-let init_helper players_queue small_blind_amt =
+(** [init_helper players_queue small_blind_amt first_player_pos]
+    initialize game. Small blind is the player at the first_player_pos,
+    and is also placed to the top of the queue. Returns the game of
+    players queue with big blind in the last place and each player with
+    2 cards and the table has 0 cards *)
+let init_helper players_queue small_blind_amt first_player_pos =
   let players_with_card, curr_deck =
     card_to_players players_queue new_deck 0
   in
-  let original_queue = Queue.copy players_with_card in
-  let queue_sb = player_shift players_with_card small_blind_amt in
+  let original_queue =
+    players_with_card |> reverse_arg_order rearrangepos first_player_pos
+  in
+  let sb = Queue.peek original_queue in
+  let queue_sb = player_shift original_queue small_blind_amt in
   let queue_bb = player_shift queue_sb (2 * small_blind_amt) in
   {
     active_players = queue_bb;
     current_deck = curr_deck;
     cards_on_table = [];
     pot = 3 * small_blind_amt;
-    small_blind = Queue.peek original_queue;
+    small_blind = sb;
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
     consecutive_calls = 0;
     game_over = false;
     fold_collection = Queue.create ();
+    position = first_player_pos;
   }
 
 (** [draw_card] draws num of cards from the current deck and places it
@@ -126,18 +139,25 @@ let execute_player_spending g x =
     automatically be the small_blind *)
 let create_game players small_blind_amt =
   let players_queue = list_to_queue players (Queue.create ()) in
-  init_helper players_queue small_blind_amt
+  init_helper players_queue small_blind_amt 1
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
 let play_again game =
   let players_queue =
     list_to_queue
-      (queue_to_list game.active_players
-      @ queue_to_list game.fold_collection)
+      List.(
+        queue_to_list game.active_players
+        @ queue_to_list game.fold_collection
+        |> map reset_player
+        |> List.sort (fun x y -> position x - position y))
       (Queue.create ())
   in
-  init_helper players_queue game.small_blind_amt
+  let pos =
+    let n = (game.position + 1) mod Queue.length players_queue in
+    if n = 0 then Queue.length players_queue else n
+  in
+  init_helper players_queue game.small_blind_amt pos
 
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
