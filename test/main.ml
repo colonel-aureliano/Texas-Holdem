@@ -240,12 +240,6 @@ let single_compare_test
   name >:: fun _ ->
   assert_equal expected_output (single_compare input1 input2)
 
-let high_card_test
-    (name : string)
-    (input : card list)
-    (expected_output : int) =
-  name >:: fun _ -> assert_equal expected_output (high_card input)
-
 let f_test
     (name : string)
     (f : card list -> bool)
@@ -262,9 +256,6 @@ let card_impl_tests =
       0;
     single_compare_test "single_compare_test\n   equal 2" (H 13) (C 13)
       0;
-    high_card_test "high_card_test 1" hand3 10;
-    high_card_test "high_card_test 2" hand2 14;
-    high_card_test "high_card_test 3" hand5 14;
     f_test "has_pair_test hand1" has_pair hand3 true;
     f_test "has_pair_test hand2" has_pair hand2 true;
     f_test "has_pair_test hand5" has_pair hand5 false;
@@ -450,7 +441,7 @@ let suite =
          [
            temp_tests;
            card_tests
-           (*card_impl_tests*)
+           (* card_impl_tests *)
            (* winner_tests; get_small_blind_tests; (*
               update_fold_state_tests; *) create_game_tests;
               card_to_players_tests; player_shift_tests;*);

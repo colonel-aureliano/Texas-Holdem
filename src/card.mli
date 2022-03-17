@@ -37,8 +37,8 @@ val index_of_highest_hand : t list -> int
     highest hand in [list_of_list_card], using texas holdem card ranking
     rules.
 
-    Requires: for any element e in [list_of_list_card], List.length e =
-    7
+    Requires: 1) for any element e in [list_of_list_card], List.length e
+    = 7; 2) all elements in e are unique
 
     Raises: [Tie] of \[i1,i2 ... in \] when hands of index i1, i2 ... in
     in [list_of_list_card] are tied. *)
@@ -54,10 +54,6 @@ val single_compare : card -> card -> int
 
     - [compare (S 3) (S 5)] is [-1]
     - [compare (C 1) (H 12)] is [1] *)
-
-val high_card : t -> int
-(** [high_card hand] returns the value of the highest card in [hand]
-    (using poker comparison rules). Returns 14 if the highest card is 1. *)
 
 val has_pair : t -> bool
 (** [has_pair hand] returns true if there is at least one pair in

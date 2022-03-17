@@ -77,11 +77,6 @@ let equal (card1 : card) (card2 : card) =
 let sort_and_rev (hand : t) =
   List.rev (List.stable_sort single_compare hand)
 
-let high_card (hand : t) =
-  let hand = sort_and_rev hand in
-  let hand = List.map extract_value hand in
-  if List.hd hand = 1 then 14 else List.hd hand
-
 (** Returns an int list of non-unique elements found in [hand]. The
     actual number of cards of value v in [hand] is the number of
     occurrences of v in [determine_pair hand] + 1. Examples:
@@ -385,6 +380,11 @@ let winning_factor (hand : t) (rank : int) =
         else curr_max
   | 5 -> (
       let c = snd (has_flush_helper hand) in
+      let high_card (hand : t) =
+        let hand = sort_and_rev hand in
+        let hand = List.map extract_value hand in
+        if List.hd hand = 1 then 14 else List.hd hand
+      in
       match c with
       | 'C' ->
           let l =
@@ -460,20 +460,6 @@ let winning_factor (hand : t) (rank : int) =
       else curr_max
   | _ -> 0
 
-let two_pair_secondary_comparison (lst : t list) : t =
-  let l =
-    List.map
-      (fun x ->
-        List.rev
-          (List.sort single_value_copmare
-             (filter_by_occurrences (List.map extract_value x) 2)))
-      lst
-  in
-  let res = List.nth (List.hd l) 1 - List.nth (List.nth l 1) 1 in
-  if res > 0 then List.hd lst
-  else if res < 0 then List.nth lst 1
-  else raise (Tied lst)
-
 let rec check_unique (lst : int list) (ele : int) (seen : bool) =
   match lst with
   | [] -> seen
@@ -481,6 +467,59 @@ let rec check_unique (lst : int list) (ele : int) (seen : bool) =
       if ele = h && not seen then check_unique t ele true
       else if ele = h && seen then false
       else check_unique t ele seen
+
+let two_pair_kicker (lst : t list) : t =
+  let lst = List.map (fun x -> sort_and_rev x) lst in
+  let hand =
+    List.map
+      (fun x ->
+        let winf = winning_factor x 2 in
+        List.filter (fun x -> single_compare (C winf) x <> 0) x)
+      lst
+  in
+  let winning_factors = List.map (fun x -> winning_factor x 1) hand in
+  let max = max_of_list winning_factors in
+  if check_unique winning_factors max false then
+    let rec find_index_of_element e list index =
+      match list with
+      | [] -> -1
+      | h :: t ->
+          if h = e then index else find_index_of_element e t (index + 1)
+    in
+    let index = find_index_of_element max winning_factors 0 in
+    List.nth lst index
+  else
+    let hand =
+      List.map
+        (fun x ->
+          let winf = winning_factor x 1 in
+          List.filter (fun x -> single_compare (C winf) x <> 0) x)
+        hand
+    in
+    let rec high_card_extract lst =
+      match lst with
+      | [] -> []
+      | h :: t -> List.hd (sort_and_rev h) :: high_card_extract t
+    in
+    let hand = high_card_extract hand in
+    try
+      let ele =
+        List.fold_left
+          (fun curr_max x ->
+            if single_compare x curr_max > 0 then x
+            else if single_compare x curr_max < 0 then curr_max
+            else failwith (string_of_int (extract_value curr_max)))
+          (List.hd hand) (List.tl hand)
+      in
+      List.find (fun x -> List.mem ele x) lst
+    with Failure s ->
+      let max = int_of_string s in
+      let l =
+        List.filter
+          (fun x -> List.mem max (List.map extract_value x))
+          lst
+      in
+      raise (Tied l)
 
 let high_card_kicker (lst : t list) =
   let lst = List.map (fun x -> sort_and_rev x) lst in
@@ -521,7 +560,6 @@ let pair_kicker (lst : t list) =
         List.filter (fun x -> single_compare (C winf) x <> 0) x)
       lst
   in
-  let hand = List.map (fun x -> sort_and_rev x) hand in
   let hand =
     List.map (fun x -> List.map (fun x -> extract_value x) x) hand
   in
@@ -589,7 +627,7 @@ let rec break_tie (lst : t list) (rank : int) : t =
       in
       let extracted = list_matching_extract mapping_list lst in
       if rank = 1 then pair_kicker extracted
-      else if rank = 2 then two_pair_secondary_comparison extracted
+      else if rank = 2 then two_pair_kicker extracted
       else raise (Tied extracted)
 
 let highest_hand_helper (lst : t list) =
