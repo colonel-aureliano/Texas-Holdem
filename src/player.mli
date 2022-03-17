@@ -1,7 +1,6 @@
 type player
 
 exception InsufficientFund
-exception EmptyPlayer of player
 
 val create_player : string -> int -> Card.t -> player
 (** [create_player name wealth cards] returns a player with name as
@@ -11,9 +10,6 @@ val name : player -> string
 val wealth : player -> int
 val amount_placed : player -> int
 val cards : player -> Card.t
-
-val equal : player -> player -> bool
-(** if 2 players have the same name*)
 
 val set_cards : player -> Card.t -> player
 (** [set_cards player cards] returns [player] possessed with [cards]. *)

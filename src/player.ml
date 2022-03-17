@@ -6,7 +6,6 @@ type player = {
 }
 
 exception InsufficientFund
-exception EmptyPlayer of player
 
 let create_player
     (input_name : string)
@@ -24,13 +23,7 @@ let wealth player = player.wealth
 let amount_placed player = player.amount_placed_on_table
 let cards player = player.cards
 let set_cards player cards = { player with cards }
-
-let set_wealth player amount = 
-  {
-    player with 
-    wealth = amount;
-  }
-    
+let set_wealth player amount = { player with wealth = amount }
 let remove_cards player = { player with cards = [] }
 
 let deduct player amount =
@@ -43,4 +36,3 @@ let deduct player amount =
     }
 
 let add player amount = { player with wealth = player.wealth + amount }
-let equal p1 p2 = p1.name = p2.name

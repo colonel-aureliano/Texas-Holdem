@@ -1,7 +1,6 @@
 open Player
 
 type game = {
-  players : player Queue.t;
   active_players : player Queue.t;
   current_deck : Card.t;
   cards_on_table : Card.t;
@@ -10,9 +9,8 @@ type game = {
   small_blind_amt : int;
   current_bet : int;
   consecutive_calls : int;
-  (* betting_round : int; *)
   game_over : bool;
-  garbage_collection : player Queue.t;
+  fold_collection : player Queue.t;
 }
 (** The abstract type of values representing game. *)
 
@@ -50,18 +48,15 @@ val get_all_players : game -> player list
 val winner_player_with_pot_added : game -> player
 (** only for degugging, delete after done*)
 
-val update_fold_state : game -> game
-(** only for degugging, delete after done*)
-
 val queue_to_list : 'a Queue.t -> 'a list
 (** only for degugging, delete after done*)
 
 val mutable_pop : 'a Queue.t -> 'a Queue.t
 (** only for degugging, delete after done*)
 
-val card_to_players : player Queue.t -> Card.t -> int -> player Queue.t * Card.t
+val card_to_players :
+  player Queue.t -> Card.t -> int -> player Queue.t * Card.t
 (** only for degugging, delete after done*)
 
 val player_shift : player Queue.t -> int -> player Queue.t
-
 val init_helper : player Queue.t -> int -> game
