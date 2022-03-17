@@ -12,6 +12,7 @@ type game = {
   current_bet : int;
   consecutive_calls : int;
   game_over : bool;
+  garbage_collection : player Queue.t;
 }
 
 type command =
@@ -99,6 +100,7 @@ let init_helper players_queue small_blind_amt =
     current_bet = 2 * small_blind_amt;
     consecutive_calls = 0;
     game_over = false;
+    garbage_collection = Queue.create ();
   }
 
 (** [draw_card] draws num of cards from the current deck and places it
@@ -195,6 +197,12 @@ let winner_player_with_pot_added g =
     List.nth player_list highest_hand_index
     |> reverse_arg_order add g.pot
 
+let mutable_transfer q1 q2 =
+  let myq1 = Queue.copy q1 in
+  let myq2 = Queue.copy q2 in
+  Queue.transfer myq1 myq2;
+  myq2
+
 (** [pot distrubutor g] distributes the pot to the winning player in
     game g*)
 let pot_distributer g =
@@ -206,7 +214,10 @@ let pot_distributer g =
        (* print_string (Player.name winner); print_endline " determined
           by winner_player_with_pot_added for Debugging \ winner
           determination.\n"; *)
-       let arranged_players = rearrange g.players winner in
+       let wealth_updated_players =
+         mutable_transfer g.garbage_collection g.active_players
+       in
+       let arranged_players = rearrange wealth_updated_players winner in
        rearrange
          (mutable_push winner (mutable_pop arranged_players))
          winner);
@@ -214,9 +225,12 @@ let pot_distributer g =
 
 (** [update_fold_state g] returns the game state after shifting the
     small_blind by a player and removing the player who folded*)
-let update_fold_state (g : game) : game = 
-  let curr_player = Queue.peek g.active_players in 
-  let updated_players = update_player_status g.players curr_player in
+let update_fold_state (g : game) : game =
+  let curr_player = Queue.peek g.active_players in
+  let updated_players = update_player_status g.players curr_player
+    (* mutable_push curr_player
+      (mutable_pop (rearrange (Queue.copy g.players) curr_player)) *)
+  in
   let new_active_players = mutable_pop (Queue.copy g.active_players) in
   let new_sb =
     if curr_player = g.small_blind then Queue.peek new_active_players
@@ -224,7 +238,13 @@ let update_fold_state (g : game) : game =
   in
   print_endline "next player after fold is ";
   print_string (Player.name (Queue.peek new_active_players));
-  { g with players = updated_players; active_players = new_active_players; small_blind = new_sb }
+  {
+    g with
+    active_players = new_active_players;
+    small_blind = new_sb;
+    players = updated_players;
+    garbage_collection = mutable_push curr_player g.garbage_collection;
+  }
 
 (** [execute_command g] returns the game state after executing the
     player's next move*)

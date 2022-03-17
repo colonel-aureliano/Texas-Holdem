@@ -323,6 +323,7 @@ let g =
     (* betting_round = 0; *)
     consecutive_calls = 0;
     game_over = false;
+    garbage_collection = Queue.create ()
   }
 
 let player_queue_equal q1 q2 : bool = 
@@ -421,7 +422,6 @@ let winner_tests =
 
 let create_game_tests = 
   [ 
-    create_game_test "2-players create game" player_list true g;
     init_helper_test "2 player game init" players_queue true g
   ]
 

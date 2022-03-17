@@ -12,6 +12,7 @@ type game = {
   consecutive_calls : int;
   (* betting_round : int; *)
   game_over : bool;
+  garbage_collection : player Queue.t;
 }
 (** The abstract type of values representing game. *)
 
