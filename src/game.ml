@@ -241,20 +241,20 @@ let execute_command (g : game) (cmd : command) : game =
           updated_g.consecutive_calls
           = Queue.length g.active_players - 1
         then
-          let rearranged_p =
-            rearrange updated_g.active_players updated_g.small_blind
-          in
           if List.length g.cards_on_table = 5 then
-            {
-              (* let _ = 0 in print_endline " card on table are \n";
-                 print_string (Card.to_string g.cards_on_table); *)
-              (pot_distributer updated_g)
-              with
-              game_over = true;
-            }
+            pot_distributer updated_g
+            (* up to here doesn't break after fold *)
           else
             let num_card =
               if List.length g.cards_on_table = 0 then 3 else 1
+            in
+            let rearranged_p =
+              rearrange updated_g.active_players
+                (if
+                 List.mem updated_g.small_blind
+                   (updated_g.active_players |> queue_to_list)
+                then updated_g.small_blind
+                else Queue.peek updated_g.active_players)
             in
             draw_card
               {
@@ -276,14 +276,17 @@ let execute_command (g : game) (cmd : command) : game =
       }
   | Fold ->
       let updated_g = update_fold_state g in
-      if Queue.length updated_g.active_players = 1 then
-        { (pot_distributer updated_g) with game_over = true }
-      else if
-        updated_g.consecutive_calls = Queue.length g.active_players
-      then
-        if List.length g.cards_on_table = 5 then
-          { (pot_distributer updated_g) with game_over = true }
-        else if List.length g.cards_on_table = 0 then
-          draw_card { updated_g with consecutive_calls = 0 } 3
-        else draw_card { updated_g with consecutive_calls = 0 } 1
+      let active_player_count = Queue.length updated_g.active_players in
+      let consecutive_call_count = updated_g.consecutive_calls in
+      let num_cards_on_table = List.length g.cards_on_table in
+
+      if
+        active_player_count = 1
+        || active_player_count = consecutive_call_count
+           && num_cards_on_table = 5
+      then pot_distributer updated_g
+      else if active_player_count = consecutive_call_count then
+        draw_card
+          { updated_g with consecutive_calls = 0 }
+          (if num_cards_on_table = 0 then 3 else 1)
       else updated_g
