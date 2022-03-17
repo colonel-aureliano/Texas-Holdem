@@ -340,12 +340,6 @@ let filter_by_occurrences (lst : int list) (n : int) : int list =
   let lst = List.filter (fun x -> snd x = n) lst in
   fst (List.split lst)
 
-let rec find_index_of_element e list index =
-  match list with
-  | [] -> -1
-  | h :: t ->
-      if h = e then index else find_index_of_element e t (index + 1)
-
 exception Tied of t list
 
 let winning_factor (hand : t) (rank : int) =
@@ -485,16 +479,56 @@ let rec check_unique (lst : int list) (ele : int) (seen : bool) =
       else if ele = h && seen then false
       else check_unique t ele seen
 
+let high_card_break_tie (lst : t list) =
+  let lst =
+    List.map (fun x -> List.rev (List.sort single_compare x)) lst
+  in
+  let hand =
+    List.map
+      (fun x ->
+        match x with
+        | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
+        | _ -> failwith "")
+      lst
+  in
+  let temp =
+    List.fold_left
+      (fun curr_max x ->
+        if List.compare single_compare x curr_max > 0 then x
+        else curr_max)
+      [] hand
+  in
+  let res =
+    List.filter
+      (fun x ->
+        let l =
+          match x with
+          | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
+          | _ -> failwith ""
+        in
+        List.equal (fun x y -> single_compare x y = 0) temp l)
+      lst
+  in
+  if List.length res > 1 then raise (Tied res) else List.hd res
+
 let rec break_tie (lst : t list) (rank : int) : t =
   (* elements in [lst] are tied at [rank], returns ele in [lst] that win
      out or raise Tied *)
   if rank = 9 then raise (Tied lst)
+  else if rank = 0 then high_card_break_tie lst
   else
     let winning_factors =
       List.map (fun x -> winning_factor x rank) lst
     in
     let max = max_of_list winning_factors in
     if check_unique winning_factors max false then
+      let rec find_index_of_element e list index =
+        match list with
+        | [] -> -1
+        | h :: t ->
+            if h = e then index
+            else find_index_of_element e t (index + 1)
+      in
       let index = find_index_of_element max winning_factors 0 in
       List.nth lst index
     else
@@ -509,19 +543,6 @@ let rec break_tie (lst : t list) (rank : int) : t =
       let extracted = list_matching_extract mapping_list lst in
       if rank = 2 then two_pair_secondary_comparison extracted
       else raise (Tied extracted)
-
-let rec high_card_extract (lst : t list) =
-  (* extracts the high card for each element of lst *)
-  match lst with
-  | [] -> []
-  | h :: t -> (high_card h, h) :: high_card_extract t
-
-let rec high_card_determine_tie lst tied_at =
-  match lst with
-  | [] -> []
-  | h :: t ->
-      if fst h = tied_at then snd h :: high_card_determine_tie t tied_at
-      else high_card_determine_tie t tied_at
 
 let highest_hand_helper (lst : t list) =
   if List.length lst = 1 then List.hd lst
@@ -539,26 +560,19 @@ let highest_hand_helper (lst : t list) =
            lst)
     in
     if fst (List.hd lst) != fst (List.nth lst 1) then snd (List.hd lst)
-    else if fst (List.hd lst) = 0 then
-      let lst = high_card_extract (snd (List.split lst)) in
-      let lst =
-        List.rev
-          (List.sort
-             (fun x y ->
-               if fst x > fst y then 1
-               else if fst x = fst y then 0
-               else -1)
-             lst)
-      in
-      if fst (List.hd lst) != fst (List.nth lst 1) then
-        snd (List.hd lst)
-      else
-        raise (Tied (high_card_determine_tie lst (fst (List.hd lst))))
     else
       let lst = List.filter (fun x -> fst x = fst (List.hd lst)) lst in
       break_tie (snd (List.split lst)) (fst (List.hd lst))
 
 exception Tie of int list
+
+let rec find_index_of_element e list index =
+  match list with
+  | [] -> -1
+  | h :: t ->
+      if List.sort single_compare h = List.sort single_compare e then
+        index
+      else find_index_of_element e t (index + 1)
 
 let index_of_highest_hand (lst : t list) =
   try
