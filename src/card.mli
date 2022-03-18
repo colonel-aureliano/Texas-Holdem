@@ -30,18 +30,22 @@ val equal : card -> card -> bool
 (** [equal c1 c2] returns true if suit of c1 equals suit of c2 and
     number of c1 equals number of c2, false otherwise. *)
 
+val rank_of_hand : t -> int
+(** [rank_of_hand hand] returns the rank of [hand] according to texas
+    holdem card ranking rules as specified in
+    docs/card_ranking_rules.txt. *)
+
 exception Tie of int list
 
 val index_of_highest_hand : t list -> int
-(** [index_of_highest_hand list_of_list_card] returns the index of the
-    highest hand in [list_of_list_card], using texas holdem card ranking
-    rules.
+(** [index_of_highest_hand card_list_list] returns the index of the
+    highest hand in [card_list_list], using texas holdem card ranking
+    rules as specified in docs/card_ranking_rules.txt.
 
-    Requires: for any element e in [list_of_list_card], List.length e =
-    7
+    Requires: for any element e in [card_list_list], List.length e = 7
 
-    Raises: [Tie] of \[i1,i2 ... in \] when hands of index i1, i2 ... in
-    in [list_of_list_card] are tied. *)
+    Raises: [Tie] of \[i1 ... in \] when hands at index i1 ... in in
+    [card_list_list] are tied. *)
 
 (********************************************************************
     Below are mainly for testing purposes.

@@ -1,4 +1,4 @@
-This text file explains what card ranking rules are used in this game.
+This txt file explains what card ranking rules are used in this game.
 
 Poker hand ranking:
 (sorted from least to greatest, an example is provided next to each kind)
@@ -34,9 +34,16 @@ A straight flush consists of any straight that is all the same suit.
 A royal flush consists of A, K, Q, J and 10, all of the same suit.
 
 
-Note that if more than one hand is tied at the same poker hand, refined comparison will be used.
+Note that if more than one hand is tied at the same rank, kicker comparison will be used.
+
+A kicker, also called a side card, is a card in a poker hand that does not itself take part in determining the rank of the hand, but that may be used to break ties between hands of the same rank.
+For example, the hand Q-Q-10-5-2 is ranked as a pair of queens. The 10, 5, and 2 are kickers.
+This hand would defeat any hand with no pair, or with a lower-ranking pair, and lose to any higher-ranking hand. 
+But the kickers can be used to break ties between other hands that also have a pair of queens.
+For example, Q-Q-K-3-2 would win (because its K kicker outranks the 10), but Q-Q-10-4-3 would lose (because its 4 is outranked by the 5).
 
 
 References: 
 https://upswingpoker.com/poker-hands-rankings/ 
 https://youtu.be/JhhyaD1npbM.
+https://en.wikipedia.org/wiki/Kicker_(poker)

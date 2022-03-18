@@ -292,24 +292,6 @@ let has_royal_flush (hand : t) =
   in
   has_royal_flush_helper hand
 
-let rec rank_hands (lst : t list) =
-  match lst with
-  | [] -> []
-  | h :: t ->
-      let rank =
-        if has_royal_flush h then 9
-        else if has_straight_flush h then 8
-        else if has_four_of_a_kind h then 7
-        else if has_full_house h then 6
-        else if has_flush h then 5
-        else if has_straight h then 4
-        else if has_three_of_a_kind h then 3
-        else if has_two_pair h then 2
-        else if has_pair h then 1
-        else 0
-      in
-      (rank, h) :: rank_hands t
-
 let single_value_copmare x y = single_compare (C x) (C y)
 
 let max_of_list (lst : int list) =
@@ -783,6 +765,23 @@ let rec break_tie (lst : t list) (rank : int) : t =
       else if rank = 5 then flush_kicker extracted
       else if rank = 7 then four_of_a_kind_kicker extracted
       else raise (Tied extracted)
+
+let rank_of_hand (hand : t) =
+  if has_royal_flush hand then 9
+  else if has_straight_flush hand then 8
+  else if has_four_of_a_kind hand then 7
+  else if has_full_house hand then 6
+  else if has_flush hand then 5
+  else if has_straight hand then 4
+  else if has_three_of_a_kind hand then 3
+  else if has_two_pair hand then 2
+  else if has_pair hand then 1
+  else 0
+
+let rec rank_hands (lst : t list) =
+  match lst with
+  | [] -> []
+  | h :: t -> (rank_of_hand h, h) :: rank_hands t
 
 let highest_hand_helper (lst : t list) =
   if List.length lst = 1 then List.hd lst
