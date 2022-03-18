@@ -37,8 +37,8 @@ val index_of_highest_hand : t list -> int
     highest hand in [list_of_list_card], using texas holdem card ranking
     rules.
 
-    Requires: 1) for any element e in [list_of_list_card], List.length e
-    = 7; 2) all elements in e are unique
+    Requires: for any element e in [list_of_list_card], List.length e =
+    7
 
     Raises: [Tie] of \[i1,i2 ... in \] when hands of index i1, i2 ... in
     in [list_of_list_card] are tied. *)
