@@ -64,9 +64,9 @@ let single_compare (card1 : card) (card2 : card) =
   let x1 = extract_value card1 in
   let x2 = extract_value card2 in
   match (x1, x2) with
-  | 1, 1 -> 0
-  | 1, _ -> 1
-  | _, 1 -> -1
+  | 1, 1 | 14, 14 -> 0
+  | 1, _ | 14, _ -> 1
+  | _, 1 | _, 14 -> -1
   | _ -> if x1 > x2 then 1 else if x1 < x2 then -1 else 0
 
 let equal (card1 : card) (card2 : card) =
@@ -460,13 +460,102 @@ let winning_factor (hand : t) (rank : int) =
       else curr_max
   | _ -> 0
 
-let rec check_unique (lst : int list) (ele : int) (seen : bool) =
+let rec check_unique lst ele seen =
+  (* tests if ele is unique in lst *)
   match lst with
   | [] -> seen
   | h :: t ->
       if ele = h && not seen then check_unique t ele true
       else if ele = h && seen then false
       else check_unique t ele seen
+
+let rec find_index_of_element e list index =
+  match list with
+  | [] -> -1
+  | h :: t ->
+      if h = e then index else find_index_of_element e t (index + 1)
+
+let high_card_kicker (lst : t list) =
+  let lst = List.map sort_and_rev lst in
+  let list = List.map (fun x -> List.map extract_value x) lst in
+  let list =
+    List.map
+      (fun x ->
+        match x with
+        | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
+        | _ -> failwith "")
+      list
+  in
+  let temp =
+    List.fold_left
+      (fun curr_max x ->
+        if List.compare single_value_copmare x curr_max > 0 then x
+        else curr_max)
+      [] list
+  in
+  if check_unique list temp false then
+    let index = find_index_of_element temp list 0 in
+    List.nth lst index
+  else
+    raise
+      (Tied
+         (List.filter
+            (fun x ->
+              let x = List.map extract_value x in
+              let x =
+                match x with
+                | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
+                | _ -> failwith ""
+              in
+              x = temp)
+            lst))
+
+let pair_kicker (lst : t list) =
+  let lst = List.map sort_and_rev lst in
+  let list =
+    List.map
+      (fun x ->
+        let winf = winning_factor x 1 in
+        List.filter (fun x -> single_compare (C winf) x <> 0) x)
+      lst
+  in
+  let list = List.map (fun x -> List.map extract_value x) list in
+  let list =
+    List.map
+      (fun x ->
+        match x with
+        | a :: b :: c :: _ -> [ a; b; c ]
+        | _ -> failwith "")
+      list
+  in
+  let temp =
+    List.fold_left
+      (fun curr_max x ->
+        if List.compare single_value_copmare x curr_max > 0 then x
+        else curr_max)
+      [] list
+  in
+  if check_unique list temp false then
+    let index = find_index_of_element temp list 0 in
+    List.nth lst index
+  else
+    raise
+      (Tied
+         (List.filter
+            (fun x ->
+              let x =
+                let winf = winning_factor x 1 in
+                List.filter (fun x -> single_compare (C winf) x <> 0) x
+              in
+              let x = sort_and_rev x in
+              let x = List.map (fun x -> extract_value x) x in
+              let x =
+                match x with
+                | a :: b :: c :: _ -> [ a; b; c ]
+                | _ -> failwith ""
+              in
+              List.equal (fun x y -> compare x y = 0) temp x)
+            lst))
 
 let two_pair_kicker (lst : t list) : t =
   let lst = List.map (fun x -> sort_and_rev x) lst in
@@ -480,12 +569,6 @@ let two_pair_kicker (lst : t list) : t =
   let winning_factors = List.map (fun x -> winning_factor x 1) hand in
   let max = max_of_list winning_factors in
   if check_unique winning_factors max false then
-    let rec find_index_of_element e list index =
-      match list with
-      | [] -> -1
-      | h :: t ->
-          if h = e then index else find_index_of_element e t (index + 1)
-    in
     let index = find_index_of_element max winning_factors 0 in
     List.nth lst index
   else
@@ -521,127 +604,148 @@ let two_pair_kicker (lst : t list) : t =
       in
       raise (Tied l)
 
-let high_card_kicker (lst : t list) =
-  let lst = List.map (fun x -> sort_and_rev x) lst in
-  let hand =
-    List.map
-      (fun x ->
-        match x with
-        | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
-        | _ -> failwith "")
-      lst
-  in
-  let temp =
-    List.fold_left
-      (fun curr_max x ->
-        if List.compare single_compare x curr_max > 0 then x
-        else curr_max)
-      [] hand
-  in
-  let res =
-    List.filter
-      (fun x ->
-        let l =
-          match x with
-          | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
-          | _ -> failwith ""
-        in
-        List.equal (fun x y -> single_compare x y = 0) temp l)
-      lst
-  in
-  if List.length res > 1 then raise (Tied res) else List.hd res
-
-let pair_kicker (lst : t list) =
-  let lst = List.map (fun x -> sort_and_rev x) lst in
-  let hand =
-    List.map
-      (fun x ->
-        let winf = winning_factor x 1 in
-        List.filter (fun x -> single_compare (C winf) x <> 0) x)
-      lst
-  in
-  let hand =
-    List.map (fun x -> List.map (fun x -> extract_value x) x) hand
-  in
-  let hand =
-    List.map
-      (fun x ->
-        match x with
-        | a :: b :: c :: _ -> [ a; b; c ]
-        | _ -> failwith "")
-      hand
-  in
-  let temp =
-    List.fold_left
-      (fun curr_max x ->
-        if List.compare single_value_copmare x curr_max > 0 then x
-        else curr_max)
-      [] hand
-  in
-  let res =
-    List.filter
-      (fun x ->
-        let x =
-          let winf = winning_factor x 1 in
-          List.filter (fun x -> single_compare (C winf) x <> 0) x
-        in
-        let x = sort_and_rev x in
-        let x = List.map (fun x -> extract_value x) x in
-        let x =
-          match x with
-          | a :: b :: c :: _ -> [ a; b; c ]
-          | _ -> failwith ""
-        in
-        List.equal (fun x y -> compare x y = 0) temp x)
-      lst
-  in
-  if List.length res > 1 then raise (Tied res) else List.hd res
-
 let three_of_a_kind_kicker (lst : t list) =
   let lst = List.map (fun x -> sort_and_rev x) lst in
-  let hand =
+  let list =
     List.map
       (fun x ->
         let winf = winning_factor x 3 in
         List.filter (fun x -> single_compare (C winf) x <> 0) x)
       lst
   in
-  let hand =
-    List.map (fun x -> List.map (fun x -> extract_value x) x) hand
-  in
-  let hand =
+  let list = List.map (fun x -> List.map extract_value x) list in
+  let list =
     List.map
       (fun x ->
         match x with
         | a :: b :: _ -> [ a; b ]
         | _ -> failwith "")
-      hand
+      list
   in
   let temp =
     List.fold_left
       (fun curr_max x ->
         if List.compare single_value_copmare x curr_max > 0 then x
         else curr_max)
-      [] hand
+      [] list
   in
-  let res =
-    List.filter
+  if check_unique list temp false then
+    let index = find_index_of_element temp list 0 in
+    List.nth lst index
+  else
+    raise
+      (Tied
+         (List.filter
+            (fun x ->
+              let x =
+                let winf = winning_factor x 3 in
+                List.filter (fun x -> single_compare (C winf) x <> 0) x
+              in
+              let x = sort_and_rev x in
+              let x = List.map (fun x -> extract_value x) x in
+              let x =
+                match x with
+                | a :: b :: _ -> [ a; b ]
+                | _ -> failwith ""
+              in
+              List.equal (fun x y -> compare x y = 0) temp x)
+            lst))
+
+let flush_kicker (lst : t list) =
+  let lst = List.map sort_and_rev lst in
+  let list =
+    List.map
       (fun x ->
-        let x =
-          let winf = winning_factor x 3 in
-          List.filter (fun x -> single_compare (C winf) x <> 0) x
-        in
-        let x = sort_and_rev x in
-        let x = List.map (fun x -> extract_value x) x in
-        let x =
-          match x with
-          | a :: b :: _ -> [ a; b ]
-          | _ -> failwith ""
-        in
-        List.equal (fun x y -> compare x y = 0) temp x)
+        let c = snd (has_flush_helper x) in
+        List.filter
+          (fun x ->
+            match x with
+            | C _ -> c = 'C'
+            | D _ -> c = 'D'
+            | S _ -> c = 'S'
+            | H _ -> c = 'H')
+          x)
       lst
   in
-  if List.length res > 1 then raise (Tied res) else List.hd res
+  let list = List.map (fun x -> List.map extract_value x) list in
+  let list =
+    List.map
+      (fun x ->
+        match x with
+        | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
+        | _ -> failwith "")
+      list
+  in
+  let temp =
+    List.fold_left
+      (fun curr_max x ->
+        if List.compare single_value_copmare x curr_max > 0 then x
+        else curr_max)
+      [] list
+  in
+  if check_unique list temp false then
+    let index = find_index_of_element temp list 0 in
+    List.nth lst index
+  else
+    raise
+      (Tied
+         (List.filter
+            (fun x ->
+              let c = snd (has_flush_helper x) in
+              let x =
+                List.filter
+                  (fun x ->
+                    match x with
+                    | C _ -> c = 'C'
+                    | D _ -> c = 'D'
+                    | S _ -> c = 'S'
+                    | H _ -> c = 'H')
+                  x
+              in
+              let x = List.map extract_value x in
+              let x =
+                match x with
+                | a :: b :: c :: d :: e :: _ -> [ a; b; c; d; e ]
+                | _ -> failwith ""
+              in
+              x = temp)
+            lst))
+
+let four_of_a_kind_kicker (lst : t list) =
+  let lst = List.map (fun x -> sort_and_rev x) lst in
+  let list =
+    List.map
+      (fun x ->
+        let winf = winning_factor x 7 in
+        List.filter (fun x -> single_compare (C winf) x <> 0) x)
+      lst
+  in
+  let list = List.map (fun x -> List.map extract_value x) list in
+  let list = List.map (fun x -> [ List.hd x ]) list in
+  let temp =
+    List.fold_left
+      (fun curr_max x ->
+        if List.compare single_value_copmare x curr_max > 0 then x
+        else curr_max)
+      [] list
+  in
+  if check_unique list temp false then
+    let index = find_index_of_element temp list 0 in
+    List.nth lst index
+  else
+    raise
+      (Tied
+         (List.filter
+            (fun x ->
+              let x =
+                let winf = winning_factor x 7 in
+                List.filter (fun x -> single_compare (C winf) x <> 0) x
+              in
+              let x = sort_and_rev x in
+              let x = List.map (fun x -> extract_value x) x in
+              let x = [ List.hd x ] in
+              List.equal (fun x y -> compare x y = 0) temp x)
+            lst))
 
 let rec break_tie (lst : t list) (rank : int) : t =
   (* elements in [lst] are tied at [rank], returns ele in [lst] that win
@@ -676,6 +780,8 @@ let rec break_tie (lst : t list) (rank : int) : t =
       if rank = 1 then pair_kicker extracted
       else if rank = 2 then two_pair_kicker extracted
       else if rank = 3 then three_of_a_kind_kicker extracted
+      else if rank = 5 then flush_kicker extracted
+      else if rank = 7 then four_of_a_kind_kicker extracted
       else raise (Tied extracted)
 
 let highest_hand_helper (lst : t list) =
@@ -700,17 +806,17 @@ let highest_hand_helper (lst : t list) =
 
 exception Tie of int list
 
-let rec find_index_of_element e list index =
+let rec find_index e list index =
   match list with
   | [] -> -1
   | h :: t ->
       if List.sort compare h = List.sort compare e then index
-      else find_index_of_element e t (index + 1)
+      else find_index e t (index + 1)
 
 let index_of_highest_hand (lst : t list) =
   try
     let hand = highest_hand_helper lst in
-    find_index_of_element hand lst 0
+    find_index hand lst 0
   with Tied list ->
-    let l = List.map (fun x -> find_index_of_element x lst 0) list in
+    let l = List.map (fun x -> find_index x lst 0) list in
     raise (Tie l)

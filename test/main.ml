@@ -72,11 +72,17 @@ let hand4_match_2 = [ H 2; S 3; D 4; C 4; H 5; D 10; D 1 ]
 
 let hand5 = [ C 1; C 11; C 5; C 3; C 2; H 8; S 6 ] (* flush *)
 
-let hand5_match = [ C 13; C 5; C 4; C 3; C 2; H 8; S 6 ]
+let hand5_match_0 = [ C 13; C 9; C 8; C 7; C 5; C 2; S 6 ]
 (* flush, lower than hand5 *)
 
-let hand5_kicker = [ C 13; C 6; C 4; C 3; C 2; H 8; S 6 ]
-(* flush, higher than hand5_match *)
+let hand5_match_1 = [ C 13; C 9; C 8; C 7; C 5; C 3; S 6 ]
+(* flush, same as hand5_match_0 *)
+
+let hand5_match_2 = [ D 1; D 11; D 5; D 3; D 2; C 8; H 6 ]
+(* flush, same as hand5 *)
+
+let hand5_kicker = [ C 13; C 10; C 4; C 3; C 2; H 8; S 6 ]
+(* flush, higher than hand5_match_0 and hand5_match_1 *)
 
 let hand6 = [ C 1; D 1; H 1; S 11; C 11; H 9; S 8 ] (* full house *)
 
@@ -111,8 +117,6 @@ let hand9_match = [ C 10; C 13; C 1; C 12; C 11; D 11; D 1 ]
   H 2; H 5; H 8; C 7; S 2; C 6 ] let test3 = [ H 3; H 4; H 5; H 8; D 12;
   S 2; C 6 ] let buggy_hand_0 = [ S 2; H 7; C 12; H 12; C 9; D 1; H 5 ]
   let buggy_hand_1 = [ S 2; H 7; C 12; H 12; C 9; D 2; S 5 ]*)
-
-let temp_tests = []
 
 let card_tests =
   [
@@ -163,10 +167,13 @@ let card_tests =
     index_of_highest_hand_test
       "index_of_highest_hand_test hand3 hand3_kicker"
       [ hand3; hand3_kicker ] 1;
-    (* index_of_highest_hand_test "index_of_highest_hand_test
-       hand5_match hand5_kicker" [ hand5_match; hand5_kicker ] 1;
-       index_of_highest_hand_test "index_of_highest_hand_test hand7
-       hand7_kicker" [ hand7; hand7_kicker ] 0;*)
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand5_match_0 hand5_kicker"
+      [ hand5_match_0; hand5_kicker ]
+      1;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand7 hand7_kicker"
+      [ hand7; hand7_kicker ] 0;
     (* Below are tests for tie or tie breakers. *)
     (* test of high card *)
     index_of_highest_hand_fail_test "0 tie_test hand0 hand0_match"
@@ -203,11 +210,16 @@ let card_tests =
       [ hand4; hand4 ]
       (Tie [ 0; 0 ]);
     (* test of flush *)
-    index_of_highest_hand_test "5 tie_test hand5 hand5_match"
-      [ hand5; hand5_match ] 0;
-    index_of_highest_hand_fail_test "5 tie_test hand5 hand5"
-      [ hand5; hand5 ]
-      (Tie [ 0; 0 ]);
+    index_of_highest_hand_test "5 tie_test hand5 hand5_match_0"
+      [ hand5; hand5_match_0 ]
+      0;
+    index_of_highest_hand_fail_test "5 tie_test hand5 hand5_match_2"
+      [ hand5; hand5_match_2 ]
+      (Tie [ 1; 0 ]);
+    index_of_highest_hand_fail_test
+      "5 tie_test hand5_match_0 hand5_match_1"
+      [ hand5_match_0; hand5_match_1 ]
+      (Tie [ 1; 0 ]);
     (* test of full house *)
     index_of_highest_hand_test
       "6 tie_test hand6 hand6_match_0 hand6_match_1"
@@ -439,9 +451,8 @@ let suite =
   "test suite for texas_holdem"
   >::: List.flatten
          [
-           temp_tests;
-           card_tests
-           (* card_impl_tests *)
+           card_tests;
+           card_impl_tests
            (* winner_tests; get_small_blind_tests; (*
               update_fold_state_tests; *) create_game_tests;
               card_to_players_tests; player_shift_tests;*);
