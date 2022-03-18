@@ -113,13 +113,13 @@ let rec has_straight_helper l =
     let c = b + 1 in
     let d = c + 1 in
     let e = d + 1 in
-    let bool =
+    let boo =
       List.nth l 1 = b
       && List.nth l 2 = c
       && List.nth l 3 = d
       && List.nth l 4 = e
     in
-    if bool then (bool, e) else has_straight_helper (List.tl l)
+    if boo then (boo, e) else has_straight_helper (List.tl l)
 
 let has_straight (hand : t) =
   let hand = List.sort_uniq single_compare hand in
@@ -574,7 +574,8 @@ let pair_kicker (lst : t list) =
   let temp =
     List.fold_left
       (fun curr_max x ->
-        if List.compare compare x curr_max > 0 then x else curr_max)
+        if List.compare single_value_copmare x curr_max > 0 then x
+        else curr_max)
       [] hand
   in
   let res =
@@ -589,6 +590,52 @@ let pair_kicker (lst : t list) =
         let x =
           match x with
           | a :: b :: c :: _ -> [ a; b; c ]
+          | _ -> failwith ""
+        in
+        List.equal (fun x y -> compare x y = 0) temp x)
+      lst
+  in
+  if List.length res > 1 then raise (Tied res) else List.hd res
+
+let three_of_a_kind_kicker (lst : t list) =
+  let lst = List.map (fun x -> sort_and_rev x) lst in
+  let hand =
+    List.map
+      (fun x ->
+        let winf = winning_factor x 3 in
+        List.filter (fun x -> single_compare (C winf) x <> 0) x)
+      lst
+  in
+  let hand =
+    List.map (fun x -> List.map (fun x -> extract_value x) x) hand
+  in
+  let hand =
+    List.map
+      (fun x ->
+        match x with
+        | a :: b :: _ -> [ a; b ]
+        | _ -> failwith "")
+      hand
+  in
+  let temp =
+    List.fold_left
+      (fun curr_max x ->
+        if List.compare single_value_copmare x curr_max > 0 then x
+        else curr_max)
+      [] hand
+  in
+  let res =
+    List.filter
+      (fun x ->
+        let x =
+          let winf = winning_factor x 3 in
+          List.filter (fun x -> single_compare (C winf) x <> 0) x
+        in
+        let x = sort_and_rev x in
+        let x = List.map (fun x -> extract_value x) x in
+        let x =
+          match x with
+          | a :: b :: _ -> [ a; b ]
           | _ -> failwith ""
         in
         List.equal (fun x y -> compare x y = 0) temp x)
@@ -628,6 +675,7 @@ let rec break_tie (lst : t list) (rank : int) : t =
       let extracted = list_matching_extract mapping_list lst in
       if rank = 1 then pair_kicker extracted
       else if rank = 2 then two_pair_kicker extracted
+      else if rank = 3 then three_of_a_kind_kicker extracted
       else raise (Tied extracted)
 
 let highest_hand_helper (lst : t list) =

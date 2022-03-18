@@ -154,16 +154,19 @@ let card_tests =
       [ hand0; hand0_kicker_0; hand0_kicker_1 ]
       2;
     index_of_highest_hand_test
-      "index_of_highest_hand_test hand1 hand1_kicker"
-      [ hand1; hand1_kicker ] 1;
-    (*index_of_highest_hand_test "index_of_highest_hand_test hand2
-      hand2_kicker" [ hand2; hand2_kicker ] 0;
-      index_of_highest_hand_test "index_of_highest_hand_test hand3
-      hand3_kicker" [ hand3; hand3_kicker ] 1;
-      index_of_highest_hand_test "index_of_highest_hand_test hand5_match
-      hand5_kicker" [ hand5_match; hand5_kicker ] 1;
-      index_of_highest_hand_test "index_of_highest_hand_test hand7
-      hand7_kicker" [ hand7; hand7_kicker ] 0;*)
+      "index_of_highest_hand_test hand1 hand1_match_1 hand1_kicker"
+      [ hand1; hand1_match_1; hand1_kicker ]
+      2;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand2 hand2_kicker"
+      [ hand2; hand2_kicker ] 0;
+    index_of_highest_hand_test
+      "index_of_highest_hand_test hand3 hand3_kicker"
+      [ hand3; hand3_kicker ] 1;
+    (* index_of_highest_hand_test "index_of_highest_hand_test
+       hand5_match hand5_kicker" [ hand5_match; hand5_kicker ] 1;
+       index_of_highest_hand_test "index_of_highest_hand_test hand7
+       hand7_kicker" [ hand7; hand7_kicker ] 0;*)
     (* Below are tests for tie or tie breakers. *)
     (* test of high card *)
     index_of_highest_hand_fail_test "0 tie_test hand0 hand0_match"
@@ -178,9 +181,6 @@ let card_tests =
       [ hand1; hand1_match_1; hand1_match_2 ]
       (Tie [ 2; 0 ]);
     (* test of two pair *)
-    index_of_highest_hand_test "2 tie_test hand2 hand2_match_0"
-      [ hand2; hand2_match_0 ]
-      1;
     index_of_highest_hand_test "2 tie_test hand2 hand2_match_1"
       [ hand2; hand2_match_1 ]
       1;
