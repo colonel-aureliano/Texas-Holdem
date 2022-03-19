@@ -52,7 +52,7 @@ val winner_player_with_pot_added : game -> player
 val queue_to_list : 'a Queue.t -> 'a list
 (** only for degugging, delete after done*)
 
-val mutable_pop : 'a Queue.t -> 'a Queue.t
+val immutable_pop : 'a Queue.t -> 'a Queue.t
 (** only for degugging, delete after done*)
 
 val card_to_players :

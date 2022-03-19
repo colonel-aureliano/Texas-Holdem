@@ -22,13 +22,15 @@ type command =
 
 (* BEGINING OF HELPER FUNCTIONS *)
 
-(** [mutable_push] is Queue.push but returns the Queue instead of a unit*)
-let mutable_push x q =
-  Queue.push x q;
-  q
+(** [immutable_push] is Queue.push but returns the Queue instead of a
+    unit*)
+let immutable_push x q =
+  let myq = Queue.copy q in
+  Queue.push x myq;
+  myq
 
-(** [mutable_pop] is Queue.pop but returns the Queue instead of a unit*)
-let mutable_pop q =
+(** [immutable_pop] is Queue.pop but returns the Queue instead of a unit*)
+let immutable_pop q =
   let myq = Queue.copy q in
   ignore (Queue.pop myq);
   myq
@@ -60,7 +62,7 @@ let players_to_hands (p : player list) : Card.t list =
     InsufficientFund. *)
 let player_shift queue amt =
   let p = Queue.peek queue in
-  mutable_push (deduct p amt) queue |> mutable_pop
+  immutable_push (deduct p amt) queue |> immutable_pop
 
 (** rearrange rotate the players in the queue until the first element is
     has the name of sb *)
@@ -199,7 +201,7 @@ let pot_distributer g =
       (let winner = winner_player_with_pot_added g in
        let arranged_players = rearrange g.active_players winner in
        rearrange
-         (mutable_push winner (mutable_pop arranged_players))
+         (immutable_push winner (immutable_pop arranged_players))
          winner);
   }
 
@@ -246,8 +248,10 @@ let execute_command (g : game) (cmd : command) : game =
         {
           g with
           fold_collection =
-            mutable_push (Queue.peek g.active_players) g.fold_collection;
-          active_players = mutable_pop g.active_players;
+            immutable_push
+              (Queue.peek g.active_players)
+              g.fold_collection;
+          active_players = immutable_pop g.active_players;
         }
       in
       if Queue.length updated_g.active_players = 1 then
