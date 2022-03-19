@@ -59,7 +59,8 @@ let players_to_hands (p : player list) : Card.t list =
     from its wealth and push it to the back of the queue. Raise
     InsufficientFund. *)
 let player_shift queue amt =
-  mutable_push (deduct (Queue.pop queue) amt) queue
+  let p = Queue.peek queue in
+  mutable_push (deduct p amt) queue |> mutable_pop
 
 (** rearrange rotate the players in the queue until the first element is
     has the name of sb *)
