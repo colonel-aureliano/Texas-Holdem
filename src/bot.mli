@@ -1,1 +1,0 @@
-val next_move : Card.t -> Card.t -> Game.command
