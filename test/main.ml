@@ -10,6 +10,12 @@ let index_of_highest_hand_test
   name >:: fun _ ->
   assert_equal expected_output (index_of_highest_hand input)
 
+let rank_of_hand_test
+    (name : string)
+    (input : card list)
+    (expected_output : int) =
+  name >:: fun _ -> assert_equal expected_output (rank_of_hand input)
+
 let index_of_highest_hand_fail_test
     (name : string)
     (input : card list list)
@@ -120,9 +126,46 @@ let hand9_match = [ C 10; C 13; C 1; C 12; C 11; D 11; D 1 ]
 
 let card_tests =
   [
-    (*index_of_highest_hand_test "testing buggy hands" [ buggy_hand_0;
-      buggy_hand_1 ] 1; index_of_highest_hand_test "testing game
-      outputs" [ test1; test2; test3 ] 2;*)
+    rank_of_hand_test "hand0_length_5" [ H 1; D 12; D 10; C 8; D 4 ] 0;
+    rank_of_hand_test "hand0_length_6"
+      [ H 1; D 12; D 10; C 8; D 4; S 3 ]
+      0;
+    rank_of_hand_test "hand1_length_5" [ H 1; S 1; H 10; S 9; D 6 ] 1;
+    rank_of_hand_test "hand1_length_6"
+      [ H 1; S 1; H 10; S 9; D 6; H 3 ]
+      1;
+    rank_of_hand_test "hand2_length_5" [ D 10; H 2; S 6; C 2; S 10 ] 2;
+    rank_of_hand_test "hand2_length_6"
+      [ D 10; H 2; S 6; C 1; C 2; S 10 ]
+      2;
+    rank_of_hand_test "hand3_length_5" [ D 2; H 2; S 6; C 3; C 2 ] 3;
+    rank_of_hand_test "hand3_length_6"
+      [ C 5; D 2; H 2; S 6; C 3; C 2 ]
+      3;
+    rank_of_hand_test "hand4_length_5" [ H 10; S 9; C 8; S 7; H 11 ] 4;
+    rank_of_hand_test "hand4_length_6"
+      [ H 10; S 9; C 8; S 7; H 2; H 11 ]
+      4;
+    rank_of_hand_test "hand5_length_5" [ C 1; C 11; C 5; C 3; C 2 ] 5;
+    rank_of_hand_test "hand5_length_6"
+      [ C 1; C 11; C 5; C 3; C 2; H 8 ]
+      5;
+    rank_of_hand_test "hand6_length_5" [ C 1; D 1; H 1; S 11; C 11 ] 6;
+    rank_of_hand_test "hand6_length_6"
+      [ C 1; D 1; H 1; S 11; C 11; H 9 ]
+      6;
+    rank_of_hand_test "hand7_length_5" [ C 5; D 5; C 2; H 5; S 5 ] 7;
+    rank_of_hand_test "hand7_length_6"
+      [ C 5; C 2; C 3; D 5; H 5; S 5 ]
+      7;
+    rank_of_hand_test "hand8_length_5" [ C 9; C 10; C 11; C 12; C 13 ] 8;
+    rank_of_hand_test "hand8_length_6"
+      [ C 9; C 10; S 8; C 11; C 12; C 13 ]
+      8;
+    rank_of_hand_test "hand9_length_5" [ D 10; D 13; D 1; D 12; D 11 ] 9;
+    rank_of_hand_test "hand9_length_6"
+      [ D 10; D 13; C 11; D 1; D 12; D 11 ]
+      9;
     index_of_highest_hand_test
       "index_of_highest_hand_test hand4_match_1 hand4_match_2"
       [ hand4_match_1; hand4_match_2 ]
@@ -241,7 +284,10 @@ let card_tests =
     (* test of royal flush *)
     index_of_highest_hand_fail_test "9 tie_test hand9 hand9_match"
       [ hand9; hand9_match ]
-      (Tie [ 1; 0 ]);
+      (Tie [ 1; 0 ])
+    (*index_of_highest_hand_test "testing buggy hands" [ buggy_hand_0;
+      buggy_hand_1 ] 1; index_of_highest_hand_test "testing game
+      outputs" [ test1; test2; test3 ] 2;*);
   ]
 
 let single_compare_test
@@ -261,25 +307,22 @@ let f_test
 
 let card_impl_tests =
   [
-    single_compare_test "single_compare_test\n   greater" (C 1) (H 2) 1;
-    single_compare_test "single_compare_test\n   lesser" (D 5) (S 13)
-      ~-1;
-    single_compare_test "single_compare_test\n   equal 1" (H 13) (H 13)
-      0;
-    single_compare_test "single_compare_test\n   equal 2" (H 13) (C 13)
-      0;
+    single_compare_test "single_compare_test greater" (C 1) (H 2) 1;
+    single_compare_test "single_compare_test lesser" (D 5) (S 13) ~-1;
+    single_compare_test "single_compare_test equal 1" (H 13) (H 13) 0;
+    single_compare_test "single_compare_test equal 2" (H 13) (C 13) 0;
     f_test "has_pair_test hand1" has_pair hand3 true;
     f_test "has_pair_test hand2" has_pair hand2 true;
     f_test "has_pair_test hand5" has_pair hand5 false;
-    f_test "has_pair_test\n   hand7" has_pair hand7 true;
+    f_test "has_pair_test hand7" has_pair hand7 true;
     f_test "has_two_pair_test hand1" has_two_pair hand3 false;
     f_test "has_two_pair_test hand2" has_two_pair hand2 true;
     f_test "has_two_pair_test hand5" has_two_pair hand5 false;
     f_test "has_two_pair_test hand7" has_two_pair hand7 false;
     f_test "has_three_of_a_kind_test hand1" has_three_of_a_kind hand3
       true;
-    f_test "has_three_of_a_kind_test\n   hand2" has_three_of_a_kind
-      hand2 false;
+    f_test "has_three_of_a_kind_test hand2" has_three_of_a_kind hand2
+      false;
     f_test "has_three_of_a_kind_test hand5" has_three_of_a_kind hand5
       false;
     f_test "has_three_of_a_kind_test hand7" has_three_of_a_kind hand7
@@ -290,9 +333,8 @@ let card_impl_tests =
       false;
     f_test "has_four_of_a_kind_test hand5" has_four_of_a_kind hand5
       false;
-    f_test "has_four_of_a_kind_test\n   hand7" has_four_of_a_kind hand7
-      true;
-    f_test "has_four_of_a_kind_test\n   hand8" has_four_of_a_kind hand8
+    f_test "has_four_of_a_kind_test hand7" has_four_of_a_kind hand7 true;
+    f_test "has_four_of_a_kind_test hand8" has_four_of_a_kind hand8
       false;
     f_test "has_four_of_a_kind_test hand6" has_four_of_a_kind hand6
       false;
@@ -300,7 +342,7 @@ let card_impl_tests =
       false;
     f_test "has_four_of_a_kind_test hand6_match_1" has_four_of_a_kind
       hand6_match_1 false;
-    f_test "has_straight_test\n   hand8" has_straight hand8 true;
+    f_test "has_straight_test hand8" has_straight hand8 true;
     f_test "has_straight_test hand7" has_straight hand7 false;
     f_test "has_straight_test hand5" has_straight hand5 false;
     f_test "has_straight_test hand2" has_straight hand2 false;

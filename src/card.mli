@@ -26,14 +26,12 @@ val n_random_card : t -> int -> t * t
 
     Requires: [amount] >= 0 && [amount] <= (List.length [deck]). *)
 
-val equal : card -> card -> bool
-(** [equal c1 c2] returns true if suit of c1 equals suit of c2 and
-    number of c1 equals number of c2, false otherwise. *)
-
 val rank_of_hand : t -> int
 (** [rank_of_hand hand] returns the rank of [hand] according to texas
     holdem card ranking rules as specified in
-    docs/card_ranking_rules.txt. *)
+    docs/card_ranking_rules.txt.
+
+    Requires: 5 <= [List.length hand] and [List.length hand] <= 7. *)
 
 exception Tie of int list
 
@@ -42,7 +40,8 @@ val index_of_highest_hand : t list -> int
     highest hand in [card_list_list], using texas holdem card ranking
     rules as specified in docs/card_ranking_rules.txt.
 
-    Requires: for any element e in [card_list_list], List.length e = 7
+    Requires: for any element e in [card_list_list], [List.length e] =
+    7.
 
     Raises: [Tie] of \[i1 ... in \] when hands at index i1 ... in in
     [card_list_list] are tied. *)
@@ -50,6 +49,10 @@ val index_of_highest_hand : t list -> int
 (********************************************************************
     Below are mainly for testing purposes.
  ********************************************************************)
+
+val equal : card -> card -> bool
+(** [equal c1 c2] returns true if suit of c1 equals suit of c2 and
+    number of c1 equals number of c2, false otherwise. *)
 
 val single_compare : card -> card -> int
 (** [compare card1 card2] returns 1 if [card1] is larger than [card2]

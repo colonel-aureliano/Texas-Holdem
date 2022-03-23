@@ -177,19 +177,19 @@ let has_flush_helper (hand : t) =
 
 let has_flush (hand : t) = fst (has_flush_helper hand)
 
-let rec has_full_house_helper l b =
-  match l with
-  | h :: t ->
-      if List.mem h t then
-        b
-        ||
-        let rest = List.filter (fun x -> x != h) t in
-        List.length rest > 0
-      else has_full_house_helper t true
-  | _ -> false
-
 let has_full_house (hand : t) =
   let l = determine_pair hand in
+  let rec has_full_house_helper l b =
+    match l with
+    | h :: t ->
+        if List.mem h t then
+          b
+          ||
+          let rest = List.filter (fun x -> x != h) t in
+          List.length rest > 0
+        else has_full_house_helper t true
+    | _ -> false
+  in
   has_full_house_helper l false
 
 let has_four_of_a_kind (hand : t) =
