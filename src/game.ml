@@ -330,5 +330,83 @@ let get_legal_moves (g : game) : string list =
     else moves
   else moves
 
-let save_game game = failwith "unimplemented"
-let read_game string = failwith "unimplemented"
+let player_to_string (p : player) : string =
+  "      \"name\": " ^ "\"" ^ Player.name p ^ "\"" ^ ",\n"
+  ^ "      \"wealth\": "
+  ^ string_of_int (Player.wealth p)
+  ^ ",\n" ^ "      \"amount_placed\": "
+  ^ string_of_int (Player.amount_placed p)
+  ^ ",\n" ^ "      \"cards\": " ^ "\""
+  ^ Card.to_string (Player.cards p)
+  ^ "\"" ^ ",\n" ^ "      \"position\": "
+  ^ string_of_int (Player.position p)
+
+let save_game (g : game) : bool =
+  let file = "texas_holdem.json" in
+  try
+    let _ =
+      let oc = open_out file in
+      Printf.fprintf oc "%s\n" "{";
+      Printf.fprintf oc "%s\n" "  \"active_players\": [";
+      Printf.fprintf oc "%s\n" "    {";
+      let active_players =
+        String.concat "\n    },\n    {\n"
+          (List.map player_to_string (queue_to_list g.active_players))
+      in
+      Printf.fprintf oc "%s\n" active_players;
+      Printf.fprintf oc "%s\n" "    }";
+      Printf.fprintf oc "%s\n" "  ],";
+      Printf.fprintf oc "%s\n" "  \"fold_collection\": [";
+      Printf.fprintf oc "%s\n" "    {";
+      let fold_collection =
+        String.concat "\n    },\n    {\n"
+          (List.map player_to_string g.fold_collection)
+      in
+      Printf.fprintf oc "%s\n" fold_collection;
+      Printf.fprintf oc "%s\n" "    }";
+      Printf.fprintf oc "%s\n" "  ],";
+      let current_deck = Card.to_string g.current_deck in
+      Printf.fprintf oc "  %s,\n"
+        ("\"current_deck\": " ^ "\"" ^ current_deck ^ "\"");
+      let cards_on_table = Card.to_string g.cards_on_table in
+      Printf.fprintf oc "  %s,\n"
+        ("\"cards_on_table\": " ^ "\"" ^ cards_on_table ^ "\"");
+      let pot = string_of_int g.pot in
+      Printf.fprintf oc "  %s,\n" ("\"pot\": " ^ pot);
+      Printf.fprintf oc "%s\n" "  \"small_blind\": ";
+      Printf.fprintf oc "%s\n" "    {";
+      let small_blind = player_to_string g.small_blind in
+      Printf.fprintf oc "%s\n" small_blind;
+      Printf.fprintf oc "%s\n" "    },";
+      let small_blind_amt = string_of_int g.small_blind_amt in
+      Printf.fprintf oc "  %s,\n"
+        ("\"small_blind_amt\": " ^ small_blind_amt);
+      let current_bet = string_of_int g.current_bet in
+      Printf.fprintf oc "  %s,\n" ("\"current_bet\": " ^ current_bet);
+      let minimum_raise = string_of_int g.minimum_raise in
+      Printf.fprintf oc "  %s,\n" ("\"minimum_raise\": " ^ minimum_raise);
+      let consecutive_calls = string_of_int g.consecutive_calls in
+      Printf.fprintf oc "  %s,\n"
+        ("\"consecutive_calls\": " ^ consecutive_calls);
+      let new_round = string_of_bool g.new_round in
+      Printf.fprintf oc "  %s,\n" ("\"new_round\": " ^ new_round);
+      let game_over = string_of_bool g.game_over in
+      Printf.fprintf oc "  %s,\n" ("\"game_over\": " ^ game_over);
+      Printf.fprintf oc "%s\n" "  \"winners\": [";
+      Printf.fprintf oc "%s\n" "    {";
+      let winners =
+        String.concat "\n    },\n    {\n"
+          (List.map player_to_string g.winners)
+      in
+      Printf.fprintf oc "%s\n" winners;
+      Printf.fprintf oc "%s\n" "    }";
+      Printf.fprintf oc "%s\n" "  ],";
+      let position = string_of_int g.position in
+      Printf.fprintf oc "  %s\n" ("\"position\": " ^ position);
+      Printf.fprintf oc "%s\n" "}";
+      close_out oc
+    in
+    true
+  with _ -> false
+
+let read_game (s : string) : game = failwith "unimplemented"

@@ -379,8 +379,17 @@ let players_queue_with_a_only = list_to_queue [ player_a ] queue
 let player_list = [ player_a; player_b ]
 let g_by_init = create_game player_list 5
 
+let save_game_test
+    (name : string)
+    (input : game)
+    (expected_output : bool) =
+  name >:: fun _ -> assert_equal expected_output (Game.save_game input)
+
+let game_save_read_tests = [ save_game_test "" g_by_init true ]
+
 let suite =
   "test suite for texas_holdem"
-  >::: List.flatten [ card_tests; card_impl_tests ]
+  >::: List.flatten
+         [ card_tests; card_impl_tests; game_save_read_tests ]
 
 let _ = run_test_tt_main suite
