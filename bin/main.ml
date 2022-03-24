@@ -22,7 +22,7 @@ let parse x : command =
   | _ -> failwith "Illegal Command"
 
 (** Prompts for command until get a valid command*)
-let rec get_command game : game =
+let rec get_command game : game * int =
   print_endline
     ("\nLegal moves: "
     ^ (get_legal_moves game |> String.concat ", ")
@@ -97,8 +97,8 @@ and play game =
     "Your current bet is $" ^ string_of_int (amount_placed p) ^ "."
     |> print_endline;
     try
-      let game = get_command game in
-      print_endline "successful";
+      let game, amount = get_command game in
+      "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
       play game
     with
     | Exit -> print_endline "exit code 0"

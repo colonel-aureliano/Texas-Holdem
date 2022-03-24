@@ -36,29 +36,29 @@ val play_again : game -> game
     previous game but shift the small blind to the next person. Also
     deals the cards similar to create game *)
 
-val execute_command : game -> command -> game
-(** [betting_round g] returns the game state after executing the
-    player's next move*)
+val execute_command : game -> command -> game * int
+(** [betting_round g] is the game state after executing the player's
+    next move, and the amount of money the player added to the pot *)
 
 val get_curr_player : game -> player
 (** [get_curr_player game] returns the player who is making the decision
-    of pass/raise/fold *)
+    of pass/raise/fold. Read only. *)
 
 val get_winners : game -> player list
 (** [get_winner game] returns the players who won. Precondition: game
-    had ended *)
+    had ended. Read only. *)
 
 val get_winning_hand : game -> string
 (** [get_winning_hand] returns the rank of winninng hand. Preconditino:
-    game has ended *)
+    game has ended. Read only. *)
 
 val get_all_players : game -> player list
 (** [get_all_players game] returns all the players in the game, sorted
-    by their positions. *)
+    by their positions. Read only. *)
 
 val get_legal_moves : game -> string list
 (** [get_available_moves game] returns the legal moves a player can make
-    this turn *)
+    this turn. Read only. *)
 
 val save_game : game -> bool
 (** [save_game game] saves the current game to a file, returns true if

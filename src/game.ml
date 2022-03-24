@@ -257,7 +257,7 @@ exception RaiseFailure
 
 (** [execute_command g] returns the game state after executing the
     player's next move*)
-let execute_command (g : game) (cmd : command) : game =
+let execute_command (g : game) (cmd : command) : game * int =
   match cmd with
   | Call ->
       let cur_player = get_curr_player g in
@@ -270,20 +270,21 @@ let execute_command (g : game) (cmd : command) : game =
         }
       in
       if updated_g.consecutive_calls = Queue.length g.active_players
-      then new_betting_round updated_g
-      else updated_g
+      then (new_betting_round updated_g, x)
+      else (updated_g, x)
   | Raise x ->
       if x < g.minimum_raise then raise RaiseFailure
       else
         let cur_player = get_curr_player g in
         let y = x + g.current_bet - amount_placed cur_player in
-        {
-          (execute_player_spending g y) with
-          current_bet = g.current_bet + x;
-          minimum_raise = x;
-          pot = g.pot + y;
-          consecutive_calls = 1;
-        }
+        ( {
+            (execute_player_spending g y) with
+            current_bet = g.current_bet + x;
+            minimum_raise = x;
+            pot = g.pot + y;
+            consecutive_calls = 1;
+          },
+          y )
   | Fold ->
       let folder = get_curr_player g in
       let updated_g =
@@ -295,19 +296,20 @@ let execute_command (g : game) (cmd : command) : game =
         }
       in
       if Queue.length updated_g.active_players = 1 then
-        pot_distributer updated_g
+        (pot_distributer updated_g, 0)
       else if
         updated_g.consecutive_calls
         = Queue.length updated_g.active_players
-      then new_betting_round updated_g
+      then (new_betting_round updated_g, 0)
       else
-        {
-          updated_g with
-          small_blind =
-            (if name folder = name g.small_blind then
-             Queue.peek updated_g.active_players
-            else g.small_blind);
-        }
+        ( {
+            updated_g with
+            small_blind =
+              (if name folder = name g.small_blind then
+               Queue.peek updated_g.active_players
+              else g.small_blind);
+          },
+          0 )
 
 let get_legal_moves (g : game) : string list =
   let cur_player = Queue.peek g.active_players in
