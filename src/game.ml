@@ -322,7 +322,7 @@ let get_legal_moves (g : game) : string list =
       @ [
           "Raise between $"
           ^ string_of_int g.minimum_raise
-          ^ "a and $"
+          ^ " and $"
           ^ string_of_int amount_left_after_call;
         ]
     else moves
