@@ -58,3 +58,11 @@ val get_all_players : game -> player list
 val get_legal_moves : game -> string
 (** [get_available_moves game] returns the legal moves a player can make
     this turn*)
+
+val save_game : game -> bool
+(** [save_game game] saves the current game to a file, returns true if
+    successful, false otherwise. *)
+
+val read_game : string -> game
+(** [read_game file] returns the game stored in [file]. Raises
+    [Sys_error file] if file is not found. *)

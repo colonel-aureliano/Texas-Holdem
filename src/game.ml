@@ -326,3 +326,6 @@ let get_legal_moves (g : game) : string =
      ^ ", "
     else "")
   ^ "fold"
+
+let save_game game = failwith "unimplemented"
+let read_game string = failwith "unimplemented"
