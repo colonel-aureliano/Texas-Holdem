@@ -9,11 +9,10 @@ type game = {
   pot : int;
   small_blind : player;
   small_blind_amt : int;
-  current_bet : int;
+  current_bet : int; (* highest bet on table *)
+  current_raise : int; (* raise of current betting round *)
   consecutive_calls : int;
-  new_round : bool;
-  (* alters true when new cards are dealt, change back to false by main
-     after display table*)
+  new_round : bool; (* true when new cards are dealt, altered by main *)
   game_over : bool;
   winners : player list; (* empty until game has ended *)
   position : int; (* position of small blind in the current game *)
@@ -114,6 +113,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
     small_blind = sb;
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
+    current_raise = 2 * small_blind_amt;
     consecutive_calls = 0;
     new_round = false;
     game_over = false;
@@ -170,6 +170,26 @@ let get_curr_player game = Queue.peek game.active_players
 (** [get_winner game] returns the player who won. Precondition: game had
     ended *)
 let get_winners game = game.winners
+
+let ranks =
+  [
+    "High Card";
+    "One Pair";
+    "Two Pairs";
+    "Three of a Kind";
+    "Straight";
+    "Flush";
+    "Full House";
+    "Four of a Kind";
+    "Striaght Flush";
+    "Royal Flush";
+  ]
+
+(** [get_winning_hand] returns the rank of winninng hand. Preconditino:
+    game has ended *)
+let get_winning_hand game =
+  (game.winners |> List.hd |> cards) @ game.cards_on_table
+  |> rank_of_hand |> List.nth ranks
 
 (** [get_all_players game] returns all the players in the game. Sorted
     by position. *)
@@ -228,9 +248,12 @@ let new_betting_round (g : game) : game =
         g with
         active_players = rearranged_p;
         consecutive_calls = 0;
+        current_raise = 0;
         new_round = true;
       }
       num_card
+
+exception RaiseFailure
 
 (** [execute_command g] returns the game state after executing the
     player's next move*)
@@ -250,14 +273,17 @@ let execute_command (g : game) (cmd : command) : game =
       then new_betting_round updated_g
       else updated_g
   | Raise x ->
-      let cur_player = get_curr_player g in
-      let y = x + g.current_bet - amount_placed cur_player in
-      {
-        (execute_player_spending g y) with
-        current_bet = g.current_bet + x;
-        pot = g.pot + y;
-        consecutive_calls = 1;
-      }
+      if x < g.current_raise then raise RaiseFailure
+      else
+        let cur_player = get_curr_player g in
+        let y = x + g.current_bet - amount_placed cur_player in
+        {
+          (execute_player_spending g y) with
+          current_bet = g.current_bet + x;
+          current_raise = x;
+          pot = g.pot + y;
+          consecutive_calls = 1;
+        }
   | Fold ->
       let folder = get_curr_player g in
       let updated_g =
