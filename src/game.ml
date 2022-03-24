@@ -308,3 +308,17 @@ let execute_command (g : game) (cmd : command) : game =
              Queue.peek updated_g.active_players
             else g.small_blind);
         }
+
+let get_legal_moves (g : game) : string =
+  let cur_player = Queue.peek g.active_players in
+  let call_deduction_amount =
+    g.current_bet - amount_placed cur_player
+  in
+  let amount_left_after_call =
+    wealth cur_player - call_deduction_amount
+  in
+  (if amount_left_after_call >= 0 then "call" else "")
+  ^ (if amount_left_after_call > 0 then
+     ", raise up to " ^ string_of_int amount_left_after_call
+    else "")
+  ^ ", fold"

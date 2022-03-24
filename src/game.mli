@@ -54,3 +54,7 @@ val get_winning_hand : game -> string
 
 val get_all_players : game -> player list
 (** [get_all_players game] returns all the players in the game*)
+
+val get_legal_moves : game -> string
+(** [get_available_moves game] returns the legal moves a player can make
+    this turn*)
