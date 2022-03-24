@@ -362,142 +362,58 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand5" has_royal_flush hand5 false;
   ]
 
-(*let winner_player_with_pot_added_test (name : string) (input : game)
-  (expected_output : string) = name >:: fun _ -> assert_equal
-  expected_output (Player.name (Game.winner_player_with_pot_added
-  input))
+let get_small_blind_test
+    (name : string)
+    (input : game)
+    (expected_output : string) =
+  name >:: fun _ ->
+  assert_equal expected_output (Player.name input.small_blind)
 
-  let get_small_blind_test (name : string) (input : game)
-  (expected_output : string) = name >:: fun _ -> assert_equal
-  expected_output (Player.name input.small_blind)
+let get_curr_player_test
+    (name : string)
+    (input : game)
+    (expected_output : string) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.name (Game.get_curr_player input))
 
-  let get_curr_player_test (name : string) (input : game)
-  (expected_output : string) = name >:: fun _ -> assert_equal
-  expected_output (Player.name (Game.get_curr_player input))
+let player_a = Player.create_player "b" 20 [ D 1; H 5 ] 0
+let player_b = Player.create_player "a" 20 [ D 2; S 5 ] 1
+let player_c = Player.create_player "c" 30 [] 2
+let player_d = Player.create_player "d" 30 [] 3
 
-  let player_a = Player.create_player "b" 20 [ D 1; H 5 ] let player_b =
-  Player.create_player "a" 20 [ D 2; S 5 ] let player_c =
-  Player.create_player "c" 30 [] let player_d = Player.create_player "d"
-  30 []
+let rec list_to_queue players queue =
+  match players with
+  | [] -> queue
+  | h :: t ->
+      list_to_queue t
+        (Queue.add h queue;
+         queue)
 
-  let rec list_to_queue players queue = match players with | [] -> queue
-  | h :: t -> list_to_queue t (Queue.add h queue; queue)
+let queue = Queue.create ()
+let players_queue = list_to_queue [ player_a; player_b ] queue
+let queue1 = Queue.create ()
 
-  let queue = Queue.create () let players_queue = list_to_queue [
-  player_a; player_b ] queue let queue1 = Queue.create ()
+let players_queue1 =
+  list_to_queue [ player_a; player_b; player_c; player_d ] queue1
 
-  let players_queue1 = list_to_queue [ player_a; player_b; player_c;
-  player_d ] queue1
+let queue2 = Queue.create ()
 
-  let queue2 = Queue.create ()
+let players_queue2 =
+  list_to_queue [ player_b; player_c; player_d; player_a ] queue2
 
-  let players_queue2 = list_to_queue [ player_b; player_c; player_d;
-  player_a ] queue2
+let queue3 = Queue.create ()
 
-  let queue3 = Queue.create ()
+let players_queue3 =
+  list_to_queue [ player_c; player_d; player_a; player_b ] queue3
 
-  let players_queue3 = list_to_queue [ player_c; player_d; player_a;
-  player_b ] queue3
-
-  let players_queue_with_b_only = list_to_queue [ player_b ] queue let
-  players_queue_with_a_only = list_to_queue [ player_a ] queue
-
-  let g = { players = Queue.copy players_queue; active_players =
-  players_queue; current_deck = []; cards_on_table = [ S 2; H 7; C 12; H
-  12; C 9 ]; pot = 5; small_blind = player_a; small_blind_amt = 5;
-  current_bet = 10; (* betting_round = 0; *) consecutive_calls = 0;
-  game_over = false; garbage_collection = Queue.create (); }
-
-  let player_queue_equal q1 q2 : bool = List.equal (fun x y ->
-  Player.name x = Player.name y) (q1 |> Game.queue_to_list) (q2 |>
-  Game.queue_to_list)
-
-  let game_equal (g1 : game) (g2 : game) : bool = player_queue_equal
-  g1.players g2.players && player_queue_equal g1.active_players
-  g2.active_players && List.equal (fun x y -> x = y) g1.current_deck
-  g2.current_deck && List.equal (fun x y -> x = y) g1.cards_on_table
-  g2.cards_on_table && g1.pot = g2.pot && Player.name g1.small_blind =
-  Player.name g2.small_blind && g1.small_blind_amt = g2.small_blind_amt
-  && g1.current_bet = g2.current_bet && g1.consecutive_calls =
-  g2.consecutive_calls && g1.game_over = g2.game_over
-
-  let update_fold_state_test (name : string) (input : game) (pass :
-  bool) (expected_output : game) = name >:: fun _ -> assert_equal pass
-  (game_equal expected_output (Game.update_fold_state input))
-
-  let create_game_test (name : string) (input : Player.player list)
-  (pass : bool) (expected_output : game) = name >:: fun _ ->
-  assert_equal pass (player_queue_equal expected_output.players
-  (Game.create_game input 1).players && player_queue_equal
-  expected_output.active_players (Game.create_game input
-  1).active_players)
-
-  let init_helper_test (name : string) (input : Player.player Queue.t)
-  (pass : bool) (expected_output : game) = name >:: fun _ ->
-  assert_equal pass (player_queue_equal expected_output.players
-  (Game.init_helper input 1).players && player_queue_equal
-  expected_output.active_players (Game.init_helper input
-  1).active_players)
-
-  let card_to_players_test (name : string) (input : Player.player
-  Queue.t) (pass : bool) (expected_output : Player.player Queue.t) =
-  name >:: fun _ -> let queue, _ = Game.card_to_players input new_deck 0
-  in assert_equal pass (player_queue_equal expected_output queue)
-
-  let player_shift_test (name : string) (input : Player.player Queue.t)
-  (pass : bool) (expected_output : Player.player Queue.t) = name >:: fun
-  _ -> assert_equal pass (player_queue_equal expected_output
-  (Game.player_shift input 0))
-
-  let player_double_shift_test (name : string) (input : Player.player
-  Queue.t) (pass : bool) (expected_output : Player.player Queue.t) =
-  name >:: fun _ -> let queue1 = Game.player_shift input 0 in let queue2
-  = Game.player_shift queue1 0 in assert_equal pass (player_queue_equal
-  expected_output queue2)
-
-  let player_list = [ player_a; player_b ] let g_by_init = create_game
-  player_list 5
-
-  let get_small_blind_tests = [ get_small_blind_test "use game init"
-  g_by_init "b"; get_small_blind_test "use game created by hard coding"
-  g "b"; ]
-
-  let get_curr_player_tests = [ get_curr_player_test "use game init"
-  g_by_init "b"; get_curr_player_test "use game created by hard coding"
-  g "b"; ]
-
-  let winner_tests = [ (*winner_player_with_pot_added_test "buggy hands"
-  g "a"*) ]
-
-  let create_game_tests = [ (*create_game_test "2-players create game"
-  player_list true g;*) init_helper_test "2 player game init"
-  players_queue true g; ]
-
-  let update_fold_state_tests = [ update_fold_state_test "blind no\n
-  change" g false { g with small_blind = player_a };
-  update_fold_state_test "active_players no change" g false { g with
-  small_blind = player_b; active_players = Queue.copy g.active_players;
-  }; update_fold_state_test "2-player, a folds as sb" g true { g with
-  small_blind = player_b; active_players = players_queue_with_b_only; };
-  ]
-
-  let card_to_players_tests = [ card_to_players_test "card\n
-  distribution" players_queue true players_queue; ]
-
-  let player_shift_tests = [ player_shift_test "player shift wrong"
-  players_queue false players_queue1; player_shift_test "player shift\n
-  correct" players_queue1 true players_queue2; player_double_shift_test
-  "shift twice" players_queue1 true players_queue3; ]*)
+let players_queue_with_b_only = list_to_queue [ player_b ] queue
+let players_queue_with_a_only = list_to_queue [ player_a ] queue
+let player_list = [ player_a; player_b ]
+let g_by_init = create_game player_list 5
 
 let suite =
   "test suite for texas_holdem"
-  >::: List.flatten
-         [
-           card_tests;
-           card_impl_tests
-           (* winner_tests; get_small_blind_tests; (*
-              update_fold_state_tests; *) create_game_tests;
-              card_to_players_tests; player_shift_tests;*);
-         ]
+  >::: List.flatten [ card_tests; card_impl_tests ]
 
 let _ = run_test_tt_main suite
