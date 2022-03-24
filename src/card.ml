@@ -64,7 +64,7 @@ let single_compare (card1 : card) (card2 : card) =
   let x1 = extract_value card1 in
   let x2 = extract_value card2 in
   match (x1, x2) with
-  | 1, 1 | 14, 14 -> 0
+  | 1, 1 | 14, 14 | 1, 14 | 14, 1 -> 0
   | 1, _ | 14, _ -> 1
   | _, 1 | _, 14 -> -1
   | _ -> if x1 > x2 then 1 else if x1 < x2 then -1 else 0
@@ -819,3 +819,59 @@ let index_of_highest_hand (lst : t list) =
   with Tied list ->
     let l = List.map (fun x -> find_index x lst 0) list in
     raise (Tie l)
+
+let same_suit (c1 : card) (c2 : card) : bool =
+  match (c1, c2) with
+  | C _, C _ | D _, D _ | S _, S _ | H _, H _ -> true
+  | _, _ -> false
+
+let starting_hand_estimated_strength (hand : t) =
+  let values =
+    List.rev
+      (List.sort single_value_copmare (List.map extract_value hand))
+  in
+  let b = same_suit (List.hd hand) (List.nth hand 1) in
+  match values with
+  | [ 1; 1 ] | [ 1; 13 ] | [ 13; 13 ] | [ 12; 12 ] -> 5
+  | [ 1; 12 ] | [ 13; 12 ] | [ 11; 11 ] | [ 10; 10 ] -> 4
+  | [ 1; 11 ] -> if b then 4 else 3
+  | [ 13; 11 ] | [ 12; 11 ] | [ 9; 9 ] | [ 8; 8 ] -> 3
+  | [ 13; 10 ]
+  | [ 1; 10 ]
+  | [ 1; 9 ]
+  | [ 1; 8 ]
+  | [ 1; 7 ]
+  | [ 1; 6 ]
+  | [ 1; 5 ] ->
+      if b then 3 else 2
+  | [ 1; 4 ] | [ 1; 3 ] | [ 1; 2 ] -> if b then 3 else 1
+  | [ 12; 10 ]
+  | [ 11; 10 ]
+  | [ 7; 7 ]
+  | [ 6; 6 ]
+  | [ 5; 5 ]
+  | [ 4; 4 ]
+  | [ 3; 3 ]
+  | [ 2; 2 ] ->
+      2
+  | [ 13; 9 ]
+  | [ 12; 9 ]
+  | [ 11; 9 ]
+  | [ 10; 9 ]
+  | [ 10; 8 ]
+  | [ 9; 8 ]
+  | [ 8; 7 ]
+  | [ 7; 6 ]
+  | [ 6; 5 ] ->
+      if b then 2 else 1
+  | [ 11; 8 ] | [ 9; 7 ] | [ 8; 6 ] -> 1
+  | [ 13; 8 ]
+  | [ 12; 8 ]
+  | [ 10; 7 ]
+  | [ 9; 6 ]
+  | [ 7; 5 ]
+  | [ 6; 4 ]
+  | [ 5; 4 ]
+  | [ 4; 3 ] ->
+      if b then 1 else 0
+  | _ -> 0

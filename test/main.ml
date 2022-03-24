@@ -10,12 +10,6 @@ let index_of_highest_hand_test
   name >:: fun _ ->
   assert_equal expected_output (index_of_highest_hand input)
 
-let rank_of_hand_test
-    (name : string)
-    (input : card list)
-    (expected_output : int) =
-  name >:: fun _ -> assert_equal expected_output (rank_of_hand input)
-
 let index_of_highest_hand_fail_test
     (name : string)
     (input : card list list)
@@ -124,48 +118,21 @@ let hand9_match = [ C 10; C 13; C 1; C 12; C 11; D 11; D 1 ]
   S 2; C 6 ] let buggy_hand_0 = [ S 2; H 7; C 12; H 12; C 9; D 1; H 5 ]
   let buggy_hand_1 = [ S 2; H 7; C 12; H 12; C 9; D 2; S 5 ]*)
 
+let starting_hand_estimated_strength_test
+    (name : string)
+    (input : card list)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output (starting_hand_estimated_strength input)
+
 let card_tests =
   [
-    rank_of_hand_test "hand0_length_5" [ H 1; D 12; D 10; C 8; D 4 ] 0;
-    rank_of_hand_test "hand0_length_6"
-      [ H 1; D 12; D 10; C 8; D 4; S 3 ]
-      0;
-    rank_of_hand_test "hand1_length_5" [ H 1; S 1; H 10; S 9; D 6 ] 1;
-    rank_of_hand_test "hand1_length_6"
-      [ H 1; S 1; H 10; S 9; D 6; H 3 ]
-      1;
-    rank_of_hand_test "hand2_length_5" [ D 10; H 2; S 6; C 2; S 10 ] 2;
-    rank_of_hand_test "hand2_length_6"
-      [ D 10; H 2; S 6; C 1; C 2; S 10 ]
-      2;
-    rank_of_hand_test "hand3_length_5" [ D 2; H 2; S 6; C 3; C 2 ] 3;
-    rank_of_hand_test "hand3_length_6"
-      [ C 5; D 2; H 2; S 6; C 3; C 2 ]
-      3;
-    rank_of_hand_test "hand4_length_5" [ H 10; S 9; C 8; S 7; H 11 ] 4;
-    rank_of_hand_test "hand4_length_6"
-      [ H 10; S 9; C 8; S 7; H 2; H 11 ]
-      4;
-    rank_of_hand_test "hand5_length_5" [ C 1; C 11; C 5; C 3; C 2 ] 5;
-    rank_of_hand_test "hand5_length_6"
-      [ C 1; C 11; C 5; C 3; C 2; H 8 ]
-      5;
-    rank_of_hand_test "hand6_length_5" [ C 1; D 1; H 1; S 11; C 11 ] 6;
-    rank_of_hand_test "hand6_length_6"
-      [ C 1; D 1; H 1; S 11; C 11; H 9 ]
-      6;
-    rank_of_hand_test "hand7_length_5" [ C 5; D 5; C 2; H 5; S 5 ] 7;
-    rank_of_hand_test "hand7_length_6"
-      [ C 5; C 2; C 3; D 5; H 5; S 5 ]
-      7;
-    rank_of_hand_test "hand8_length_5" [ C 9; C 10; C 11; C 12; C 13 ] 8;
-    rank_of_hand_test "hand8_length_6"
-      [ C 9; C 10; S 8; C 11; C 12; C 13 ]
-      8;
-    rank_of_hand_test "hand9_length_5" [ D 10; D 13; D 1; D 12; D 11 ] 9;
-    rank_of_hand_test "hand9_length_6"
-      [ D 10; D 13; C 11; D 1; D 12; D 11 ]
-      9;
+    starting_hand_estimated_strength_test "strength 5" [ C 13; D 1 ] 5;
+    starting_hand_estimated_strength_test "strength 4" [ D 1; H 12 ] 4;
+    starting_hand_estimated_strength_test "strength 3" [ C 1; C 2 ] 3;
+    starting_hand_estimated_strength_test "strength 2" [ D 6; D 5 ] 2;
+    starting_hand_estimated_strength_test "strength 1" [ C 9; D 7 ] 1;
+    starting_hand_estimated_strength_test "strength 0" [ S 10; H 2 ] 0;
     index_of_highest_hand_test
       "index_of_highest_hand_test hand4_match_1 hand4_match_2"
       [ hand4_match_1; hand4_match_2 ]

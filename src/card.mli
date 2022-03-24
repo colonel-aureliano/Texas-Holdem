@@ -33,6 +33,13 @@ val rank_of_hand : t -> int
 
     Requires: 5 <= [List.length hand] and [List.length hand] <= 7. *)
 
+val starting_hand_estimated_strength : t -> int
+(** [starting_hand_estimated_strength hand] returns the estimated
+    strength of [hand], which is an integer between 0 and 5, where 5 is
+    the strongest and 0 the weakest.
+
+    Requires: [List.length hand] = 2. *)
+
 exception Tie of int list
 
 val index_of_highest_hand : t list -> int
