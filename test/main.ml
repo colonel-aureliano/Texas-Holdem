@@ -376,16 +376,28 @@ let players_queue3 =
 
 let players_queue_with_b_only = list_to_queue [ player_b ] queue
 let players_queue_with_a_only = list_to_queue [ player_a ] queue
-let player_list = [ player_a; player_b ]
-let g_by_init = create_game player_list 5
+let player_list2 = [ player_a; player_b ]
+let player_list4 = [ player_a; player_b; player_c; player_d ]
+let g_by_init2 = create_game player_list2 5
+let folded_g2, _ = execute_command g_by_init2 Fold
+let g_by_init4 = create_game player_list4 5
+let folded_g4, _ = execute_command g_by_init4 Fold
+let folded_g4, _ = execute_command folded_g4 Fold
 
 let save_game_test
     (name : string)
     (input : game)
+    (name : string)
     (expected_output : bool) =
-  name >:: fun _ -> assert_equal expected_output (Game.save_game input)
+  name >:: fun _ ->
+  assert_equal expected_output (Game.save_game input name)
 
-let game_save_read_tests = [ save_game_test "" g_by_init true ]
+let game_save_read_tests =
+  [
+    save_game_test "" g_by_init2 "2player " true;
+    save_game_test "" folded_g2 "2playerfold" true;
+    save_game_test "" folded_g4 "4playerfold" true;
+  ]
 
 let suite =
   "test suite for texas_holdem"

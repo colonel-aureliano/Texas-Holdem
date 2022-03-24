@@ -33,8 +33,13 @@ val create_game : player list -> int -> game
 
 val play_again : game -> game
 (** [play again] reinitialize the game with the same players from the
-    previous game but shift the small blind to the next person. Also
-    deals the cards similar to create game *)
+    previous game but shift the small blind to the next person. Other
+    parts are the same as create_game. Precondition: game is over *)
+
+val reshuffling_period : game -> game
+(** [reshuffling_period] moves all players to active_players. Prepares
+    for adding funds, adding new players, and removing players.
+    Precondition: game is over *)
 
 val execute_command : game -> command -> game * int
 (** [betting_round g] is the game state after executing the player's
@@ -60,9 +65,9 @@ val get_legal_moves : game -> string list
 (** [get_available_moves game] returns the legal moves a player can make
     this turn. Read only. *)
 
-val save_game : game -> bool
-(** [save_game game] saves the current game to a file, returns true if
-    successful, false otherwise. *)
+val save_game : game -> string -> bool
+(** [save_game game name] saves the current game to a [name].json,
+    returns true if successful, false otherwise. *)
 
 val read_game : string -> game
 (** [read_game file] returns the game stored in [file]. Raises

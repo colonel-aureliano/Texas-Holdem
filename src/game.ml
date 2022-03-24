@@ -163,6 +163,8 @@ let play_again game =
   in
   init_helper players_queue game.small_blind_amt pos
 
+let reshuffling_period game = game
+
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
 let get_curr_player game = Queue.peek game.active_players
@@ -341,8 +343,8 @@ let player_to_string (p : player) : string =
   ^ "\"" ^ ",\n" ^ "      \"position\": "
   ^ string_of_int (Player.position p)
 
-let save_game (g : game) : bool =
-  let file = "texas_holdem.json" in
+let save_game (g : game) (name : string) : bool =
+  let file = "game_files/" ^ name ^ ".json" in
   try
     let _ =
       let oc = open_out file in
