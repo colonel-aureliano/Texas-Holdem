@@ -3,6 +3,7 @@ open Player
 
 type game = {
   active_players : player Queue.t;
+  fold_collection : player list;
   current_deck : Card.t;
   cards_on_table : Card.t;
   pot : int;
@@ -14,9 +15,8 @@ type game = {
   (* alters true when new cards are dealt, change back to false by main
      after display table*)
   game_over : bool;
-  fold_collection : player Queue.t;
-  position : int;
   winners : player list; (* empty until game has ended *)
+  position : int; (* position of small blind in the current game *)
 }
 
 type command =
@@ -117,7 +117,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
     consecutive_calls = 0;
     new_round = false;
     game_over = false;
-    fold_collection = Queue.create ();
+    fold_collection = [];
     position = first_player_pos;
     winners = [];
   }
@@ -153,8 +153,7 @@ let play_again game =
   let players_queue =
     list_to_queue
       List.(
-        queue_to_list game.active_players
-        @ queue_to_list game.fold_collection
+        queue_to_list game.active_players @ game.fold_collection
         |> map reset_player
         |> List.sort (fun x y -> position x - position y))
   in
@@ -175,7 +174,7 @@ let get_winners game = game.winners
 (** [get_all_players game] returns all the players in the game. Sorted
     by position. *)
 let get_all_players game =
-  queue_to_list game.active_players @ queue_to_list game.fold_collection
+  queue_to_list game.active_players @ game.fold_collection
   |> List.sort (fun x y -> position x - position y)
 
 let table game = game.cards_on_table
@@ -265,9 +264,7 @@ let execute_command (g : game) (cmd : command) : game =
         {
           g with
           fold_collection =
-            immutable_push
-              (Queue.peek g.active_players)
-              g.fold_collection;
+            Queue.peek g.active_players :: g.fold_collection;
           active_players = immutable_pop g.active_players;
         }
       in

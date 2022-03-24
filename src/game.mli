@@ -2,6 +2,7 @@ open Player
 
 type game = {
   active_players : player Queue.t;
+  fold_collection : player list;
   current_deck : Card.t;
   cards_on_table : Card.t;
   pot : int;
@@ -11,9 +12,8 @@ type game = {
   consecutive_calls : int;
   new_round : bool;
   game_over : bool;
-  fold_collection : player Queue.t;
-  position : int;
   winners : player list;
+  position : int;
 }
 (** The abstract type of values representing game. *)
 
