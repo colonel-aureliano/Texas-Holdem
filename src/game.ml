@@ -10,7 +10,7 @@ type game = {
   small_blind : player;
   small_blind_amt : int;
   current_bet : int; (* highest bet on table *)
-  current_raise : int; (* raise of current betting round *)
+  minimum_raise : int; (* raise of current betting round *)
   consecutive_calls : int;
   new_round : bool; (* true when new cards are dealt, altered by main *)
   game_over : bool;
@@ -113,7 +113,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
     small_blind = sb;
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
-    current_raise = 2 * small_blind_amt;
+    minimum_raise = 2 * small_blind_amt;
     consecutive_calls = 0;
     new_round = false;
     game_over = false;
@@ -248,7 +248,7 @@ let new_betting_round (g : game) : game =
         g with
         active_players = rearranged_p;
         consecutive_calls = 0;
-        current_raise = 0;
+        minimum_raise = 0;
         new_round = true;
       }
       num_card
@@ -273,14 +273,14 @@ let execute_command (g : game) (cmd : command) : game =
       then new_betting_round updated_g
       else updated_g
   | Raise x ->
-      if x < g.current_raise then raise RaiseFailure
+      if x < g.minimum_raise then raise RaiseFailure
       else
         let cur_player = get_curr_player g in
         let y = x + g.current_bet - amount_placed cur_player in
         {
           (execute_player_spending g y) with
           current_bet = g.current_bet + x;
-          current_raise = x;
+          minimum_raise = x;
           pot = g.pot + y;
           consecutive_calls = 1;
         }
@@ -317,8 +317,12 @@ let get_legal_moves (g : game) : string =
   let amount_left_after_call =
     wealth cur_player - call_deduction_amount
   in
-  (if amount_left_after_call >= 0 then "call" else "")
+  (if amount_left_after_call >= 0 then "call, " else "")
   ^ (if amount_left_after_call > 0 then
-     ", raise up to " ^ string_of_int amount_left_after_call
+     "raise between "
+     ^ string_of_int g.minimum_raise
+     ^ " and "
+     ^ string_of_int amount_left_after_call
+     ^ ", "
     else "")
-  ^ ", fold"
+  ^ "fold"

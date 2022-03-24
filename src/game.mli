@@ -9,7 +9,7 @@ type game = {
   small_blind : player;
   small_blind_amt : int;
   current_bet : int;
-  current_raise : int;
+  minimum_raise : int;
   consecutive_calls : int;
   new_round : bool;
   game_over : bool;
