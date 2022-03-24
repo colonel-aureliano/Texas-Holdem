@@ -309,23 +309,24 @@ let execute_command (g : game) (cmd : command) : game =
             else g.small_blind);
         }
 
-let get_legal_moves (g : game) : string =
+let get_legal_moves (g : game) : string list =
   let cur_player = Queue.peek g.active_players in
-  let call_deduction_amount =
-    g.current_bet - amount_placed cur_player
-  in
   let amount_left_after_call =
-    wealth cur_player - call_deduction_amount
+    wealth cur_player - g.current_bet + amount_placed cur_player
   in
-  (if amount_left_after_call >= 0 then "call, " else "")
-  ^ (if amount_left_after_call > 0 then
-     "raise between "
-     ^ string_of_int g.minimum_raise
-     ^ " and "
-     ^ string_of_int amount_left_after_call
-     ^ ", "
-    else "")
-  ^ "fold"
+  let moves = [ "Fold" ] in
+  if amount_left_after_call >= 0 then
+    let moves = moves @ [ "Call" ] in
+    if g.minimum_raise <= amount_left_after_call then
+      moves
+      @ [
+          "Raise between $"
+          ^ string_of_int g.minimum_raise
+          ^ "a and $"
+          ^ string_of_int amount_left_after_call;
+        ]
+    else moves
+  else moves
 
 let save_game game = failwith "unimplemented"
 let read_game string = failwith "unimplemented"

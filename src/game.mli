@@ -53,11 +53,12 @@ val get_winning_hand : game -> string
     game has ended *)
 
 val get_all_players : game -> player list
-(** [get_all_players game] returns all the players in the game*)
+(** [get_all_players game] returns all the players in the game, sorted
+    by their positions. *)
 
-val get_legal_moves : game -> string
+val get_legal_moves : game -> string list
 (** [get_available_moves game] returns the legal moves a player can make
-    this turn*)
+    this turn *)
 
 val save_game : game -> bool
 (** [save_game game] saves the current game to a file, returns true if

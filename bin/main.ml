@@ -24,8 +24,9 @@ let parse x : command =
 (** Prompts for command until get a valid command*)
 let rec get_command game : game =
   print_endline
-    ("\nLegal moves are: " ^ get_legal_moves game
-   ^ "\nEnter your move: ");
+    ("\nLegal moves: "
+    ^ (get_legal_moves game |> String.concat ", ")
+    ^ "\nEnter your move: ");
   try
     let command = parse 0 in
     execute_command game command
