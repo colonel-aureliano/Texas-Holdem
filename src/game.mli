@@ -9,9 +9,11 @@ type game = {
   small_blind_amt : int;
   current_bet : int;
   consecutive_calls : int;
+  new_round : bool;
   game_over : bool;
   fold_collection : player Queue.t;
   position : int;
+  winners : player list;
 }
 (** The abstract type of values representing game. *)
 
@@ -39,22 +41,9 @@ val get_curr_player : game -> player
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
 
-val get_winner : game -> player
-(** [get_winner game] returns the player who won. Precondition: game had
-    ended *)
+val get_winners : game -> player list
+(** [get_winner game] returns the players who won. Precondition: game
+    had ended *)
 
 val get_all_players : game -> player list
 (** [get_all_players game] returns all the players in the game*)
-
-val winner_player_with_pot_added : game -> player
-(** only for degugging, delete after done*)
-
-val queue_to_list : 'a Queue.t -> 'a list
-(** only for degugging, delete after done*)
-
-val immutable_pop : 'a Queue.t -> 'a Queue.t
-(** only for degugging, delete after done*)
-
-val card_to_players :
-  player Queue.t -> Card.t -> int -> player Queue.t * Card.t
-(** only for degugging, delete after done*)

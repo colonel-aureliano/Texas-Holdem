@@ -46,8 +46,8 @@ let rec player_result = function
     again *)
 let rec end_game game =
   print_endline "\n\nThis game is over.";
-  let winner = get_winner game in
-  "The winner is: " ^ name winner |> print_endline;
+  let winners = List.map (fun x -> name x) (get_winners game) in
+  "The winner is: " ^ String.concat ", " winners |> print_endline;
   print_endline "\nPlayer Status";
   let players = get_all_players game |> List.rev in
   player_result players;
@@ -60,18 +60,23 @@ let rec end_game game =
       "small blind : " ^ name game.small_blind |> print_endline;
       print_endline "the blinds are placed by dealer\n";
       play game
-  | _ -> print_endline "\nbye"
+  | _ -> print_endline "\nbye\n"
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
 and play game =
   if game.game_over = true then end_game game
+  else if game.new_round = true then begin
+    print_endline "\n\n\n\nNew cards have been dealt. ";
+    "Table: " ^ to_string game.cards_on_table |> print_endline;
+    play { game with new_round = false }
+  end
   else
     let p = get_curr_player game in
-    "\nThe next player is " ^ name p ^ "." |> print_endline;
+    "\n\n\n\nThe next player is " ^ name p ^ "." |> print_endline;
     print_endline "Press Enter to confirm.";
     print_string (read_line ());
-    "\n\n\n\nTable: " ^ to_string game.cards_on_table |> print_endline;
+    "\nTable: " ^ to_string game.cards_on_table |> print_endline;
     "\nHello, " ^ name p ^ "!" |> print_endline;
     "Your Hand: " ^ to_string (cards p) |> print_endline;
     "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."

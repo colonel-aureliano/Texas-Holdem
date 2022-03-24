@@ -10,9 +10,13 @@ type game = {
   small_blind_amt : int;
   current_bet : int;
   consecutive_calls : int;
+  new_round : bool;
+  (* alters true when new cards are dealt, change back to false by main
+     after display table*)
   game_over : bool;
   fold_collection : player Queue.t;
   position : int;
+  winners : player list; (* empty until game has ended *)
 }
 
 type command =
@@ -35,19 +39,16 @@ let immutable_pop q =
   ignore (Queue.pop myq);
   myq
 
-(** [reverse_arg_order] swaps the argument orders for a function with 2
-    arguments*)
-let reverse_arg_order f x y = f y x
-
-(** [list_to_queue players] converts the list of players to a queue. Use
-    queue = Queue.create () for initialization. *)
-let rec list_to_queue players queue =
+let rec list_to_queue_helper players queue =
   match players with
   | [] -> queue
   | h :: t ->
-      list_to_queue t
+      list_to_queue_helper t
         (Queue.add h queue;
          queue)
+
+(** [list_to_queue players] converts the list of players to a queue. *)
+let list_to_queue player = list_to_queue_helper player (Queue.create ())
 
 (** [queue_to_list players] converts the queue of players to a list *)
 let queue_to_list q = List.rev (Queue.fold (fun x y -> y :: x) [] q)
@@ -100,7 +101,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
     card_to_players players_queue new_deck 0
   in
   let original_queue =
-    players_with_card |> reverse_arg_order rearrangepos first_player_pos
+    rearrangepos players_with_card first_player_pos
   in
   let sb = Queue.peek original_queue in
   let queue_sb = player_shift original_queue small_blind_amt in
@@ -114,9 +115,11 @@ let init_helper players_queue small_blind_amt first_player_pos =
     small_blind_amt;
     current_bet = 2 * small_blind_amt;
     consecutive_calls = 0;
+    new_round = false;
     game_over = false;
     fold_collection = Queue.create ();
     position = first_player_pos;
+    winners = [];
   }
 
 (** [draw_card] draws num of cards from the current deck and places it
@@ -141,7 +144,7 @@ let execute_player_spending g x =
     players and small_blind_amt. The first player in the queue will
     automatically be the small_blind *)
 let create_game players small_blind_amt =
-  let players_queue = list_to_queue players (Queue.create ()) in
+  let players_queue = list_to_queue players in
   init_helper players_queue small_blind_amt 1
 
 (** [play_again game] restarts the game with same set of players but
@@ -154,7 +157,6 @@ let play_again game =
         @ queue_to_list game.fold_collection
         |> map reset_player
         |> List.sort (fun x y -> position x - position y))
-      (Queue.create ())
   in
   let pos =
     let n = (game.position + 1) mod Queue.length players_queue in
@@ -168,41 +170,51 @@ let get_curr_player game = Queue.peek game.active_players
 
 (** [get_winner game] returns the player who won. Precondition: game had
     ended *)
-let get_winner game = Queue.peek game.active_players
+let get_winners game = game.winners
 
-(** [get_all_players game] returns all the players in the game*)
+(** [get_all_players game] returns all the players in the game. Sorted
+    by position. *)
 let get_all_players game =
   queue_to_list game.active_players @ queue_to_list game.fold_collection
+  |> List.sort (fun x y -> position x - position y)
 
 let table game = game.cards_on_table
 
-(** [winner_player_with_pot_added] returns the winning player with the
-    pot added to his wealth*)
-let winner_player_with_pot_added g =
+(** [winner_player_with_pot_added] is the winning players with the pot
+    added to their wealths *)
+let winners_with_pot_added g : player list =
   if Queue.length g.active_players = 1 then
-    add (Queue.peek g.active_players) g.pot
+    [ add (Queue.peek g.active_players) g.pot ]
   else
     let player_list = g.active_players |> queue_to_list in
-    let highest_hand_index =
-      player_list
-      |> List.map (fun x -> Player.cards x @ g.cards_on_table)
-      |> index_of_highest_hand
+    let highest_hand_indeces =
+      try
+        [
+          player_list
+          |> List.map (fun x -> Player.cards x @ g.cards_on_table)
+          |> index_of_highest_hand;
+        ]
+      with Tie ls -> ls
     in
-    List.nth player_list highest_hand_index
-    |> reverse_arg_order add g.pot
+    let n = List.length highest_hand_indeces in
+    List.map
+      (fun x -> add (List.nth player_list x) (g.pot / n))
+      highest_hand_indeces
 
 (** [pot distrubutor g] distributes the pot to the winning player in
-    game g. Puts winner at top of list of active players. *)
+    game g. Puts winners in game.winners and update active players. *)
 let pot_distributer g =
+  let g =
+    { g with game_over = true; winners = winners_with_pot_added g }
+  in
+  let names = List.map (fun x -> name x) g.winners in
   {
     g with
-    game_over = true;
     active_players =
-      (let winner = winner_player_with_pot_added g in
-       let arranged_players = rearrange g.active_players winner in
-       rearrange
-         (immutable_push winner (immutable_pop arranged_players))
-         winner);
+      (queue_to_list g.active_players
+      |> List.filter (fun x -> List.mem (name x) names |> not))
+      @ g.winners
+      |> list_to_queue;
   }
 
 (** [new_betting_round] updates the game state to enter the next betting
@@ -213,7 +225,12 @@ let new_betting_round (g : game) : game =
     let num_card = if List.length g.cards_on_table = 0 then 3 else 1 in
     let rearranged_p = rearrange g.active_players g.small_blind in
     draw_card
-      { g with active_players = rearranged_p; consecutive_calls = 0 }
+      {
+        g with
+        active_players = rearranged_p;
+        consecutive_calls = 0;
+        new_round = true;
+      }
       num_card
 
 (** [execute_command g] returns the game state after executing the
