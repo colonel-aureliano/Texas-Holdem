@@ -9,6 +9,7 @@ type game = {
   small_blind : player;
   small_blind_amt : int;
   current_bet : int;
+  current_raise : int;
   consecutive_calls : int;
   new_round : bool;
   game_over : bool;
@@ -16,6 +17,8 @@ type game = {
   position : int;
 }
 (** The abstract type of values representing game. *)
+
+exception RaiseFailure (* raise is less than previous raise. *)
 
 type command =
   | Call
@@ -44,6 +47,10 @@ val get_curr_player : game -> player
 val get_winners : game -> player list
 (** [get_winner game] returns the players who won. Precondition: game
     had ended *)
+
+val get_winning_hand : game -> string
+(** [get_winning_hand] returns the rank of winninng hand. Preconditino:
+    game has ended *)
 
 val get_all_players : game -> player list
 (** [get_all_players game] returns all the players in the game*)

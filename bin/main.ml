@@ -36,6 +36,9 @@ let rec get_command game : game =
   | InsufficientFund ->
       print_endline "Insufficient Fund";
       get_command game
+  | RaiseFailure ->
+      print_endline "Insufficient Raise";
+      get_command game
 
 (** [player_result] prints the naeme and wealth of all players *)
 let rec player_result = function
@@ -44,20 +47,6 @@ let rec player_result = function
       player_result t;
       name h ^ ": $" ^ string_of_int (wealth h) |> print_endline
 
-let ranks =
-  [
-    "High Card";
-    "One Pair";
-    "Two Pairs";
-    "Three of a Kind";
-    "Straight";
-    "Flush";
-    "Full House";
-    "Four of a Kind";
-    "Striaght Flush";
-    "Royal Flush";
-  ]
-
 (** [end_game] shows the result of the game and asks whether to play
     again *)
 let rec end_game game =
@@ -65,11 +54,7 @@ let rec end_game game =
   let winners = List.map (fun x -> name x) (get_winners game) in
   let s = if List.length winners = 1 then "Winner: " else "Winners: " in
   s ^ String.concat ", " winners |> print_endline;
-  "Winning hand has "
-  ^ (get_winners game |> List.hd |> cards |> rank_of_hand
-   |> List.nth ranks)
-  ^ "."
-  |> print_endline;
+  "Winning hand has " ^ get_winning_hand game ^ "." |> print_endline;
   print_endline "\nPlayer Status";
   let players = get_all_players game |> List.rev in
   player_result players;
