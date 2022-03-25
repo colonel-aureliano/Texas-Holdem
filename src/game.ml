@@ -1,5 +1,6 @@
 open Card
 open Player
+open Yojson.Basic.Util
 
 type game = {
   active_players : player list;
@@ -399,6 +400,94 @@ let save_game (g : game) (name : string) : bool =
     true
   with _ -> false
 
+let to_card_list (s : string) : card list =
+  let lst = String.split_on_char ' ' s in
+  let lst = List.filter (fun x -> x <> "") lst in
+  let rec to_card (lst : string list) : card list =
+    match lst with
+    | [] -> []
+    | h :: t ->
+        let number =
+          match h.[0] with
+          | 'K' -> 13
+          | 'Q' -> 12
+          | 'J' -> 11
+          | 'A' -> 1
+          | x -> int_of_char x - 48
+        in
+        if String.sub h 1 1 = String.sub "7♦" 1 1 then
+          D number :: to_card t
+        else if String.sub h 1 1 = String.sub "7♥" 1 1 then
+          H number :: to_card t
+        else if String.sub h 1 1 = String.sub "7♣" 1 1 then
+          C number :: to_card t
+        else if String.sub h 1 1 = String.sub "7♠" 1 1 then
+          S number :: to_card t
+        else if String.sub h 2 1 = String.sub "7♦" 1 1 then
+          D number :: to_card t
+        else if String.sub h 2 1 = String.sub "7♥" 1 1 then
+          H number :: to_card t
+        else if String.sub h 2 1 = String.sub "7♣" 1 1 then
+          C number :: to_card t
+        else if String.sub h 2 1 = String.sub "7♠" 1 1 then
+          S number :: to_card t
+        else failwith "failed to match suits"
+  in
+  to_card lst
+
+let to_player (obj : Yojson.Basic.t) : player =
+  let obj = to_assoc obj in
+  let name = to_string (List.assoc "name" obj) in
+  let wealth = to_int (List.assoc "wealth" obj) in
+  let amount_placed = to_int (List.assoc "amount_placed" obj) in
+  let cards = to_card_list (to_string (List.assoc "cards" obj)) in
+  let position = to_int (List.assoc "position" obj) in
+  Player.create_player_full name wealth cards amount_placed position
+
+let to_player_list (lst : Yojson.Basic.t list) : player list =
+  try List.map to_player lst with _ -> []
+
 exception BadFormat
 
-let read_game (j : Yojson.Basic.t) : game = failwith ""
+let read_game (j : Yojson.Basic.t) : game =
+  try
+    let j = to_assoc j in
+    let active_players =
+      to_player_list (to_list (List.assoc "active_players" j))
+    in
+    let fold_collection =
+      to_player_list (to_list (List.assoc "fold_collection" j))
+    in
+    let current_deck =
+      to_card_list (to_string (List.assoc "current_deck" j))
+    in
+    let cards_on_table =
+      to_card_list (to_string (List.assoc "cards_on_table" j))
+    in
+    let pot = to_int (List.assoc "pot" j) in
+    let small_blind = to_player (List.assoc "small_blind" j) in
+    let small_blind_amt = to_int (List.assoc "small_blind_amt" j) in
+    let current_bet = to_int (List.assoc "current_bet" j) in
+    let minimum_raise = to_int (List.assoc "minimum_raise" j) in
+    let consecutive_calls = to_int (List.assoc "consecutive_calls" j) in
+    let new_round = to_bool (List.assoc "new_round" j) in
+    let game_over = to_bool (List.assoc "game_over" j) in
+    let winners = to_player_list (to_list (List.assoc "winners" j)) in
+    let position = to_int (List.assoc "position" j) in
+    {
+      active_players;
+      current_deck;
+      cards_on_table;
+      pot;
+      small_blind;
+      small_blind_amt;
+      current_bet;
+      minimum_raise;
+      consecutive_calls;
+      new_round;
+      game_over;
+      fold_collection;
+      position;
+      winners;
+    }
+  with _ -> raise BadFormat

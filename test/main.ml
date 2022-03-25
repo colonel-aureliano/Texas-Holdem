@@ -405,8 +405,8 @@ let game_save_read_tests =
     save_game_test "" g_by_init2 "2player" true;
     save_game_test "" folded_g2 "2playerfold" true;
     save_game_test "" folded_g4 "4playerfold" true;
-    read_game_test "" "game_files/2player.json" 15
-    (* read_game_test "" "game_files/2playerfold.json" 15; *);
+    read_game_test "" "game_files/2player.json" 15;
+    read_game_test "" "game_files/2playerfold.json" 15;
   ]
 
 let suite =
