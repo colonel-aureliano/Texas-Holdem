@@ -6,6 +6,11 @@ val create_player : string -> int -> Card.t -> int -> player
 (** [create_player name wealth cards position] returns a player with
     name as [name], wealth as [wealth], cards as [cards]. *)
 
+val create_player_full : string -> int -> Card.t -> int -> int -> player
+(** [create_player_full name wealth cards amount_placed_on_table position]
+    returns a player with name as [name], wealth as [wealth], cards as
+    [cards], amount_placed_on_table as [amount_placed_on_table]. *)
+
 val name : player -> string
 val wealth : player -> int
 val amount_placed : player -> int

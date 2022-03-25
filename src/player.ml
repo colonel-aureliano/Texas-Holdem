@@ -21,6 +21,20 @@ let create_player
     position;
   }
 
+let create_player_full
+    (input_name : string)
+    (input_wealth : int)
+    (input_cards : Card.t)
+    (input_amount_placed_on_table : int)
+    (position : int) =
+  {
+    name = input_name;
+    wealth = input_wealth;
+    cards = input_cards;
+    amount_placed_on_table = input_amount_placed_on_table;
+    position;
+  }
+
 let name player = player.name
 let wealth player = player.wealth
 let amount_placed player = player.amount_placed_on_table
