@@ -48,7 +48,7 @@ let list_sum lst = List.fold_left (fun x y -> x + y) 0 lst
     average hand strength of the 7 cards *)
 let rec avg_hand_strength deck num_rollouts hand acc =
   match acc with
-  | 0 -> []
+  | -1 -> []
   | _ ->
       let rollouts = run_rollouts deck num_rollouts hand acc in
       let avg =
