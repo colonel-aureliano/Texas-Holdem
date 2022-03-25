@@ -1,10 +1,23 @@
 open Card
-
-type bot_level =
-  | Easy
-  | Medium
+open Player_with_bot
 
 let decision_rule
+    (my_strength : int)
+    (opp_strength : int)
+    (wealth : int)
+    (min_raise : int) : string list =
+  if min_raise > wealth then ["Fold"]
+  else
+    let threshold = Random.int 3 in
+    if threshold <= my_strength - opp_strength then
+      let amt = min
+        (min_raise + ((my_strength - opp_strength) * (wealth / 20)))
+        wealth
+      in 
+      ["Raise"; string_of_int amt]
+    else if threshold < my_strength - opp_strength + 2 then ["Call"]
+    else ["Fold"]
+(* let decision_rule
     (my_strength : int)
     (opp_strength : int)
     (wealth : int)
@@ -18,7 +31,9 @@ let decision_rule
            (min_raise + ((my_strength - opp_strength) * (wealth / 20)))
            wealth)
     else if threshold < my_strength - opp_strength + 2 then Call
-    else Fold
+    else Fold *)
+
+
 
 (* (** [next_move_easy hand table wealth min_raise] returns the next
    move (Call, Raise x, Fold) of the easy difficulty bot given cards
@@ -72,7 +87,7 @@ let next_move_medium
     (table : Card.t)
     (deck : Card.t)
     (wealth : int)
-    (min_raise : int) : Game.command =
+    (min_raise : int) : string list=
   if List.length table = 0 then
     decision_rule
       (starting_hand_estimated_strength hand)
@@ -101,7 +116,8 @@ let next_move
     (table : Card.t)
     (deck : Card.t)
     (wealth : int)
-    (min_raise : int) : Game.command =
+    (min_raise : int) : string list =
   match bot_level with
   | Easy -> next_move_easy wealth min_raise
   | Medium -> next_move_medium hand table deck wealth min_raise
+  | _ -> failwith "Unimplemented"

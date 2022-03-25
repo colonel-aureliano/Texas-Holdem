@@ -65,6 +65,9 @@ val execute_command : game -> command -> game * int
 (** [betting_round g] is the game state after executing the player's
     next move, and the amount of money the player added to the pot *)
 
+val table: game -> Card.t 
+(** [table game] gets the cards on table *)
+
 val get_curr_player : game -> player
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold. Read only. *)

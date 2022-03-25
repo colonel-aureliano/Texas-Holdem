@@ -228,11 +228,8 @@ and play game =
     if bot then 
     (
       let cmd_str = 
-        match mode with 
-        | Easy -> easy_next_move 
-        | Medium -> medium_next_move
-        | Hard -> hard_next_move 
-        | _ -> failwith "Error"
+        next_move mode (cards p) (table game) game.current_deck 
+          (wealth p) (game.minimum_raise)
       in let cmd = parse_bot_cmd cmd_str in
       let _ = execute_command game cmd in
       play game
