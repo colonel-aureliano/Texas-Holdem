@@ -30,17 +30,15 @@ let push x q = q @ [ x ]
 
 (** [pop q] is q with first element removed. Raises: Failure if q is
     empty *)
-let pop = function
-  | h :: t -> t
-  | _ -> failwith "Empty"
+let pop = List.tl
 
 (** [peek q] is the first element of q. Raises: Failure if q is empty *)
-let peek ls = List.hd ls
+let peek = List.hd
 
 (** [player_shift] pop the top element of the queue, deduct amount x
     from its wealth and push it to the back of the queue. Raises:
     InsufficientFund. *)
-let player_shift queue amt =
+let player_shift amt queue =
   let p = peek queue in
   push (deduct p amt) queue |> pop
 
@@ -48,7 +46,7 @@ let player_shift queue amt =
     first element is the same as n *)
 let rec rearrange queue func n =
   if n = func (peek queue) then queue
-  else rearrange (player_shift queue 0) func n
+  else rearrange (player_shift 0 queue) func n
 
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
@@ -74,8 +72,8 @@ let init_helper players_queue small_blind_amt first_player_pos =
     rearrange players_with_card position first_player_pos
   in
   let sb = peek original_queue in
-  let queue_sb = player_shift original_queue small_blind_amt in
-  let queue_bb = player_shift queue_sb (2 * small_blind_amt) in
+  let queue_sb = player_shift small_blind_amt original_queue in
+  let queue_bb = player_shift (2 * small_blind_amt) queue_sb in
   {
     active_players = queue_bb;
     current_deck = curr_deck;
@@ -107,7 +105,7 @@ let draw_card g num =
     player has spent amount x of his wealth. Then the current player is
     moved to the back.*)
 let execute_player_spending g x =
-  { g with active_players = player_shift g.active_players x }
+  { g with active_players = player_shift x g.active_players }
 
 (* END OF HELPER FUNCTIONS *)
 
@@ -128,15 +126,41 @@ let play_again game =
   init_helper players_queue game.small_blind_amt pos
 
 (* BEGIN OF RESHUFFLING PERIOD FUNCTIONS *)
+
+exception PlayerNotFound
+
 let reshuffling_period game =
   {
     game with
-    active_players = game.active_players @ game.fold_collection;
+    active_players =
+      game.active_players @ game.fold_collection
+      |> List.sort (fun x y -> position x - position y);
   }
 
-let add_fund game name amt = game
-let add_player game player = game
-let remove_player game name = game
+let add_fund game player_name amt =
+  let players = game.active_players in
+  if List.map name players |> List.mem player_name then
+    {
+      game with
+      active_players =
+        rearrange players name player_name |> player_shift (-amt);
+    }
+  else raise PlayerNotFound
+
+let remove_player game player_name =
+  let players = game.active_players in
+  if List.map name players |> List.mem player_name then
+    {
+      game with
+      active_players = rearrange players name player_name |> pop;
+    }
+  else raise PlayerNotFound
+
+let add_player game player_name wealth =
+  let players = game.active_players in
+  let pos = List.nth players (List.length players - 1) |> position in
+  let player = create_player player_name wealth (pos + 1) in
+  { game with active_players = players @ [ player ] }
 
 (* END OF RESHUFFLING PERIOD FUNCTIONS *)
 

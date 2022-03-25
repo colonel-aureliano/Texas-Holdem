@@ -11,12 +11,11 @@ exception InsufficientFund
 let create_player
     (input_name : string)
     (input_wealth : int)
-    (input_cards : Card.t)
     (position : int) =
   {
     name = input_name;
     wealth = input_wealth;
-    cards = input_cards;
+    cards = Card.new_deck;
     amount_placed_on_table = 0;
     position;
   }

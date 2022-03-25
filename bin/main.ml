@@ -145,7 +145,7 @@ let rec create_players n i (ls : player list) (namels : string list) =
     in
     "Your initial wealth is $" ^ string_of_int wealth ^ "."
     |> print_endline;
-    let player = create_player name wealth new_deck i in
+    let player = create_player name wealth i in
     create_players n (i + 1) (player :: ls) (name :: namels)
 
 (** [setup] sets up the initial state of the game. *)

@@ -20,6 +20,8 @@ type game = {
 
 exception RaiseFailure (* raise is less than previous raise. *)
 
+exception PlayerNotFound
+
 type command =
   | Call
   | Raise of int
@@ -37,8 +39,8 @@ val play_again : game -> game
     parts are the same as create_game. Precondition: game is over *)
 
 val reshuffling_period : game -> game
-(** [reshuffling_period] moves all players to active_players. Prepares
-    for adding funds, adding new players, and removing players.
+(** [reshuffling_period] moves all players to active_players and sort.
+    Prepares for adding funds, adding new players, and removing players.
     Precondition: game is over *)
 
 val add_fund : game -> string -> int -> game
@@ -46,9 +48,10 @@ val add_fund : game -> string -> int -> game
     str. Precondition: reshuffling period. Raises: Failure if such
     player does not exist *)
 
-val add_player : game -> player -> game
-(** [add_player game p] adds p to players in game. Precondition:
-    reshuffling period. TODO: raise duplicate name. *)
+val add_player : game -> string -> int -> game
+(** [add_player game name wealth] adds player with name and wealth to
+    players in game. Precondition: reshuffling period. TODO: raise
+    duplicate name. *)
 
 val remove_player : game -> string -> game
 (** [remove_player g str] removes player with name str from the game.
