@@ -20,6 +20,10 @@ let create_player
     position;
   }
 
+let create_player_raw n w card pos =
+  let p = create_player n w pos in
+  { p with cards = card }
+
 let create_player_full
     (input_name : string)
     (input_wealth : int)

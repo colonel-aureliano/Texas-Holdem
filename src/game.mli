@@ -21,6 +21,7 @@ type game = {
 exception RaiseFailure (* raise is less than previous raise. *)
 
 exception PlayerNotFound
+exception DuplicateName
 
 type command =
   | Call
@@ -44,19 +45,18 @@ val reshuffling_period : game -> game
     Precondition: game is over *)
 
 val add_fund : game -> string -> int -> game
-(** [add_fund game amt str] adds amount to wealth of player with name
-    str. Precondition: reshuffling period. Raises: Failure if such
-    player does not exist *)
+(** [add_fund game name amount] adds amount to wealth of player with
+    name str. Precondition: reshuffling period. Raises: PlayerNotFound,
+    Failure is amount is negative *)
 
 val add_player : game -> string -> int -> game
 (** [add_player game name wealth] adds player with name and wealth to
-    players in game. Precondition: reshuffling period. TODO: raise
-    duplicate name. *)
+    players in game. Precondition: reshuffling period. Raise:
+    DuplicateName, Failure if wealth is negative. *)
 
 val remove_player : game -> string -> game
 (** [remove_player g str] removes player with name str from the game.
-    recondition: reshuffling period. Raises: Failure if such player does
-    not exist *)
+    recondition: reshuffling period. Raises: PlayerNotFound *)
 
 val execute_command : game -> command -> game * int
 (** [betting_round g] is the game state after executing the player's

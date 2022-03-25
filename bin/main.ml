@@ -6,7 +6,7 @@ open Card
 exception Exit of int
 (** 0: exit; 1: save game *)
 
-(** [prompt] asks user to enter a parseable command. input of "exit"
+(** [parse] asks user to enter a parseable command. input of "exit"
     exits the game. Empty input and Raise 0 are parsed as Call. *)
 let parse game : command =
   print_string "> ";
@@ -25,6 +25,63 @@ let parse game : command =
         print_endline "\nGame saved to game_files folder.\n"
       else print_endline "\nFailed to save game.\n";
       Exit 1 |> raise
+  | _ -> failwith "Illegal Command"
+
+(** [reshuffling_parse] asks user to enter command during reshuffling
+    period. *)
+let rec reshuffle_parse game : game =
+  print_string "\n> ";
+  match
+    String.(
+      read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
+  with
+  | [ "add"; "fund"; name; amount ] -> begin
+      try
+        let game = add_fund game name (int_of_string amount) in
+        print_endline "Action succeeded";
+        reshuffle_parse game
+      with
+      | Failure _ ->
+          print_endline
+            "Action failed: amount must be a nonnegative integer";
+          reshuffle_parse game
+      | PlayerNotFound ->
+          print_endline "Action failed: player not found";
+          reshuffle_parse game
+    end
+  | [ "remove"; "player"; name ] -> begin
+      try
+        let game = remove_player game name in
+        print_endline "Action succeeded";
+        reshuffle_parse game
+      with PlayerNotFound ->
+        print_endline "Action failed: player not found";
+        reshuffle_parse game
+    end
+  | [ "add"; "player"; name; wealth ] -> begin
+      try
+        let game = add_player game name (int_of_string wealth) in
+        print_endline "Action succeeded";
+        reshuffle_parse game
+      with
+      | Failure _ ->
+          print_endline
+            "Action failed: amount must be a nonnegative integer";
+          reshuffle_parse game
+      | PlayerNotFound ->
+          print_endline "Action failed: player not found";
+          reshuffle_parse game
+      | DuplicateName ->
+          print_endline "Action failed: duplicate name";
+          reshuffle_parse game
+    end
+  | [ "start" ] ->
+      let game = play_again game in
+      print_endline "\n\nnew game started";
+      "small blind : " ^ name game.small_blind |> print_endline;
+      print_endline "the blinds are placed by dealer\n";
+      game
+  | [ "exit" ] -> Exit 0 |> raise
   | _ -> failwith "Illegal Command"
 
 (** Prompts for command until get a valid command*)
@@ -68,13 +125,20 @@ let rec end_game game =
   print_endline "\nWould you like to start another game? (Y/N)";
   print_string "> ";
   match String.(read_line () |> trim |> lowercase_ascii) with
-  | "y" | "" ->
-      let game = play_again game in
-      print_endline "\n\nnew game started";
-      "small blind : " ^ name game.small_blind |> print_endline;
-      print_endline "the blinds are placed by dealer\n";
-      play game
+  | "y" | "" -> reshuffling_period game |> reshuffle
   | _ -> print_endline "\nbye\n"
+
+and reshuffle game =
+  print_endline "\n\n\n\nReshuffling Period";
+  print_endline
+    "Commands: \n\
+    \ Add Fund [Name] [Amount] \n\
+    \ Add Player [Name] [Wealth] \n\
+    \ Remove Player [Name] \n\
+    \ Start";
+  try reshuffle_parse game |> play
+  with Exit n ->
+    "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)

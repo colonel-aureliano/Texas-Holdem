@@ -344,10 +344,10 @@ let get_curr_player_test
   assert_equal expected_output
     (Player.name (Game.get_curr_player input))
 
-let player_a = Player.create_player "b" 20 [ D 1; H 5 ] 0
-let player_b = Player.create_player "a" 20 [ D 2; S 5 ] 1
-let player_c = Player.create_player "c" 30 [] 2
-let player_d = Player.create_player "d" 30 [] 3
+let player_a = Player.create_player_raw "b" 20 [ D 1; H 5 ] 0
+let player_b = Player.create_player_raw "a" 20 [ D 2; S 5 ] 1
+let player_c = Player.create_player_raw "c" 30 [] 2
+let player_d = Player.create_player_raw "d" 30 [] 3
 
 let rec list_to_queue players queue =
   match players with

@@ -128,6 +128,7 @@ let play_again game =
 (* BEGIN OF RESHUFFLING PERIOD FUNCTIONS *)
 
 exception PlayerNotFound
+exception DuplicateName
 
 let reshuffling_period game =
   {
@@ -135,17 +136,20 @@ let reshuffling_period game =
     active_players =
       game.active_players @ game.fold_collection
       |> List.sort (fun x y -> position x - position y);
+    fold_collection = [];
   }
 
 let add_fund game player_name amt =
   let players = game.active_players in
-  if List.map name players |> List.mem player_name then
+  if List.map name players |> List.mem player_name |> not then
+    raise PlayerNotFound
+  else if amt < 0 then failwith "negative"
+  else
     {
       game with
       active_players =
         rearrange players name player_name |> player_shift (-amt);
     }
-  else raise PlayerNotFound
 
 let remove_player game player_name =
   let players = game.active_players in
@@ -158,9 +162,13 @@ let remove_player game player_name =
 
 let add_player game player_name wealth =
   let players = game.active_players in
-  let pos = List.nth players (List.length players - 1) |> position in
-  let player = create_player player_name wealth (pos + 1) in
-  { game with active_players = players @ [ player ] }
+  if List.map name players |> List.mem player_name then
+    raise DuplicateName
+  else if wealth < 0 then failwith "negative"
+  else
+    let pos = List.nth players (List.length players - 1) |> position in
+    let player = create_player player_name wealth (pos + 1) in
+    { game with active_players = players @ [ player ] }
 
 (* END OF RESHUFFLING PERIOD FUNCTIONS *)
 
