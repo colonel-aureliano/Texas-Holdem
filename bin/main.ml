@@ -40,62 +40,48 @@ let parse game : command =
     period. *)
 let rec reshuffle_parse game : game =
   print_string "\n> ";
-  match
-    String.(
-      read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
-  with
-  | [ "add"; "fund"; name; amount ] -> begin
-      try
+  try
+    match
+      String.(
+        read_line () |> trim |> lowercase_ascii |> split_on_char ' ')
+    with
+    | [ "add"; "fund"; name; amount ] ->
         let game = add_fund game name (int_of_string amount) in
         print_endline "Action succeeded";
         reshuffle_parse game
-      with
-      | Failure _ ->
-          print_endline
-            "Action failed: amount must be a nonnegative integer";
-          reshuffle_parse game
-      | PlayerNotFound ->
-          print_endline "Action failed: player not found";
-          reshuffle_parse game
-    end
-  | [ "remove"; "player"; name ] -> begin
-      try
+    | [ "remove"; "player"; name ] ->
         let game = remove_player game name in
         print_endline "Action succeeded";
         reshuffle_parse game
-      with
-      | PlayerNotFound ->
-          print_endline "Action failed: player not found";
-          reshuffle_parse game
-      | NotEnoughPlayers ->
-          print_endline "Action failed: not enough players ";
-          reshuffle_parse game
-    end
-  | [ "add"; "player"; name; wealth ] -> begin
-      try
+    | [ "add"; "player"; name; wealth ] ->
         let game = add_player game name (int_of_string wealth) in
         print_endline "Action succeeded";
         reshuffle_parse game
-      with
-      | Failure _ ->
-          print_endline
-            "Action failed: amount must be a nonnegative integer";
-          reshuffle_parse game
-      | DuplicateName ->
-          print_endline "Action failed: duplicate name";
-          reshuffle_parse game
-    end
-  | [ "start" ] ->
-      let game = play_again game in
-      print_endline "\n\nnew game started";
-      "small blind : " ^ name game.small_blind |> print_endline;
-      print_endline "the blinds are placed by dealer\n";
-      game
-  | [ "status" ] ->
-      player_result game.active_players;
+    | [ "start" ] ->
+        let game = play_again game in
+        print_endline "\n\nnew game started";
+        "small blind : " ^ name game.small_blind |> print_endline;
+        print_endline "the blinds are placed by dealer\n";
+        game
+    | [ "status" ] ->
+        player_result game.active_players;
+        reshuffle_parse game
+    | [ "exit" ] -> Exit 0 |> raise
+    | _ -> failwith "Illegal Command"
+  with
+  | PlayerNotFound ->
+      print_endline "Action failed: player not found";
       reshuffle_parse game
-  | [ "exit" ] -> Exit 0 |> raise
-  | _ -> failwith "Illegal Command"
+  | NotEnoughPlayers ->
+      print_endline "Action failed: not enough players ";
+      reshuffle_parse game
+  | DuplicateName ->
+      print_endline "Action failed: duplicate name";
+      reshuffle_parse game
+  | Failure _ ->
+      print_endline
+        "Action failed: amount must be a nonnegative integer";
+      reshuffle_parse game
 
 (** Prompts for command until get a valid command*)
 let rec get_command game : game * int =
@@ -144,9 +130,7 @@ and reshuffle game =
     \ Status \n\
     \ Exit \n\
     \ Start";
-  try reshuffle_parse game |> play
-  with Exit n ->
-    "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
+  reshuffle_parse game |> play
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
