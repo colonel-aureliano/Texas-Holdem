@@ -3,11 +3,12 @@ open Game
 open Player
 open Card
 
-exception Exit
+exception Exit of int
+(** 0: exit; 1: save game *)
 
 (** [prompt] asks user to enter a parseable command. input of "exit"
     exits the game. Empty input and Raise 0 are parsed as Call. *)
-let parse x : command =
+let parse game : command =
   print_string "> ";
   match
     String.(
@@ -18,7 +19,12 @@ let parse x : command =
   | [ "raise"; n ] ->
       let n = int_of_string n in
       if n > 0 then Raise n else failwith "Illegal Command"
-  | [ "exit" ] -> raise Exit
+  | [ "exit" ] -> Exit 0 |> raise
+  | [ "save"; name ] ->
+      if save_game game name then
+        print_endline "\nGame saved to game_files folder.\n"
+      else print_endline "\nFailed to save game.\n";
+      Exit 1 |> raise
   | _ -> failwith "Illegal Command"
 
 (** Prompts for command until get a valid command*)
@@ -28,7 +34,7 @@ let rec get_command game : game * int =
     ^ (get_legal_moves game |> String.concat ", ")
     ^ "\nEnter your move: ");
   try
-    let command = parse 0 in
+    let command = parse game in
     execute_command game command
   with
   | Failure _ ->
@@ -100,9 +106,7 @@ and play game =
       let game, amount = get_command game in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
       play game
-    with
-    | Exit -> print_endline "exit code 0"
-    | Tie _ -> print_endline "Tie in Game. Feature to be implemented."
+    with Exit n -> if n = 0 then print_endline "\nexit code 0\n"
 
 (** [create_players n i ls namels] adds [n] players to [ls]. Prompts
     each player to enter in their names and initial wealth. Default
