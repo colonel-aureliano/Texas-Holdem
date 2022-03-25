@@ -390,7 +390,4 @@ let save_game (g : game) (name : string) : bool =
     true
   with _ -> false
 
-let read_game (file : string) : game =
-  let rec read_file f = Yojson.Basic.from_file f in
-  let j = read_file file in
-  failwith ""
+let read_game (j : Yojson.Basic.t) : game = failwith ""
