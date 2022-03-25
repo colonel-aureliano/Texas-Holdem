@@ -331,6 +331,8 @@ let get_legal_moves (g : game) : string list =
     else moves
   else moves
 
+(* SAVE LOAD GAME FUNCTIONS *)
+
 let player_to_string (p : player) : string =
   "      \"name\": " ^ "\"" ^ Player.name p ^ "\"" ^ ",\n"
   ^ "      \"wealth\": "

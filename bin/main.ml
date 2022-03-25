@@ -6,6 +6,27 @@ open Card
 exception Exit of int
 (** 0: exit; 1: save game *)
 
+(** [load_file] prompts user to enter game file and converts it to type
+    game. x is dummy variable. Condition: requested json file exists in
+    game_files, file in right format of a game file. Raises: Exit *)
+let rec load_file () : game =
+  print_endline "Enter the game file: ";
+  print_string "> ";
+  let filename = read_line () in
+  if filename = "exit" then raise (Exit 0)
+  else
+    match
+      Yojson.Basic.from_file ("game_files/" ^ filename ^ ".json")
+      |> read_game
+    with
+    | exception Sys_error _ ->
+        print_endline "file not found\n";
+        load_file ()
+    | exception BadFormat ->
+        print_endline "bad json format\n";
+        load_file ()
+    | game -> game
+
 let rec player_result_helper = function
   | [] -> print_string ""
   | h :: t ->
@@ -31,8 +52,8 @@ let parse game : command =
   | [ "exit" ] -> Exit 0 |> raise
   | [ "save"; name ] ->
       if save_game game name then
-        print_endline "\nGame saved to game_files folder.\n"
-      else print_endline "\nFailed to save game.\n";
+        print_endline "\nGame saved to game_files folder."
+      else print_endline "\nFailed to save game.";
       Exit 1 |> raise
   | _ -> failwith "Illegal Command"
 
@@ -234,9 +255,30 @@ let setup () =
   print_endline "\n\nsetup completed";
   "small blind : " ^ name game.small_blind |> print_endline;
   print_endline "the blinds are placed by dealer\n";
-  play game
+  game
 
 (** Exectue game enegine *)
 let () =
   print_endline "\n\nWelcome to poker.\n";
-  setup ()
+  print_endline
+    "Setup Commands: \n\
+    \ New: start a new game \n\
+    \ Load : load an existing JSON game file";
+  print_string "> ";
+  try
+    let game =
+      match read_line () |> String.trim |> String.lowercase_ascii with
+      | "new" -> setup ()
+      | "load" -> load_file ()
+      | _ -> raise (Exit 0)
+    in
+    print_endline
+      "\n\n\
+       Play Commands Menu: \n\
+      \ Fold \n\
+      \ Call \n\
+      \ Raise [amount] \n\
+      \ Save [name] \n\
+      \ Exit";
+    play game
+  with Exit n -> print_endline "exit code 0"
