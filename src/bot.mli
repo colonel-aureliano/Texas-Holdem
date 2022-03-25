@@ -1,4 +1,7 @@
-val next_move_easy : Card.t -> Card.t -> int -> int -> Game.command
-(** [next_move_easy hand table wealth min_raise] returns the next move
-    (Call, Raise x, Fold) of the easy difficulty bot given cards [hand]
-    and [table] and states [wealth] and [min_raise]*)
+type bot_level = Easy (* TODO: delete this after Elva pushes *)
+
+val next_move :
+  bot_level -> Card.t -> Card.t -> Card.t -> int -> int -> Game.command
+(** [next_move difficult hand table deck wealth min_raise] returns the
+    next move (Call, Raise x, Fold) of the [difficulty] bot given cards
+    [hand] and [table] and states [wealth], [min_raise] and [deck]*)
