@@ -1,4 +1,7 @@
-type bot_level = Easy (* TODO: delete this after Elva pushes *)
+type bot_level =
+  | Easy
+  | Medium
+(* TODO: delete this after Elva pushes *)
 
 val next_move :
   bot_level -> Card.t -> Card.t -> Card.t -> int -> int -> Game.command
