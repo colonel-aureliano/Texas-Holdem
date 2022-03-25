@@ -148,23 +148,24 @@ and reshuffle game =
     \ Add Player [Name] [Wealth] \n\
     \ Remove Player [Name] \n\
     \ Status \n\
+    \ Save [filename] \n\
     \ Exit \n\
     \ Start";
   reshuffle_parse game |> begin_play
 
 (** [begin_play] displays commands menu and play. *)
 and begin_play game =
-  print_endline "\n\nGame Started";
+  print_endline "\n\n\n\nGame Started";
   "Small Blind : " ^ name game.small_blind |> print_endline;
   print_endline "\nPlayer Status";
   get_all_players game |> player_result;
   print_endline
-    "\n\n\
+    "\n\
      Game Commands Menu: \n\
     \ Fold \n\
     \ Call \n\
     \ Raise [amount] \n\
-    \ Save [name] \n\
+    \ Save [filename] \n\
     \ Exit";
   play game
 
