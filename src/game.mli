@@ -1,7 +1,7 @@
 open Player
 
 type game = {
-  active_players : player Queue.t;
+  active_players : player list;
   fold_collection : player list;
   current_deck : Card.t;
   cards_on_table : Card.t;

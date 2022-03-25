@@ -68,7 +68,7 @@ let rec end_game game =
   print_endline "\nWould you like to start another game? (Y/N)";
   print_string "> ";
   match String.(read_line () |> trim |> lowercase_ascii) with
-  | "y" ->
+  | "y" | "" ->
       let game = play_again game in
       print_endline "\n\nnew game started";
       "small blind : " ^ name game.small_blind |> print_endline;
@@ -106,7 +106,8 @@ and play game =
       let game, amount = get_command game in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
       play game
-    with Exit n -> if n = 0 then print_endline "\nexit code 0\n"
+    with Exit n ->
+      "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
 
 (** [create_players n i ls namels] adds [n] players to [ls]. Prompts
     each player to enter in their names and initial wealth. Default
@@ -131,8 +132,8 @@ let rec create_players n i (ls : player list) (namels : string list) =
             "player" ^ string_of_int i)
           else name
     in
-    "Hello " ^ name ^ "!" |> print_endline;
-    print_endline "\nEnter your wealth: ";
+    "\nHello " ^ name ^ "!" |> print_endline;
+    print_endline "Enter your wealth: ";
     print_string "> ";
     let wealth =
       try

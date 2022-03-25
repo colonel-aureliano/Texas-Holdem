@@ -2,7 +2,7 @@ open Card
 open Player
 
 type game = {
-  active_players : player Queue.t;
+  active_players : player list;
   fold_collection : player list;
   current_deck : Card.t;
   cards_on_table : Card.t;
@@ -25,70 +25,53 @@ type command =
 
 (* BEGINING OF HELPER FUNCTIONS *)
 
-(** [immutable_push] is Queue.push but returns the Queue instead of a
-    unit*)
-let immutable_push x q =
-  let myq = Queue.copy q in
-  Queue.push x myq;
-  myq
+(** [push x q] is [q; x]*)
+let push x q = q @ [ x ]
 
-(** [immutable_pop] is Queue.pop but returns the Queue instead of a unit*)
-let immutable_pop q =
-  let myq = Queue.copy q in
-  ignore (Queue.pop myq);
-  myq
+(** [pop q] is q with first element removed. Raises: Failure if q is
+    empty *)
+let pop = function
+  | h :: t -> t
+  | _ -> failwith "Empty"
 
-let rec list_to_queue_helper players queue =
-  match players with
-  | [] -> queue
-  | h :: t ->
-      list_to_queue_helper t
-        (Queue.add h queue;
-         queue)
-
-(** [list_to_queue players] converts the list of players to a queue. *)
-let list_to_queue player = list_to_queue_helper player (Queue.create ())
-
-(** [queue_to_list players] converts the queue of players to a list *)
-let queue_to_list q = List.rev (Queue.fold (fun x y -> y :: x) [] q)
+(** [peek q] is the first element of q. Raises: Failure if q is empty *)
+let peek ls = List.hd ls
 
 (** [players_to_hands] returns a list containing the hands of each
     player in [p] *)
 let players_to_hands (p : player list) : Card.t list =
   List.map (fun x -> cards x) p
 
-(** [player_shift] pop the top element on the queue, deduct amount x
-    from its wealth and push it to the back of the queue. Raise
+(** [player_shift] pop the top element of the queue, deduct amount x
+    from its wealth and push it to the back of the queue. Raises:
     InsufficientFund. *)
 let player_shift queue amt =
-  let p = Queue.peek queue in
-  immutable_push (deduct p amt) queue |> immutable_pop
+  let p = peek queue in
+  push (deduct p amt) queue |> pop
 
 (** rearrange rotate the players in the queue until the first element is
     has the name of sb *)
 let rec rearrange queue sb =
-  if name (Queue.peek queue) = name sb then queue
+  if name (peek queue) = name sb then queue
   else rearrange (player_shift queue 0) sb
 
 (** [rearrangepos queue pos] rotate the players in the queue until the
     first element is has the position pos. Precondition: such player
     exists. *)
 let rec rearrangepos queue pos =
-  if position (Queue.peek queue) = pos then queue
+  if position (peek queue) = pos then queue
   else rearrangepos (player_shift queue 0) pos
 
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
 let rec card_to_players queue deck num_dealed =
-  if num_dealed = Queue.length queue then (queue, deck)
+  if num_dealed = List.length queue then (queue, deck)
   else
-    let player = Queue.take queue in
+    let player = peek queue in
+    let queue = pop queue in
     let cards, new_deck = n_random_card deck 2 in
     let new_player = set_cards player cards in
-    card_to_players
-      (Queue.add new_player queue;
-       queue)
-      new_deck (num_dealed + 1)
+    card_to_players (push new_player queue) new_deck (num_dealed + 1)
 
 (** [init_helper players_queue small_blind_amt first_player_pos]
     initialize game. Small blind is the player at the first_player_pos,
@@ -102,7 +85,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
   let original_queue =
     rearrangepos players_with_card first_player_pos
   in
-  let sb = Queue.peek original_queue in
+  let sb = peek original_queue in
   let queue_sb = player_shift original_queue small_blind_amt in
   let queue_bb = player_shift queue_sb (2 * small_blind_amt) in
   {
@@ -144,22 +127,20 @@ let execute_player_spending g x =
     players and small_blind_amt. The first player in the queue will
     automatically be the small_blind *)
 let create_game players small_blind_amt =
-  let players_queue = list_to_queue players in
-  init_helper players_queue small_blind_amt 1
+  init_helper players small_blind_amt 1
 
 (** [play_again game] restarts the game with same set of players but
     shifting the small_blind to the next person *)
 let play_again game =
   let players_queue =
-    list_to_queue
-      List.(
-        queue_to_list game.active_players @ game.fold_collection
-        |> map reset_player
-        |> List.sort (fun x y -> position x - position y))
+    List.(
+      game.active_players @ game.fold_collection
+      |> map reset_player
+      |> List.sort (fun x y -> position x - position y))
   in
   let pos =
-    let n = (game.position + 1) mod Queue.length players_queue in
-    if n = 0 then Queue.length players_queue else n
+    let n = (game.position + 1) mod List.length players_queue in
+    if n = 0 then List.length players_queue else n
   in
   init_helper players_queue game.small_blind_amt pos
 
@@ -167,7 +148,7 @@ let reshuffling_period game = game
 
 (** [get_curr_player game] returns the player who is making the decision
     of pass/raise/fold *)
-let get_curr_player game = Queue.peek game.active_players
+let get_curr_player game = peek game.active_players
 
 (** [get_winner game] returns the player who won. Precondition: game had
     ended *)
@@ -196,7 +177,7 @@ let get_winning_hand game =
 (** [get_all_players game] returns all the players in the game. Sorted
     by position. *)
 let get_all_players game =
-  queue_to_list game.active_players @ game.fold_collection
+  game.active_players @ game.fold_collection
   |> List.sort (fun x y -> position x - position y)
 
 let table game = game.cards_on_table
@@ -204,10 +185,10 @@ let table game = game.cards_on_table
 (** [winner_player_with_pot_added] is the winning players with the pot
     added to their wealths *)
 let winners_with_pot_added g : player list =
-  if Queue.length g.active_players = 1 then
-    [ add (Queue.peek g.active_players) g.pot ]
+  if List.length g.active_players = 1 then
+    [ add (peek g.active_players) g.pot ]
   else
-    let player_list = g.active_players |> queue_to_list in
+    let player_list = g.active_players in
     let highest_hand_indeces =
       try
         [
@@ -232,10 +213,9 @@ let pot_distributer g =
   {
     g with
     active_players =
-      (queue_to_list g.active_players
+      (g.active_players
       |> List.filter (fun x -> List.mem (name x) names |> not))
-      @ g.winners
-      |> list_to_queue;
+      @ g.winners;
   }
 
 (** [new_betting_round] updates the game state to enter the next betting
@@ -271,8 +251,8 @@ let execute_command (g : game) (cmd : command) : game * int =
           consecutive_calls = g.consecutive_calls + 1;
         }
       in
-      if updated_g.consecutive_calls = Queue.length g.active_players
-      then (new_betting_round updated_g, x)
+      if updated_g.consecutive_calls = List.length g.active_players then
+        (new_betting_round updated_g, x)
       else (updated_g, x)
   | Raise x ->
       if x < g.minimum_raise then raise RaiseFailure
@@ -292,29 +272,28 @@ let execute_command (g : game) (cmd : command) : game * int =
       let updated_g =
         {
           g with
-          fold_collection =
-            Queue.peek g.active_players :: g.fold_collection;
-          active_players = immutable_pop g.active_players;
+          fold_collection = peek g.active_players :: g.fold_collection;
+          active_players = pop g.active_players;
         }
       in
-      if Queue.length updated_g.active_players = 1 then
+      if List.length updated_g.active_players = 1 then
         (pot_distributer updated_g, 0)
       else if
         updated_g.consecutive_calls
-        = Queue.length updated_g.active_players
+        = List.length updated_g.active_players
       then (new_betting_round updated_g, 0)
       else
         ( {
             updated_g with
             small_blind =
               (if name folder = name g.small_blind then
-               Queue.peek updated_g.active_players
+               peek updated_g.active_players
               else g.small_blind);
           },
           0 )
 
 let get_legal_moves (g : game) : string list =
-  let cur_player = Queue.peek g.active_players in
+  let cur_player = peek g.active_players in
   let amount_left_after_call =
     wealth cur_player - g.current_bet + amount_placed cur_player
   in
@@ -353,7 +332,7 @@ let save_game (g : game) (name : string) : bool =
       Printf.fprintf oc "%s\n" "    {";
       let active_players =
         String.concat "\n    },\n    {\n"
-          (List.map player_to_string (queue_to_list g.active_players))
+          (List.map player_to_string g.active_players)
       in
       Printf.fprintf oc "%s\n" active_players;
       Printf.fprintf oc "%s\n" "    }";
