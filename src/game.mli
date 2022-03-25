@@ -83,6 +83,8 @@ val save_game : game -> string -> bool
 (** [save_game game name] saves the current game to a [name].json,
     returns true if successful, false otherwise. *)
 
-val read_game : string -> game
-(** [read_game file] returns the game stored in [file]. Raises
-    [Sys_error file] if file is not found. *)
+exception BadFormat
+
+val read_game : Yojson.Basic.t -> game
+(** [read_game j] returns the game stored in [j]. Raises [BadFormat] if
+    [j] is badly formatted. *)

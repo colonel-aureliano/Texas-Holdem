@@ -397,14 +397,16 @@ let read_game_test
     (input : string)
     (expected_output : int) =
   name >:: fun _ ->
-  assert_equal expected_output (Game.read_game input).pot
+  assert_equal expected_output
+    (Game.read_game (Yojson.Basic.from_file input)).pot
 
 let game_save_read_tests =
   [
     save_game_test "" g_by_init2 "2player" true;
     save_game_test "" folded_g2 "2playerfold" true;
     save_game_test "" folded_g4 "4playerfold" true;
-    read_game_test "" "game_files/2player.json" 15;
+    read_game_test "" "game_files/2player.json" 15
+    (* read_game_test "" "game_files/2playerfold.json" 15; *);
   ]
 
 let suite =

@@ -375,4 +375,6 @@ let save_game (g : game) (name : string) : bool =
     true
   with _ -> false
 
-let read_game (s : string) : game = failwith "unimplemented"
+exception BadFormat
+
+let read_game (j : Yojson.Basic.t) : game = failwith ""
