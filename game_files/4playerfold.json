@@ -1,0 +1,57 @@
+{
+  "active_players": [
+    {
+      "name": "a",
+      "wealth": 15,
+      "amount_placed": 5,
+      "cards": "6♥   8♣   ",
+      "position": 1
+    },
+    {
+      "name": "c",
+      "wealth": 20,
+      "amount_placed": 10,
+      "cards": "9♣   8♥   ",
+      "position": 2
+    }
+  ],
+  "fold_collection": [
+    {
+      "name": "b",
+      "wealth": 20,
+      "amount_placed": 0,
+      "cards": "A♦   8♠   ",
+      "position": 0
+    },
+    {
+      "name": "d",
+      "wealth": 30,
+      "amount_placed": 0,
+      "cards": "Q♦   2♣   ",
+      "position": 3
+    }
+  ],
+  "current_deck": "K♦   J♦   10♦   9♦   8♦   7♦   6♦   5♦   4♦   3♦   2♦   K♣   Q♣   J♣   10♣   7♣   6♣   5♣   4♣   3♣   A♣   K♥   Q♥   J♥   10♥   9♥   7♥   5♥   4♥   3♥   2♥   A♥   K♠   Q♠   J♠   10♠   9♠   7♠   6♠   5♠   4♠   3♠   2♠   A♠   ",
+  "cards_on_table": "",
+  "pot": 15,
+  "small_blind": 
+    {
+      "name": "a",
+      "wealth": 20,
+      "amount_placed": 0,
+      "cards": "6♥   8♣   ",
+      "position": 1
+    },
+  "small_blind_amt": 5,
+  "current_bet": 10,
+  "minimum_raise": 10,
+  "consecutive_calls": 0,
+  "new_round": false,
+  "game_over": false,
+  "winners": [
+    {
+
+    }
+  ],
+  "position": 1
+}
