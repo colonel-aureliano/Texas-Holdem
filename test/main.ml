@@ -344,10 +344,10 @@ let get_curr_player_test
   assert_equal expected_output
     (Player.name (Game.get_curr_player input))
 
-let player_a = Player.create_player_raw "b" 20 [ D 1; H 5 ] 0
-let player_b = Player.create_player_raw "a" 20 [ D 2; S 5 ] 1
-let player_c = Player.create_player_raw "c" 30 [] 2
-let player_d = Player.create_player_raw "d" 30 [] 3
+let player_a = Player.create_player_full "b" 20 [ D 1; H 5 ] 0 0
+let player_b = Player.create_player_full "a" 20 [ D 2; S 5 ] 0 1
+let player_c = Player.create_player_full "c" 30 [] 0 2
+let player_d = Player.create_player_full "d" 30 [] 0 3
 
 let rec list_to_queue players queue =
   match players with
@@ -405,8 +405,9 @@ let game_save_read_tests =
     save_game_test "" g_by_init2 "2player" true;
     save_game_test "" folded_g2 "2playerfold" true;
     save_game_test "" folded_g4 "4playerfold" true;
-    read_game_test "" "game_files/2player.json" 15
-    (* read_game_test "" "game_files/2playerfold.json" 15; *);
+    read_game_test "" "game_files/2player.json" 15;
+    read_game_test "" "game_files/2playerfold.json" 15;
+    read_game_test "" "game_files/4playerfold.json" 15;
   ]
 
 let suite =
