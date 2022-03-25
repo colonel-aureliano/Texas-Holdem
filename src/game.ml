@@ -114,7 +114,7 @@ let create_game players small_blind_amt =
   init_helper players small_blind_amt 1
 
 let play_again game =
-  let players = game.active_players in
+  let players = List.map reset_player game.active_players in
   let sb =
     try
       List.filter (fun x -> position x > game.position) players

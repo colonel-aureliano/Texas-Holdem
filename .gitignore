@@ -10,7 +10,6 @@ texas_holdem.zip
 *.native
 *.byte
 _build
-game_files
 
 # temporary files
 *.swp
