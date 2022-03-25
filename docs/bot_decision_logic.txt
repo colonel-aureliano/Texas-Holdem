@@ -1,4 +1,7 @@
-Easy level bot logic: 
+Easy level bot: 
+  - random decisions
+  
+Medium level bot logic: 
   - If pre-flop then go by table else
   - Get mean of the average hand strengths under 0, 1, or 2 more cards dealt (in x number of simulations)
   - Do the same for the opponent, assuming a random hand

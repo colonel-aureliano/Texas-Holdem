@@ -1,6 +1,8 @@
 open Card
 
-type bot_level = Easy
+type bot_level =
+  | Easy
+  | Medium
 
 let decision_rule
     (my_strength : int)
@@ -60,7 +62,7 @@ let rec avg_hand_strength deck num_rollouts hand acc =
     (Call, Raise x, Fold) of the medium difficulty bot given cards
     [hand] and [table] and states [wealth] and [min_raise]. It only
     looks at the projection of its own hand's strength.*)
-let next_move_easy
+let next_move_medium
     (hand : Card.t)
     (table : Card.t)
     (deck : Card.t)
@@ -85,6 +87,9 @@ let next_move_easy
     in
     decision_rule my_avg_strength opp_avg_strength wealth min_raise
 
+let next_move_easy (wealth : int) (min_raise : int) =
+  decision_rule (Random.int 3) 0 wealth min_raise
+
 let next_move
     bot_level
     (hand : Card.t)
@@ -93,4 +98,5 @@ let next_move
     (wealth : int)
     (min_raise : int) : Game.command =
   match bot_level with
-  | Easy -> next_move_easy hand table deck wealth min_raise
+  | Easy -> next_move_easy wealth min_raise
+  | Medium -> next_move_medium hand table deck wealth min_raise
