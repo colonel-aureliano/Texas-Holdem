@@ -37,11 +37,6 @@ let pop = function
 (** [peek q] is the first element of q. Raises: Failure if q is empty *)
 let peek ls = List.hd ls
 
-(** [players_to_hands] returns a list containing the hands of each
-    player in [p] *)
-let players_to_hands (p : player list) : Card.t list =
-  List.map (fun x -> cards x) p
-
 (** [player_shift] pop the top element of the queue, deduct amount x
     from its wealth and push it to the back of the queue. Raises:
     InsufficientFund. *)
@@ -49,18 +44,11 @@ let player_shift queue amt =
   let p = peek queue in
   push (deduct p amt) queue |> pop
 
-(** rearrange rotate the players in the queue until the first element is
-    has the name of sb *)
-let rec rearrange queue sb =
-  if name (peek queue) = name sb then queue
-  else rearrange (player_shift queue 0) sb
-
-(** [rearrangepos queue pos] rotate the players in the queue until the
-    first element is has the position pos. Precondition: such player
-    exists. *)
-let rec rearrangepos queue pos =
-  if position (peek queue) = pos then queue
-  else rearrangepos (player_shift queue 0) pos
+(** [rearrange queue func m] rotate the players in the queue until func
+    first element is the same as n *)
+let rec rearrange queue func n =
+  if n = func (peek queue) then queue
+  else rearrange (player_shift queue 0) func n
 
 (** [card_to_players queue deck num_dealed] deal 2 cards randomly to
     players in the queue *)
@@ -83,7 +71,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
     card_to_players players_queue new_deck 0
   in
   let original_queue =
-    rearrangepos players_with_card first_player_pos
+    rearrange players_with_card position first_player_pos
   in
   let sb = peek original_queue in
   let queue_sb = player_shift original_queue small_blind_amt in
@@ -123,14 +111,9 @@ let execute_player_spending g x =
 
 (* END OF HELPER FUNCTIONS *)
 
-(** [create_game players small_blind_amt] initializes game based on
-    players and small_blind_amt. The first player in the queue will
-    automatically be the small_blind *)
 let create_game players small_blind_amt =
   init_helper players small_blind_amt 1
 
-(** [play_again game] restarts the game with same set of players but
-    shifting the small_blind to the next person *)
 let play_again game =
   let players_queue =
     List.(
@@ -144,14 +127,20 @@ let play_again game =
   in
   init_helper players_queue game.small_blind_amt pos
 
-let reshuffling_period game = game
+(* BEGIN OF RESHUFFLING PERIOD FUNCTIONS *)
+let reshuffling_period game =
+  {
+    game with
+    active_players = game.active_players @ game.fold_collection;
+  }
 
-(** [get_curr_player game] returns the player who is making the decision
-    of pass/raise/fold *)
+let add_fund game name amt = game
+let add_player game player = game
+let remove_player game name = game
+
+(* END OF RESHUFFLING PERIOD FUNCTIONS *)
+
 let get_curr_player game = peek game.active_players
-
-(** [get_winner game] returns the player who won. Precondition: game had
-    ended *)
 let get_winners game = game.winners
 
 let ranks =
@@ -168,14 +157,10 @@ let ranks =
     "Royal Flush";
   ]
 
-(** [get_winning_hand] returns the rank of winninng hand. Preconditino:
-    game has ended *)
 let get_winning_hand game =
   (game.winners |> List.hd |> cards) @ game.cards_on_table
   |> rank_of_hand |> List.nth ranks
 
-(** [get_all_players game] returns all the players in the game. Sorted
-    by position. *)
 let get_all_players game =
   game.active_players @ game.fold_collection
   |> List.sort (fun x y -> position x - position y)
@@ -224,7 +209,9 @@ let new_betting_round (g : game) : game =
   if List.length g.cards_on_table = 5 then pot_distributer g
   else
     let num_card = if List.length g.cards_on_table = 0 then 3 else 1 in
-    let rearranged_p = rearrange g.active_players g.small_blind in
+    let rearranged_p =
+      rearrange g.active_players name (name g.small_blind)
+    in
     draw_card
       {
         g with
@@ -237,8 +224,6 @@ let new_betting_round (g : game) : game =
 
 exception RaiseFailure
 
-(** [execute_command g] returns the game state after executing the
-    player's next move*)
 let execute_command (g : game) (cmd : command) : game * int =
   match cmd with
   | Call ->

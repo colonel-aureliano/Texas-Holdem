@@ -27,9 +27,9 @@ type command =
 
 val create_game : player list -> int -> game
 (** [create_game] initialize the game with player list passed in from
-    the interface player, deal hands for each player, and deal the cards
-    on the table. It also automatically move for small and big blind, so
-    the next player to move is the one after big blind *)
+    the interface player, deal hands for each player. First player is
+    small blind. It also automatically move for small and big blind, so
+    the next player to move is the one after big blind. *)
 
 val play_again : game -> game
 (** [play again] reinitialize the game with the same players from the
@@ -40,6 +40,20 @@ val reshuffling_period : game -> game
 (** [reshuffling_period] moves all players to active_players. Prepares
     for adding funds, adding new players, and removing players.
     Precondition: game is over *)
+
+val add_fund : game -> string -> int -> game
+(** [add_fund game amt str] adds amount to wealth of player with name
+    str. Precondition: reshuffling period. Raises: Failure if such
+    player does not exist *)
+
+val add_player : game -> player -> game
+(** [add_player game p] adds p to players in game. Precondition:
+    reshuffling period. TODO: raise duplicate name. *)
+
+val remove_player : game -> string -> game
+(** [remove_player g str] removes player with name str from the game.
+    recondition: reshuffling period. Raises: Failure if such player does
+    not exist *)
 
 val execute_command : game -> command -> game * int
 (** [betting_round g] is the game state after executing the player's
@@ -54,7 +68,7 @@ val get_winners : game -> player list
     had ended. Read only. *)
 
 val get_winning_hand : game -> string
-(** [get_winning_hand] returns the rank of winninng hand. Preconditino:
+(** [get_winning_hand] returns the rank of winninng hand. Precondition:
     game has ended. Read only. *)
 
 val get_all_players : game -> player list
