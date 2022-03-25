@@ -9,11 +9,16 @@ let decision_rule
     (opp_strength : int)
     (wealth : int)
     (min_raise : int) : Game.command =
-  let threshold = Random.int 3 in
-  if threshold <= my_strength - opp_strength then
-    Raise (min_raise + ((my_strength - opp_strength) * (wealth / 20)))
-  else if threshold < my_strength - opp_strength + 2 then Call
-  else Fold
+  if min_raise > wealth then Fold
+  else
+    let threshold = Random.int 3 in
+    if threshold <= my_strength - opp_strength then
+      Raise
+        (min
+           (min_raise + ((my_strength - opp_strength) * (wealth / 20)))
+           wealth)
+    else if threshold < my_strength - opp_strength + 2 then Call
+    else Fold
 
 (* (** [next_move_easy hand table wealth min_raise] returns the next
    move (Call, Raise x, Fold) of the easy difficulty bot given cards
