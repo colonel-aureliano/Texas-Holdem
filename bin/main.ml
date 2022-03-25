@@ -6,6 +6,15 @@ open Card
 exception Exit of int
 (** 0: exit; 1: save game *)
 
+let rec player_result_helper = function
+  | [] -> print_string ""
+  | h :: t ->
+      player_result_helper t;
+      name h ^ ": $" ^ string_of_int (wealth h) |> print_endline
+
+(** [player_result] prints the naeme and wealth of all players *)
+let rec player_result ls = List.rev ls |> player_result_helper
+
 (** [parse] asks user to enter a parseable command. input of "exit"
     exits the game. Empty input and Raise 0 are parsed as Call. *)
 let parse game : command =
@@ -54,9 +63,13 @@ let rec reshuffle_parse game : game =
         let game = remove_player game name in
         print_endline "Action succeeded";
         reshuffle_parse game
-      with PlayerNotFound ->
-        print_endline "Action failed: player not found";
-        reshuffle_parse game
+      with
+      | PlayerNotFound ->
+          print_endline "Action failed: player not found";
+          reshuffle_parse game
+      | NotEnoughPlayers ->
+          print_endline "Action failed: not enough players ";
+          reshuffle_parse game
     end
   | [ "add"; "player"; name; wealth ] -> begin
       try
@@ -68,9 +81,6 @@ let rec reshuffle_parse game : game =
           print_endline
             "Action failed: amount must be a nonnegative integer";
           reshuffle_parse game
-      | PlayerNotFound ->
-          print_endline "Action failed: player not found";
-          reshuffle_parse game
       | DuplicateName ->
           print_endline "Action failed: duplicate name";
           reshuffle_parse game
@@ -81,6 +91,9 @@ let rec reshuffle_parse game : game =
       "small blind : " ^ name game.small_blind |> print_endline;
       print_endline "the blinds are placed by dealer\n";
       game
+  | [ "status" ] ->
+      player_result game.active_players;
+      reshuffle_parse game
   | [ "exit" ] -> Exit 0 |> raise
   | _ -> failwith "Illegal Command"
 
@@ -104,13 +117,6 @@ let rec get_command game : game * int =
       print_endline "Insufficient Raise";
       get_command game
 
-(** [player_result] prints the naeme and wealth of all players *)
-let rec player_result = function
-  | [] -> print_string ""
-  | h :: t ->
-      player_result t;
-      name h ^ ": $" ^ string_of_int (wealth h) |> print_endline
-
 (** [end_game] shows the result of the game and asks whether to play
     again *)
 let rec end_game game =
@@ -120,7 +126,7 @@ let rec end_game game =
   s ^ String.concat ", " winners |> print_endline;
   "Winning hand has " ^ get_winning_hand game ^ "." |> print_endline;
   print_endline "\nPlayer Status";
-  let players = get_all_players game |> List.rev in
+  let players = get_all_players game in
   player_result players;
   print_endline "\nWould you like to start another game? (Y/N)";
   print_string "> ";
@@ -131,10 +137,12 @@ let rec end_game game =
 and reshuffle game =
   print_endline "\n\n\n\nReshuffling Period";
   print_endline
-    "Commands: \n\
+    "Commands Menu: \n\
     \ Add Fund [Name] [Amount] \n\
     \ Add Player [Name] [Wealth] \n\
     \ Remove Player [Name] \n\
+    \ Status \n\
+    \ Exit \n\
     \ Start";
   try reshuffle_parse game |> play
   with Exit n ->

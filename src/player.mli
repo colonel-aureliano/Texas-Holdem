@@ -2,8 +2,6 @@ type player
 
 exception InsufficientFund
 
-val create_player_raw : string -> int -> Card.t -> int -> player
-
 val create_player : string -> int -> int -> player
 (** [create_player name wealth position] returns a player with name as
     [name], wealth as [wealth]. *)

@@ -114,22 +114,20 @@ let create_game players small_blind_amt =
   init_helper players small_blind_amt 1
 
 let play_again game =
-  let players_queue =
-    List.(
-      game.active_players @ game.fold_collection
-      |> map reset_player
-      |> List.sort (fun x y -> position x - position y))
+  let players = game.active_players in
+  let sb =
+    try
+      List.filter (fun x -> position x > game.position) players
+      |> List.hd
+    with Failure _ -> List.hd players
   in
-  let pos =
-    let n = (game.position + 1) mod List.length players_queue in
-    if n = 0 then List.length players_queue else n
-  in
-  init_helper players_queue game.small_blind_amt pos
+  init_helper players game.small_blind_amt (position sb)
 
 (* BEGIN OF RESHUFFLING PERIOD FUNCTIONS *)
 
 exception PlayerNotFound
 exception DuplicateName
+exception NotEnoughPlayers
 
 let reshuffling_period game =
   {
@@ -149,17 +147,21 @@ let add_fund game player_name amt =
     {
       game with
       active_players =
-        rearrange players name player_name |> player_shift (-amt);
+        rearrange players name player_name
+        |> player_shift (-amt)
+        |> List.sort (fun x y -> position x - position y);
     }
 
 let remove_player game player_name =
   let players = game.active_players in
-  if List.map name players |> List.mem player_name then
+  if List.length players < 2 then raise NotEnoughPlayers
+  else if List.map name players |> List.mem player_name |> not then
+    raise PlayerNotFound
+  else
     {
       game with
       active_players = rearrange players name player_name |> pop;
     }
-  else raise PlayerNotFound
 
 let add_player game player_name wealth =
   let players = game.active_players in

@@ -22,6 +22,7 @@ exception RaiseFailure (* raise is less than previous raise. *)
 
 exception PlayerNotFound
 exception DuplicateName
+exception NotEnoughPlayers
 
 type command =
   | Call
@@ -37,7 +38,8 @@ val create_game : player list -> int -> game
 val play_again : game -> game
 (** [play again] reinitialize the game with the same players from the
     previous game but shift the small blind to the next person. Other
-    parts are the same as create_game. Precondition: game is over *)
+    parts are the same as create_game. Precondition: reshuffling period
+    (active_players is sorted by position) *)
 
 val reshuffling_period : game -> game
 (** [reshuffling_period] moves all players to active_players and sort.
@@ -56,7 +58,8 @@ val add_player : game -> string -> int -> game
 
 val remove_player : game -> string -> game
 (** [remove_player g str] removes player with name str from the game.
-    recondition: reshuffling period. Raises: PlayerNotFound *)
+    recondition: reshuffling period. Raises: PlayerNotFound,
+    NotEnoughPlayers*)
 
 val execute_command : game -> command -> game * int
 (** [betting_round g] is the game state after executing the player's
