@@ -101,7 +101,10 @@ let next_move_medium
     decision_rule my_avg_strength opp_avg_strength wealth min_raise
 
 let next_move_easy (wealth : int) (min_raise : int) =
-  decision_rule (Random.int 3) 0 wealth min_raise
+  decision_rule
+    (Random.self_init ();
+     Random.int 3)
+    0 wealth min_raise
 
 let next_move
     bot_level
