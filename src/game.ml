@@ -419,32 +419,30 @@ let to_card_list (s : string) : card list =
     match lst with
     | [] -> []
     | h :: t ->
-        let number =
-          match h.[0] with
-          | 'K' -> 13
-          | 'Q' -> 12
-          | 'J' -> 11
-          | 'A' -> 1
-          | x -> int_of_char x - 48
-        in
-        if String.sub h 1 1 = String.sub "7♦" 1 1 then
-          D number :: to_card t
-        else if String.sub h 1 1 = String.sub "7♥" 1 1 then
-          H number :: to_card t
-        else if String.sub h 1 1 = String.sub "7♣" 1 1 then
-          C number :: to_card t
-        else if String.sub h 1 1 = String.sub "7♠" 1 1 then
-          S number :: to_card t
-        else if String.sub h 2 1 = String.sub "7♦" 1 1 then
-          D number :: to_card t
-        else if String.sub h 2 1 = String.sub "7♥" 1 1 then
-          H number :: to_card t
-        else if String.sub h 2 1 = String.sub "7♣" 1 1 then
-          C number :: to_card t
-        else if String.sub h 2 1 = String.sub "7♠" 1 1 then
-          S number :: to_card t
-        else failwith "failed to match suits"
+        if String.length h = 4 then
+          let number =
+            match h.[0] with
+            | 'K' -> 13
+            | 'Q' -> 12
+            | 'J' -> 11
+            | 'A' -> 1
+            | x -> int_of_char x - 48
+          in
+          if String.sub h 1 3 = "♦" then D number :: to_card t
+          else if String.sub h 1 3 = "♥" then H number :: to_card t
+          else if String.sub h 1 3 = "♣" then C number :: to_card t
+          else if String.sub h 1 3 = "♠" then S number :: to_card t
+          else failwith "failed to match suits"
+        else
+          let number = String.sub h 0 2 in
+          let number = int_of_string number in
+          if String.sub h 2 3 = "♦" then D number :: to_card t
+          else if String.sub h 2 3 = "♥" then H number :: to_card t
+          else if String.sub h 2 3 = "♣" then C number :: to_card t
+          else if String.sub h 2 3 = "♠" then S number :: to_card t
+          else failwith "failed to match suits"
   in
+
   to_card lst
 
 let to_player (obj : Yojson.Basic.t) : player =
