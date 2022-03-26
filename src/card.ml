@@ -23,6 +23,54 @@ let rec to_string (hand : t) : string =
       | H x -> string_of_rank x ^ "♥" ^ "   " ^ to_string t
       | D x -> string_of_rank x ^ "♦" ^ "   " ^ to_string t)
 
+let rec first_last_line (n : int) (acc : string) : string =
+  if n = 0 then acc else first_last_line (n - 1) (acc ^ "+ --- +   ")
+
+let rec second_line (lst : string list) (acc : string) : string =
+  if List.length lst = 0 then acc
+  else
+    let value = List.hd lst in
+    if String.length value = 1 then
+      second_line (List.tl lst) (acc ^ "|" ^ value ^ "    |   ")
+    else second_line (List.tl lst) (acc ^ "|" ^ value ^ "   |   ")
+
+let rec third_line (lst : string list) (acc : string) : string =
+  if List.length lst = 0 then acc
+  else third_line (List.tl lst) (acc ^ "|  " ^ List.hd lst ^ "  |   ")
+
+let rec fourth_line (lst : string list) (acc : string) : string =
+  if List.length lst = 0 then acc
+  else
+    let value = List.hd lst in
+    if String.length value = 1 then
+      fourth_line (List.tl lst) (acc ^ "|    " ^ value ^ "|   ")
+    else fourth_line (List.tl lst) (acc ^ "|   " ^ value ^ "|   ")
+
+let extract_value (c : card) =
+  match c with
+  | S x | H x | C x | D x -> x
+
+let rec pretty_print (hand : t) : string =
+  let n = List.length hand in
+  let value_list =
+    List.map string_of_rank (List.map extract_value hand)
+  in
+  let suit_list =
+    List.map
+      (fun x ->
+        match x with
+        | S x -> "♠"
+        | C x -> "♣"
+        | H x -> "♥"
+        | D x -> "♦")
+      hand
+  in
+  "\n" ^ first_last_line n "" ^ "\n"
+  ^ second_line value_list ""
+  ^ "\n" ^ third_line suit_list "" ^ "\n"
+  ^ fourth_line value_list ""
+  ^ "\n" ^ first_last_line n ""
+
 let rec create_new_deck lst =
   match lst with
   | [] -> create_new_deck [ S 1 ]
@@ -55,10 +103,6 @@ let rec n_random_card (t : t) (n : int) =
       let card, new_deck = random_card t in
       let remaining_cards, new_deck = n_random_card new_deck (n - 1) in
       (card :: remaining_cards, new_deck)
-
-let extract_value (c : card) =
-  match c with
-  | S x | H x | C x | D x -> x
 
 let single_compare (card1 : card) (card2 : card) =
   let x1 = extract_value card1 in

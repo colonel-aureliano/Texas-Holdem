@@ -14,7 +14,11 @@ type t = card list
 (** Represents one deck of cards. *)
 
 val to_string : t -> string
-(** [to_string hand] a string representation of [hand]. *)
+(** [to_string hand] returns a string representation of [hand]. *)
+
+val pretty_print : t -> string
+(** [pretty_print hand] returns a pretty string representation of
+    [hand]. *)
 
 val new_deck : t
 (** [new_deck] returns a new deck of poker cards. There are 52 cards. *)
