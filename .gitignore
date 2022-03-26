@@ -10,6 +10,7 @@ texas_holdem.zip
 *.native
 *.byte
 _build
+*.json
 
 # temporary files
 *.swp
