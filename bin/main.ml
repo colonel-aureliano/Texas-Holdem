@@ -4,12 +4,12 @@ open Player
 open Card
 
 exception Exit of int
-(** 0: exit; 1: save game *)
+(** 0: exit; 1: save game; 2: load file error *)
 
 (** [load_file] prompts user to enter game file and converts it to type
     game. x is dummy variable. Condition: requested json file exists in
     game_files, file in right format of a game file. *)
-let rec load_file () : game =
+let load_file () : game =
   print_endline "Enter the game file: ";
   print_string "> ";
   let filename = read_line () in
@@ -19,10 +19,10 @@ let rec load_file () : game =
   with
   | exception Sys_error _ ->
       print_endline "file not found\n";
-      load_file ()
+      raise (Exit 2)
   | exception BadFormat ->
       print_endline "bad json format\n";
-      load_file ()
+      raise (Exit 2)
   | game -> game
 
 let rec player_result_helper = function
@@ -283,5 +283,9 @@ let () =
   print_string "> ";
   match read_line () |> String.trim |> String.lowercase_ascii with
   | "new" -> setup () |> begin_play
-  | "load" -> load_file () |> begin_play
+  | "load" -> begin
+      try load_file () |> begin_play
+      with Exit n ->
+        "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
+    end
   | _ -> ()
