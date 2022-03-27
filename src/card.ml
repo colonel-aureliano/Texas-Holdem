@@ -18,10 +18,10 @@ let rec to_string (hand : t) : string =
   | [] -> ""
   | h :: t -> (
       match h with
-      | S x -> string_of_rank x ^ "♠" ^ "   " ^ to_string t
-      | C x -> string_of_rank x ^ "♣" ^ "   " ^ to_string t
-      | H x -> string_of_rank x ^ "♥" ^ "   " ^ to_string t
-      | D x -> string_of_rank x ^ "♦" ^ "   " ^ to_string t)
+      | S x -> string_of_rank x ^ "♠" ^ " " ^ to_string t
+      | C x -> string_of_rank x ^ "♣" ^ " " ^ to_string t
+      | H x -> string_of_rank x ^ "♥" ^ " " ^ to_string t
+      | D x -> string_of_rank x ^ "♦" ^ " " ^ to_string t)
 
 let rec first_last_line (n : int) (acc : string) : string =
   if n = 0 then acc else first_last_line (n - 1) (acc ^ "+ --- +   ")
