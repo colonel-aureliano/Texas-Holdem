@@ -141,7 +141,7 @@ let rec end_game game =
 
 (** [reshuffle] displays commands menu and enters reshuffle period *)
 and reshuffle game =
-  print_endline "\n\n\n\nReshuffling Period";
+  print_endline "\n\n\n\n\n\n\n\nReshuffling Period";
   print_endline
     "Commands Menu: \n\
     \ Add Fund [Name] [Amount] \n\
@@ -155,7 +155,7 @@ and reshuffle game =
 
 (** [begin_play] displays commands menu and play. *)
 and begin_play game =
-  print_endline "\n\n\n\nGame Started";
+  print_endline "\n\n\n\n\n\n\n\nGame Started";
   "Small Blind : " ^ name game.small_blind |> print_endline;
   print_endline "\nPlayer Status";
   get_all_players game |> player_result;
@@ -174,18 +174,19 @@ and begin_play game =
 and play game =
   if game.game_over = true then end_game game
   else if game.new_round = true then begin
-    print_endline "\n\n\n\nNew cards have been dealt. ";
-    "Table: " ^ to_string game.cards_on_table |> print_endline;
+    print_endline "\n\n\n\n\n\n\n\nNew cards have been dealt. ";
+    "Table: " ^ pretty_print game.cards_on_table |> print_endline;
     play { game with new_round = false }
   end
   else
     let p = get_curr_player game in
-    "\n\n\n\nThe next player is " ^ name p ^ "." |> print_endline;
+    "\n\n\n\n\n\n\n\nThe next player is " ^ name p ^ "."
+    |> print_endline;
     print_endline "Press Enter to confirm.";
     print_string (read_line ());
-    "\nTable: " ^ to_string game.cards_on_table |> print_endline;
+    "\nTable: " ^ pretty_print game.cards_on_table |> print_endline;
     "\nHello, " ^ name p ^ "!" |> print_endline;
-    "Your Hand: " ^ to_string (cards p) |> print_endline;
+    "Your Hand: " ^ pretty_print (cards p) |> print_endline;
     "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
     |> print_endline;
     "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
