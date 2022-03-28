@@ -12,7 +12,6 @@ type game = {
   minimum_raise : int;
   consecutive_calls : int;
   new_round : bool;
-  game_over : bool;
   winners : player list;
   position : int;
 }

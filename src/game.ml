@@ -14,7 +14,6 @@ type game = {
   minimum_raise : int; (* raise of current betting round *)
   consecutive_calls : int;
   new_round : bool; (* true when new cards are dealt, altered by main *)
-  game_over : bool;
   winners : player list; (* empty until game has ended *)
   position : int; (* position of small blind in the current game *)
 }
@@ -86,7 +85,6 @@ let init_helper players_queue small_blind_amt first_player_pos =
     minimum_raise = 2 * small_blind_amt;
     consecutive_calls = 0;
     new_round = false;
-    game_over = false;
     fold_collection = [];
     position = first_player_pos;
     winners = [];
@@ -226,9 +224,7 @@ let winners_with_pot_added g : player list =
 (** [pot distrubutor g] distributes the pot to the winning player in
     game g. Puts winners in game.winners and update active players. *)
 let pot_distributer g =
-  let g =
-    { g with game_over = true; winners = winners_with_pot_added g }
-  in
+  let g = { g with winners = winners_with_pot_added g } in
   let names = List.map (fun x -> name x) g.winners in
   {
     g with
@@ -393,8 +389,6 @@ let save_game (g : game) (name : string) : bool =
         ("\"consecutive_calls\": " ^ consecutive_calls);
       let new_round = string_of_bool g.new_round in
       Printf.fprintf oc "  %s,\n" ("\"new_round\": " ^ new_round);
-      let game_over = string_of_bool g.game_over in
-      Printf.fprintf oc "  %s,\n" ("\"game_over\": " ^ game_over);
       Printf.fprintf oc "%s\n" "  \"winners\": [";
       Printf.fprintf oc "%s\n" "    {";
       let winners =
@@ -481,7 +475,6 @@ let read_game (j : Yojson.Basic.t) : game =
     let minimum_raise = to_int (List.assoc "minimum_raise" j) in
     let consecutive_calls = to_int (List.assoc "consecutive_calls" j) in
     let new_round = to_bool (List.assoc "new_round" j) in
-    let game_over = to_bool (List.assoc "game_over" j) in
     let winners = to_player_list (to_list (List.assoc "winners" j)) in
     let position = to_int (List.assoc "position" j) in
     {
@@ -495,7 +488,6 @@ let read_game (j : Yojson.Basic.t) : game =
       minimum_raise;
       consecutive_calls;
       new_round;
-      game_over;
       fold_collection;
       position;
       winners;

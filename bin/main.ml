@@ -172,7 +172,7 @@ and begin_play game =
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
 and play game =
-  if game.game_over = true then end_game game
+  if List.length game.winners > 0 then end_game game
   else if game.new_round = true then begin
     print_endline "\n\n\n\n\n\n\n\nNew cards have been dealt. ";
     "Table: " ^ pretty_print game.cards_on_table |> print_endline;
