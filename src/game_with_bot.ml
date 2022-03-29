@@ -354,8 +354,8 @@ let player_to_string (p : player) : string =
   ^ Card.to_string (Player_with_bot.cards p)
   ^ "\"" ^ ",\n" ^ "      \"position\": "
   ^ string_of_int (Player_with_bot.position p)
-  ^ "\"" ^ ",\n" ^ "      \"is_bot\": "
-  ^ "(" ^ string_of_bool bot_bool ^ "," ^ str_bot_mode ^ ")"
+  ^ ",\n" ^ "      \"is_bot\": " ^ "\""
+  ^ "(" ^ string_of_bool bot_bool ^ "," ^ str_bot_mode ^ ")" ^ "\""
 
 let save_game (g : game) (name : string) : bool =
   let file = "game_files/" ^ name ^ ".json" in

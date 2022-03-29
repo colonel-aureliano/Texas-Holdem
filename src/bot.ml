@@ -18,9 +18,9 @@ let decision_rule
           (min_raise + ((my_strength - opp_strength) * (wealth / 20)))
           wealth
       in
-      [ "Raise"; string_of_int amt ]
-    else if threshold < my_strength - opp_strength + 2 then [ "Call" ]
-    else [ "Fold" ]
+      [ "raise"; string_of_int amt ]
+    else if threshold < my_strength - opp_strength + 2 then [ "call" ]
+    else [ "fold" ]
 (* let decision_rule (my_strength : int) (opp_strength : int) (wealth :
    int) (min_raise : int) : Game.command = if min_raise > wealth then
    Fold else let threshold = Random.int 3 in if threshold <= my_strength
@@ -80,13 +80,13 @@ let next_move_medium
     (table : Card.t)
     (deck : Card.t)
     (wealth : int)
-    (min_raise : int) : string list =
+    (min_raise : int) 
+    (num_rollouts : int): string list =
   if List.length table = 0 then
     decision_rule
       (starting_hand_estimated_strength hand)
       0 wealth min_raise
   else
-    let num_rollouts = 100 in
     let my_avg_strength =
       (avg_hand_strength deck num_rollouts (hand @ table)
          (5 - List.length table)
@@ -115,5 +115,6 @@ let next_move
     (min_raise : int) : string list =
   match bot_level with
   | Easy -> next_move_easy wealth min_raise
-  | Medium -> next_move_medium hand table deck wealth min_raise
-  | _ -> failwith "Unimplemented"
+  | Medium -> next_move_medium hand table deck wealth min_raise 100
+  | Hard -> next_move_medium hand table deck wealth min_raise 1000 
+  | _ -> failwith "Illegal Bot Mode"
