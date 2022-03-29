@@ -5,7 +5,7 @@ open Card
 open Bot
 
 exception Exit of int
-(** 0: exit; 1: save game *)
+(** 0: exit; 1: save game; 2: load file error *)
 
 (** =============================== *)
 
@@ -59,24 +59,22 @@ let parse_bot_cmd str =
 
 (** [load_file] prompts user to enter game file and converts it to type
     game. x is dummy variable. Condition: requested json file exists in
-    game_files, file in right format of a game file. Raises: Exit *)
-let rec load_file () : game =
+    game_files, file in right format of a game file. *)
+let load_file () : game =
   print_endline "Enter the game file: ";
   print_string "> ";
   let filename = read_line () in
-  if filename = "exit" then raise (Exit 0)
-  else
-    match
-      Yojson.Basic.from_file ("game_files/" ^ filename ^ ".json")
-      |> read_game
-    with
-    | exception Sys_error _ ->
-        print_endline "file not found\n";
-        load_file ()
-    | exception BadFormat ->
-        print_endline "bad json format\n";
-        load_file ()
-    | game -> game
+  match
+    Yojson.Basic.from_file ("game_files/" ^ filename ^ ".json")
+    |> read_game
+  with
+  | exception Sys_error _ ->
+      print_endline "file not found\n";
+      raise (Exit 2)
+  | exception BadFormat ->
+      print_endline "bad json format\n";
+      raise (Exit 2)
+  | game -> game
 
 let rec player_result_helper = function
   | [] -> print_string ""
@@ -88,7 +86,7 @@ let rec player_result_helper = function
 let rec player_result ls = List.rev ls |> player_result_helper
 
 (** [parse] asks user to enter a parseable command. input of "exit"
-    exits the game. Empty input and Raise 0 are parsed as Call. *)
+    exits the game. Raise : Exit. *)
 let parse game : command =
   print_string "> ";
   match
@@ -109,7 +107,7 @@ let parse game : command =
   | _ -> failwith "Illegal Command"
 
 (** [reshuffling_parse] asks user to enter command during reshuffling
-    period. *)
+    period. Raise: Exit. *)
 let rec reshuffle_parse game : game =
   print_string "\n> ";
   try
@@ -129,16 +127,16 @@ let rec reshuffle_parse game : game =
         let game = add_player game name (int_of_string wealth) in
         print_endline "Action succeeded";
         reshuffle_parse game
-    | [ "start" ] ->
-        let game = play_again game in
-        print_endline "\n\nnew game started";
-        "small blind : " ^ name game.small_blind |> print_endline;
-        print_endline "the blinds are placed by dealer\n";
-        game
+    | [ "start" ] -> play_again game
     | [ "status" ] ->
         player_result game.active_players;
         reshuffle_parse game
-    | [ "exit" ] -> Exit 0 |> raise
+    | [ "exit" ] -> Exit 0 |> raise 
+    | [ "save"; n ] ->
+      if save_game game n then
+        print_endline "\nGame saved to game_files folder."
+      else print_endline "\nFailed to save game.";
+      Exit 1 |> raise
     | _ -> failwith "Illegal Command"
   with
   | PlayerNotFound ->
@@ -192,30 +190,47 @@ let rec end_game game =
       exit 0
 
 and reshuffle game =
-  print_endline "\n\n\n\nReshuffling Period";
+  print_endline "\n\n\n\n\n\n\n\nReshuffling Period";
   print_endline
     "Commands Menu: \n\
     \ Add Fund [Name] [Amount] \n\
     \ Add Player [Name] [Wealth] \n\
     \ Remove Player [Name] \n\
     \ Status \n\
+    \ Save [filename] \n\
     \ Exit \n\
     \ Start";
-  reshuffle_parse game |> play
+  reshuffle_parse game |> begin_play
+
+(** [begin_play] displays commands menu and play. *)
+and begin_play game =
+  print_endline "\n\n\n\n\n\n\n\nGame Started";
+  "Small Blind : " ^ name game.small_blind |> print_endline;
+  print_endline "\nPlayer Status";
+  get_all_players game |> player_result;
+  print_endline
+    "\n\
+     Game Commands Menu: \n\
+    \ Fold \n\
+    \ Call \n\
+    \ Raise [amount] \n\
+    \ Save [filename] \n\
+    \ Exit";
+  play game
 
 (** [play] loops through plyaers, displaying relevant information and
     asks for command*)
 and play game =
-  if game.game_over = true then end_game game
+  if List.length game.winners > 0 then end_game game
   else if game.new_round = true then begin
-    print_endline "\n\n\n\nNew cards have been dealt. ";
-    "Table: " ^ to_string game.cards_on_table |> print_endline;
+    print_endline "\n\n\n\n\n\n\n\nNew cards have been dealt. ";
+    "Table: " ^ pretty_print game.cards_on_table |> print_endline;
     play { game with new_round = false }
   end
   else
     let p = get_curr_player game in
-
-    "\n\n\n\nThe next player is " ^ name p ^ "." |> print_endline;
+    "\n\n\n\n\n\n\n\nThe next player is " ^ name p ^ "."
+    |> print_endline;
     let bot, mode = is_bot p in
     if bot then (
       let cmd_str_lst =
@@ -230,9 +245,9 @@ and play game =
       play game)
     else print_endline "Press Enter to confirm.";
     print_string (read_line ());
-    "\nTable: " ^ to_string game.cards_on_table |> print_endline;
+    "\nTable: " ^ pretty_print game.cards_on_table |> print_endline;
     "\nHello, " ^ name p ^ "!" |> print_endline;
-    "Your Hand: " ^ to_string (cards p) |> print_endline;
+    "Your Hand: " ^ pretty_print (cards p) |> print_endline;
     "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
     |> print_endline;
     "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
@@ -297,7 +312,7 @@ let rec create_players n i (ls : player list) (namels : string list) =
     let player = create_player name wealth i (false, None) in
     create_players n (i + 1) (player :: ls) (name :: namels)
 
-(** [setup] sets up the initial state of the game. *)
+(** [setup] sets up the initial state of the a new game. *)
 let setup () =
   print_endline "Please enter the number of players.\n";
   print_string "> ";
@@ -337,20 +352,12 @@ let () =
     \ New: start a new game \n\
     \ Load : load an existing JSON game file";
   print_string "> ";
-  try
-    let game =
-      match read_line () |> String.trim |> String.lowercase_ascii with
-      | "new" -> setup ()
-      | "load" -> load_file ()
-      | _ -> raise (Exit 0)
-    in
-    print_endline
-      "\n\n\
-       Play Commands Menu: \n\
-      \ Fold \n\
-      \ Call \n\
-      \ Raise [amount] \n\
-      \ Save [name] \n\
-      \ Exit";
-    play game
-  with Exit n -> print_endline "exit code 0"
+  match read_line () |> String.trim |> String.lowercase_ascii with
+  | "new" -> setup () |> begin_play
+  | "load" -> 
+    begin
+      try load_file () |> begin_play
+      with Exit n ->
+        "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
+    end
+  | _ -> ()
