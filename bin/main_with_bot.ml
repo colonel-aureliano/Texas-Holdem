@@ -9,7 +9,7 @@ exception Exit of int
 
 (** =============================== *)
 
-let legal_move game : unit = 
+let legal_move game : unit =
   print_endline
     ("\nLegal moves: "
     ^ (get_legal_moves game |> String.concat ", ")
@@ -19,15 +19,15 @@ let rec get_bot_level i ls =
   print_endline "\nWhich level of PokerBot do you want against?";
   print_endline "Possible mode are: Easy, Medium, Hard";
   print_string "> ";
-  try 
-    let level = 
-      match read_line () |> String.trim |> String.lowercase_ascii with 
+  try
+    let level =
+      match read_line () |> String.trim |> String.lowercase_ascii with
       | "easy" -> Easy
       | "medium" -> Medium
       | "hard" -> Hard
       | _ -> failwith "Illegal Command"
     in
-    let wealth = 
+    let wealth =
       print_endline "\nEnter wealth assigned to PokerBot:";
       print_string "> ";
       try
@@ -37,23 +37,25 @@ let rec get_bot_level i ls =
         print_endline "Warning: wealth must be a nonnegative integer.";
         100
     in
-    "PokerBot's initial wealth is $" ^ string_of_int wealth ^ "."|> print_endline;
-    let player = create_player "PokerBot" wealth (i+1) (true, level) in 
+    "PokerBot's initial wealth is $" ^ string_of_int wealth ^ "."
+    |> print_endline;
+    let player =
+      create_player "PokerBot" wealth (i + 1) (true, level)
+    in
     player :: ls
-  with 
-  | _ -> 
+  with _ ->
     print_endline "Illegal Command";
     get_bot_level i ls
-  
-  let parse_bot_cmd str = 
-    match str with
-    | [ "fold" ] -> (Fold, "Fold")
-    | [ "call" ] | [ "raise"; "0" ] | [ "" ] -> (Call, "Call")
-    | [ "raise"; n ] -> 
-        let new_n = int_of_string n in 
-        (Raise new_n, "Raise "^n)
-    | _ -> failwith "Illegal Command"
+
 (** =============================== *)
+let parse_bot_cmd str =
+  match str with
+  | [ "fold" ] -> (Fold, "Fold")
+  | [ "call" ] | [ "raise"; "0" ] | [ "" ] -> (Call, "Call")
+  | [ "raise"; n ] ->
+      let new_n = int_of_string n in
+      (Raise new_n, "Raise " ^ n)
+  | _ -> failwith "Illegal Command"
 
 (** [load_file] prompts user to enter game file and converts it to type
     game. x is dummy variable. Condition: requested json file exists in
@@ -185,7 +187,9 @@ let rec end_game game =
   print_string "> ";
   match String.(read_line () |> trim |> lowercase_ascii) with
   | "y" | "" -> reshuffling_period game |> reshuffle
-  | _ -> print_endline "\nbye\n"
+  | _ ->
+      print_endline "\nbye\n";
+      exit 0
 
 and reshuffle game =
   print_endline "\n\n\n\nReshuffling Period";
@@ -210,60 +214,56 @@ and play game =
   end
   else
     let p = get_curr_player game in
-    
+
     "\n\n\n\nThe next player is " ^ name p ^ "." |> print_endline;
-    let (bot, mode) = is_bot p in 
-    if bot then 
-    (
-      let cmd_str_lst = 
-        next_move mode (cards p) (table game) game.current_deck 
-          (wealth p) (game.minimum_raise)
-      in 
+    let bot, mode = is_bot p in
+    if bot then (
+      let cmd_str_lst =
+        next_move mode (cards p) (table game) game.current_deck
+          (wealth p) game.minimum_raise
+      in
       print_endline "PokerBot is thinking...";
-      let cmd,cmd_str = parse_bot_cmd cmd_str_lst in
-      "PokerBot plays " ^ cmd_str |> print_endline ;
+      let cmd, cmd_str = parse_bot_cmd cmd_str_lst in
+      "PokerBot plays " ^ cmd_str |> print_endline;
       let game, amount = execute_command game cmd in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
+      play game)
+    else print_endline "Press Enter to confirm.";
+    print_string (read_line ());
+    "\nTable: " ^ to_string game.cards_on_table |> print_endline;
+    "\nHello, " ^ name p ^ "!" |> print_endline;
+    "Your Hand: " ^ to_string (cards p) |> print_endline;
+    "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
+    |> print_endline;
+    "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
+    "Highest bet on the table is $"
+    ^ string_of_int game.current_bet
+    ^ "."
+    |> print_endline;
+    "Your current bet is $" ^ string_of_int (amount_placed p) ^ "."
+    |> print_endline;
+    try
+      let game, amount = get_command game in
+      "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
       play game
-    )
-    else 
-      print_endline "Press Enter to confirm.";
-      print_string (read_line ());
-      "\nTable: " ^ to_string game.cards_on_table |> print_endline;
-      "\nHello, " ^ name p ^ "!" |> print_endline;
-      "Your Hand: " ^ to_string (cards p) |> print_endline;
-      "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
-      |> print_endline;
-      "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
-      "Highest bet on the table is $"
-      ^ string_of_int game.current_bet
-      ^ "."
-      |> print_endline;
-      "Your current bet is $" ^ string_of_int (amount_placed p) ^ "."
-      |> print_endline;
-      try
-        let game, amount = get_command game in
-        "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
-        play game
-      with Exit n ->
-        "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
+    with Exit n ->
+      "\nexit code " ^ string_of_int n ^ "\n" |> print_endline;
+      exit 0
 
 (** [create_players n i ls namels] adds [n] players to [ls]. Prompts
     each player to enter in their names and initial wealth. Default
     player name: player[i]. Default wealth: 100. Default cards: a full
     deck. Checks that the new name cannot be in namels *)
 let rec create_players n i (ls : player list) (namels : string list) =
-  if i > n then 
-  ( 
+  if i > n then (
     print_endline "\nWant to play with PokerBot? (Y/N)";
     print_string "> ";
-    match read_line () |> String.trim |> String.lowercase_ascii with 
+    match read_line () |> String.trim |> String.lowercase_ascii with
     | "y" -> get_bot_level i ls
-    | "n" -> ls 
-    | _ -> 
-      print_endline "Warning: No PokerBot in this game by defualt. \n";
-      ls
-  )
+    | "n" -> ls
+    | _ ->
+        print_endline "Warning: No PokerBot in this game by defualt. \n";
+        ls)
   else
     let _ =
       "\n*** Player" ^ string_of_int i ^ " ***" |> print_endline;
@@ -284,7 +284,7 @@ let rec create_players n i (ls : player list) (namels : string list) =
     "\nHello " ^ name ^ "!" |> print_endline;
     print_endline "Enter your wealth: ";
     print_string "> ";
-    let wealth = 
+    let wealth =
       try
         let raw = read_line () |> int_of_string in
         if raw < 0 then failwith "negative" else raw

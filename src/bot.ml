@@ -7,6 +7,7 @@ let decision_rule
     (wealth : int)
     (min_raise : int) : string list =
   if min_raise > wealth then [ "Fold" ]
+  else if wealth <= 0 then [ "Fold" ]
   else
     let threshold =
       Random.self_init ();
@@ -60,16 +61,21 @@ let list_sum lst = List.fold_left (fun x y -> x + y) 0 lst
 
 (** [avg_hand_strength deck num_rollouts hand] runs [num_rollouts]
     number of simulations until completion (7 cards) then returns the
-    average hand strength of the 7 cards *)
+    average hand strength of the 7 cards.
+
+    Requires: num_rollouts > 0 *)
 let rec avg_hand_strength deck num_rollouts hand acc =
-  match acc with
-  | -1 -> []
-  | _ ->
-      let rollouts = run_rollouts deck num_rollouts hand acc in
-      let avg =
-        list_sum (List.map rank_of_hand rollouts) / num_rollouts
-      in
-      avg :: avg_hand_strength deck num_rollouts hand (acc - 1)
+  if num_rollouts < 1 then
+    raise (Invalid_argument " Require: num_rollouts > 0")
+  else
+    match acc with
+    | -1 -> []
+    | _ ->
+        let rollouts = run_rollouts deck num_rollouts hand acc in
+        let avg =
+          list_sum (List.map rank_of_hand rollouts) / num_rollouts
+        in
+        avg :: avg_hand_strength deck num_rollouts hand (acc - 1)
 
 (** [next_move_easy hand table wealth min_raise] returns the next move
     (Call, Raise x, Fold) of the medium difficulty bot given cards
@@ -80,18 +86,23 @@ let next_move_medium
     (table : Card.t)
     (deck : Card.t)
     (wealth : int)
-    (min_raise : int) 
-    (num_rollouts : int): string list =
+    (min_raise : int)
+    (num_rollouts : int) : string list =
   if List.length table = 0 then
     decision_rule
       (starting_hand_estimated_strength hand)
       0 wealth min_raise
   else
+    let num_cards_to_rollout = 5 - List.length table in
+    let my_cumm_strength =
+      avg_hand_strength deck num_rollouts (hand @ table)
+        num_cards_to_rollout
+      |> list_sum
+    in
     let my_avg_strength =
-      (avg_hand_strength deck num_rollouts (hand @ table)
-         (5 - List.length table)
-      |> list_sum)
-      / (5 - List.length table)
+      if num_cards_to_rollout > 0 then
+        my_cumm_strength / num_cards_to_rollout
+      else my_cumm_strength
     in
     let opp_avg_strength =
       (avg_hand_strength deck num_rollouts table (7 - List.length table)
@@ -116,5 +127,5 @@ let next_move
   match bot_level with
   | Easy -> next_move_easy wealth min_raise
   | Medium -> next_move_medium hand table deck wealth min_raise 100
-  | Hard -> next_move_medium hand table deck wealth min_raise 1000 
+  | Hard -> next_move_medium hand table deck wealth min_raise 1000
   | _ -> failwith "Illegal Bot Mode"
