@@ -7,14 +7,18 @@ open Bot
 exception Exit of int
 (** 0: exit; 1: save game; 2: load file error *)
 
-(** =============================== *)
-
+(** [legal_move] prints the legal moves of the game and 
+and the player to choose an action *)
 let legal_move game : unit =
   print_endline
     ("\nLegal moves: "
     ^ (get_legal_moves game |> String.concat ", ")
     ^ "\nEnter your move: ")
 
+(** [get_bot_level i ls] gets level of bot and initial wealth from 
+user input. If illegal bot level is entered, then no bot is created. 
+If no valid wealth entered, then bot starts with initial wealth of 100. 
+Then create the bot player and add it to the player list ls*)
 let rec get_bot_level i ls =
   print_endline "\nWhich level of PokerBot do you want against?";
   print_endline "Possible mode are: Easy, Medium, Hard";
@@ -39,15 +43,14 @@ let rec get_bot_level i ls =
     in
     "PokerBot's initial wealth is $" ^ string_of_int wealth ^ "."
     |> print_endline;
-    let player =
-      create_player "PokerBot" wealth (i + 1) (true, level)
-    in
+    let player = create_player "PokerBot" wealth (i + 1) (true, level) in
     player :: ls
   with _ ->
     print_endline "Illegal Command";
     get_bot_level i ls
 
-(** =============================== *)
+(** [parse_bot_cmd str] parses the string command and returns Command
+and a corresponding string *)
 let parse_bot_cmd str =
   match str with
   | [ "fold" ] -> (Fold, "Fold")
@@ -119,7 +122,7 @@ let rec reshuffle_parse game : game =
         let game = add_fund game name (int_of_string amount) in
         print_endline "Action succeeded";
         reshuffle_parse game
-    | [ "remove"; "player"; name ] ->
+    | [ "remove"; "player"; name ] -> 
         let game = remove_player game name in
         print_endline "Action succeeded";
         reshuffle_parse game
