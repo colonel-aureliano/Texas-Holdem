@@ -206,7 +206,9 @@ let rec end_game game =
   print_endline "\nWould you like to start another game? (Y/N)";
   print_string "> ";
   match String.(read_line () |> trim |> lowercase_ascii) with
-  | "y" | "" -> reshuffling_period game |> reshuffle
+  | "y" | "" ->
+      ignore (Sys.command "clear");
+      reshuffling_period game |> reshuffle
   | _ ->
       print_endline "\nbye\n";
       exit 0
@@ -231,7 +233,7 @@ and begin_play game =
   print_endline "The blinds are placed by the dealer.";
   print_endline "\nPlayer Status";
   get_all_players game |> player_result;
-  print_endline "Press Enter to confirm.";
+  print_endline "Press Return to confirm.";
   ignore (read_line ());
   ignore (Sys.command "clear");
   play game
@@ -243,7 +245,7 @@ and play game =
   else if game.new_round = true then begin
     print_endline "New cards have been dealt to the table. ";
     pretty_print game.cards_on_table |> print_endline;
-    print_endline "Press Enter to confirm.";
+    print_endline "Press Return to confirm.";
     ignore (read_line ());
     ignore (Sys.command "clear");
     play { game with new_round = false }
@@ -259,14 +261,19 @@ and play game =
       in
       print_endline "PokerBot is thinking...";
       let cmd, cmd_str = parse_bot_cmd cmd_str_lst in
-      "PokerBot plays " ^ cmd_str |> print_endline;
+      "\nPokerBot plays " ^ cmd_str |> print_endline;
       let game, amount = execute_command game cmd in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
-      print_endline "Press Enter to confirm.";
+      print_endline
+        "\nPress Return to confirm. Enter Peek to see bot's hand.";
+      print_string ">";
+      if read_line () |> String.trim |> String.lowercase_ascii = "peek"
+      then pretty_print (cards p) |> print_endline;
+      print_endline "\nPress Return to continue.";
       ignore (read_line ());
       ignore (Sys.command "clear");
       play game)
-    else print_endline "Press Enter to confirm.";
+    else print_endline "Press Return to confirm.";
     ignore (read_line ());
     print_commands_menu ();
     "\nTable: " ^ pretty_print game.cards_on_table |> print_endline;
@@ -282,7 +289,7 @@ and play game =
     try
       let game, amount = get_command game in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
-      print_endline "Press Enter to confirm.";
+      print_endline "Press Return to confirm.";
       ignore (read_line ());
       ignore (Sys.command "clear");
       play game
@@ -371,7 +378,7 @@ let setup () =
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
   let game = create_game (List.rev players) sb in
   print_endline "\n\nsetup completed";
-  print_endline "Press Enter to start game.";
+  print_endline "Press Return to start game.";
   ignore (read_line ());
   ignore (Sys.command "clear");
   game
