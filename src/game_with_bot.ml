@@ -2,6 +2,7 @@ open Card
 open Player_with_bot
 open Bot
 open Yojson.Basic.Util
+open Str
 
 type game = {
   active_players : player list;
@@ -353,6 +354,17 @@ let get_legal_moves (g : game) : string list =
 (* SAVE LOAD GAME FUNCTIONS *)
 
 (** ============================ *)
+
+let replace str =
+  let loc = ref "" in
+  String.iter
+    (fun c ->
+      if c = '\n' then loc := !loc ^ "\\n"
+      else if c = '\t' then loc := !loc ^ "\\t"
+      else loc := !loc ^ Char.escaped c)
+    str;
+  !loc
+
 let bot_level_to_string b_level =
   match b_level with
   | Easy -> "Easy"
@@ -435,7 +447,9 @@ let save_game (g : game) (name : string) : bool =
       Printf.fprintf oc "%s\n" "  ],";
       let position = string_of_int g.position in
       Printf.fprintf oc "  %s,\n" ("\"position\": " ^ position);
-      Printf.fprintf oc "  %s\n" "\"game_log\": \"unimplemented\"";
+      let game_log = replace g.game_log in
+      Printf.fprintf oc "  %s\n"
+        ("\"game_log\": " ^ "\"" ^ game_log ^ "\"");
       Printf.fprintf oc "%s\n" "}";
       close_out oc
     in

@@ -79,7 +79,9 @@ let load_file () : game =
   | exception BadFormat ->
       print_endline "bad json format\n";
       raise (Exit 2)
-  | game -> game
+  | game ->
+      ignore (Sys.command "clear");
+      game
 
 let rec player_result_helper = function
   | [] -> print_string ""
@@ -111,7 +113,7 @@ let parse game : command =
         print_endline "\nGame saved to game_files folder."
       else print_endline "\nFailed to save game.";
       Exit 1 |> raise
-  | [ "view"; "game"; "log" ] -> raise ViewGameLog
+  | [ "view"; "game"; "log" ] | [ "view" ] -> raise ViewGameLog
   | _ -> failwith "Illegal Command"
 
 (** [reshuffling_parse] asks user to enter command during reshuffling
@@ -268,10 +270,10 @@ and play game =
     ignore (read_line ());
     print_commands_menu ();
     "\nTable: " ^ pretty_print game.cards_on_table |> print_endline;
-    "Pot: $" ^ string_of_int game.pot ^ "\t" ^ "Highest bet: $"
+    "\nPot: $" ^ string_of_int game.pot ^ "\t" ^ "Highest bet: $"
     ^ string_of_int game.current_bet
     |> print_endline;
-    "Your Hand: " ^ pretty_print (cards p) |> print_endline;
+    "\nYour Hand: " ^ pretty_print (cards p) |> print_endline;
     "\nYour wealth: $"
     ^ string_of_int (wealth p)
     ^ "\t" ^ "Your current bet: $"
