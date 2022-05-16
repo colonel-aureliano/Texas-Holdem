@@ -28,3 +28,6 @@ clean:
 
 doc:
 	dune build @doc
+
+docs:
+	dune build @doc
