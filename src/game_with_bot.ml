@@ -11,12 +11,18 @@ type game = {
   pot : int;
   small_blind : player;
   small_blind_amt : int;
-  current_bet : int; (* highest bet on table *)
-  minimum_raise : int; (* raise of current betting round *)
+  current_bet : int;
+  (* highest bet on table *)
+  minimum_raise : int;
+  (* raise of current betting round *)
   consecutive_calls : int;
-  new_round : bool; (* true when new cards are dealt, altered by main *)
-  winners : player list; (* empty until game has ended *)
-  position : int; (* position of small blind in the current game *)
+  new_round : bool;
+  (* true when new cards are dealt, altered by main *)
+  winners : player list;
+  (* empty until game has ended *)
+  position : int;
+  (* position of small blind in the current game *)
+  game_log : string; (* document player moves *)
 }
 
 type command =
@@ -89,6 +95,7 @@ let init_helper players_queue small_blind_amt first_player_pos =
     fold_collection = [];
     position = first_player_pos;
     winners = [];
+    game_log = "";
   }
 
 (** [draw_card] draws num of cards from the current deck and places it
@@ -125,7 +132,9 @@ let play_again game =
 (* BEGIN OF RESHUFFLING PERIOD FUNCTIONS *)
 
 exception PlayerNotFound
+
 exception DuplicateName
+
 exception NotEnoughPlayers
 
 let reshuffling_period game =
@@ -169,12 +178,15 @@ let add_player game player_name wealth =
   else if wealth < 0 then failwith "negative"
   else
     let pos = List.nth players (List.length players - 1) |> position in
-    let player = create_player player_name wealth (pos + 1) (false, None) in
+    let player =
+      create_player player_name wealth (pos + 1) (false, None)
+    in
     { game with active_players = players @ [ player ] }
 
 (* END OF RESHUFFLING PERIOD FUNCTIONS *)
 
 let get_curr_player game = peek game.active_players
+
 let get_winners game = game.winners
 
 let ranks =
@@ -212,7 +224,8 @@ let winners_with_pot_added g : player list =
       try
         [
           player_list
-          |> List.map (fun x -> Player_with_bot.cards x @ g.cards_on_table)
+          |> List.map (fun x ->
+                 Player_with_bot.cards x @ g.cards_on_table)
           |> index_of_highest_hand;
         ]
       with Tie ls -> ls
@@ -251,6 +264,8 @@ let new_betting_round (g : game) : game =
         consecutive_calls = 0;
         minimum_raise = 0;
         new_round = true;
+        game_log =
+          g.game_log ^ "\n" ^ string_of_int num_card ^ " cards dealt\t";
       }
       num_card
 
@@ -260,12 +275,15 @@ let execute_command (g : game) (cmd : command) : game * int =
   match cmd with
   | Call ->
       let cur_player = get_curr_player g in
-      let x = g.current_bet - Player_with_bot.amount_placed cur_player in
+      let x =
+        g.current_bet - Player_with_bot.amount_placed cur_player
+      in
       let updated_g =
         {
           (execute_player_spending g x) with
           pot = g.pot + x;
           consecutive_calls = g.consecutive_calls + 1;
+          game_log = g.game_log ^ name cur_player ^ " calls\t";
         }
       in
       if updated_g.consecutive_calls = List.length g.active_players then
@@ -282,6 +300,9 @@ let execute_command (g : game) (cmd : command) : game * int =
             minimum_raise = x;
             pot = g.pot + y;
             consecutive_calls = 1;
+            game_log =
+              g.game_log ^ name cur_player ^ " raises $"
+              ^ string_of_int y ^ "\t";
           },
           y )
   | Fold ->
@@ -291,6 +312,7 @@ let execute_command (g : game) (cmd : command) : game * int =
           g with
           fold_collection = peek g.active_players :: g.fold_collection;
           active_players = pop g.active_players;
+          game_log = g.game_log ^ name folder ^ " folds\t";
         }
       in
       if List.length updated_g.active_players = 1 then
@@ -330,16 +352,16 @@ let get_legal_moves (g : game) : string list =
 
 (* SAVE LOAD GAME FUNCTIONS *)
 
-(**  ============================ *)
-let bot_level_to_string b_level = 
-  match b_level with 
+(** ============================ *)
+let bot_level_to_string b_level =
+  match b_level with
   | Easy -> "Easy"
   | Medium -> "Medium"
   | Hard -> "Hard"
   | None -> "None"
 
 let player_to_string (p : player) : string =
-  let (bot_bool, bot_mode) = is_bot p in
+  let bot_bool, bot_mode = is_bot p in
   let str_bot_mode = bot_level_to_string bot_mode in
   "      \"name\": " ^ "\"" ^ Player_with_bot.name p ^ "\"" ^ ",\n"
   ^ "      \"wealth\": "
@@ -350,8 +372,8 @@ let player_to_string (p : player) : string =
   ^ Card.to_string (Player_with_bot.cards p)
   ^ "\"" ^ ",\n" ^ "      \"position\": "
   ^ string_of_int (Player_with_bot.position p)
-  ^ ",\n" ^ "      \"is_bot\": " ^ "\""
-  ^ "(" ^ string_of_bool bot_bool ^ "," ^ str_bot_mode ^ ")" ^ "\""
+  ^ ",\n" ^ "      \"is_bot\": " ^ "\"" ^ "(" ^ string_of_bool bot_bool
+  ^ "," ^ str_bot_mode ^ ")" ^ "\""
 
 let save_game (g : game) (name : string) : bool =
   let file = "game_files/" ^ name ^ ".json" in
@@ -412,7 +434,8 @@ let save_game (g : game) (name : string) : bool =
       Printf.fprintf oc "%s\n" "    }";
       Printf.fprintf oc "%s\n" "  ],";
       let position = string_of_int g.position in
-      Printf.fprintf oc "  %s\n" ("\"position\": " ^ position);
+      Printf.fprintf oc "  %s,\n" ("\"position\": " ^ position);
+      Printf.fprintf oc "  %s\n" "\"game_log\": \"unimplemented\"";
       Printf.fprintf oc "%s\n" "}";
       close_out oc
     in
@@ -426,43 +449,44 @@ let to_card_list (s : string) : card list =
     match lst with
     | [] -> []
     | h :: t ->
-      if String.length h = 4 then
-        let number =
-          match h.[0] with
-          | 'K' -> 13
-          | 'Q' -> 12
-          | 'J' -> 11
-          | 'A' -> 1
-          | x -> int_of_char x - 48
-        in
-        if String.sub h 1 3 = "♦" then D number :: to_card t
-        else if String.sub h 1 3 = "♥" then H number :: to_card t
-        else if String.sub h 1 3 = "♣" then C number :: to_card t
-        else if String.sub h 1 3 = "♠" then S number :: to_card t
-        else failwith "failed to match suits"
-      else
-        let number = String.sub h 0 2 in
-        let number = int_of_string number in
-        if String.sub h 2 3 = "♦" then D number :: to_card t
-        else if String.sub h 2 3 = "♥" then H number :: to_card t
-        else if String.sub h 2 3 = "♣" then C number :: to_card t
-        else if String.sub h 2 3 = "♠" then S number :: to_card t
-        else failwith "failed to match suits"
+        if String.length h = 4 then
+          let number =
+            match h.[0] with
+            | 'K' -> 13
+            | 'Q' -> 12
+            | 'J' -> 11
+            | 'A' -> 1
+            | x -> int_of_char x - 48
+          in
+          if String.sub h 1 3 = "♦" then D number :: to_card t
+          else if String.sub h 1 3 = "♥" then H number :: to_card t
+          else if String.sub h 1 3 = "♣" then C number :: to_card t
+          else if String.sub h 1 3 = "♠" then S number :: to_card t
+          else failwith "failed to match suits"
+        else
+          let number = String.sub h 0 2 in
+          let number = int_of_string number in
+          if String.sub h 2 3 = "♦" then D number :: to_card t
+          else if String.sub h 2 3 = "♥" then H number :: to_card t
+          else if String.sub h 2 3 = "♣" then C number :: to_card t
+          else if String.sub h 2 3 = "♠" then S number :: to_card t
+          else failwith "failed to match suits"
   in
   to_card lst
 
-let to_bot s = 
+let to_bot s =
   let lst = String.split_on_char ')' s in
-  let lst = String.split_on_char '(' (List.hd lst) in 
+  let lst = String.split_on_char '(' (List.hd lst) in
   let lst = String.split_on_char ',' (List.nth lst 1) in
-  let mode = 
-    match (List.nth lst 1) with 
+  let mode =
+    match List.nth lst 1 with
     | "Easy" -> Easy
     | "Medium" -> Medium
     | "Hard" -> Hard
-    | "None" -> None 
-    |_ -> failwith "Illegal Bot Level"
-  in (bool_of_string(List.hd lst), mode)
+    | "None" -> None
+    | _ -> failwith "Illegal Bot Level"
+  in
+  (bool_of_string (List.hd lst), mode)
 
 let to_player (obj : Yojson.Basic.t) : player =
   let obj = to_assoc obj in
@@ -472,7 +496,8 @@ let to_player (obj : Yojson.Basic.t) : player =
   let cards = to_card_list (to_string (List.assoc "cards" obj)) in
   let position = to_int (List.assoc "position" obj) in
   let bot = to_bot (to_string (List.assoc "is_bot" obj)) in
-    Player_with_bot.create_player_full name wealth cards amount_placed position bot
+  Player_with_bot.create_player_full name wealth cards amount_placed
+    position bot
 
 let to_player_list (lst : Yojson.Basic.t list) : player list =
   try List.map to_player lst with _ -> []
@@ -503,6 +528,7 @@ let read_game (j : Yojson.Basic.t) : game =
     let new_round = to_bool (List.assoc "new_round" j) in
     let winners = to_player_list (to_list (List.assoc "winners" j)) in
     let position = to_int (List.assoc "position" j) in
+    let game_log = to_string (List.assoc "game_log" j) in
     {
       active_players;
       current_deck;
@@ -517,5 +543,6 @@ let read_game (j : Yojson.Basic.t) : game =
       fold_collection;
       position;
       winners;
+      game_log;
     }
   with _ -> raise BadFormat

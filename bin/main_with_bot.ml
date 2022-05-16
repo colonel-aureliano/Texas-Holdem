@@ -7,18 +7,18 @@ open Bot
 exception Exit of int
 (** 0: exit; 1: save game; 2: load file error *)
 
-(** [legal_move] prints the legal moves of the game and 
-and the player to choose an action *)
+(** [legal_move] prints the legal moves of the game and and the player
+    to choose an action *)
 let legal_move game : unit =
   print_endline
     ("\nLegal moves: "
     ^ (get_legal_moves game |> String.concat ", ")
     ^ "\nEnter your move: ")
 
-(** [get_bot_level i ls] gets level of bot and initial wealth from 
-user input. If illegal bot level is entered, then no bot is created. 
-If no valid wealth entered, then bot starts with initial wealth of 100. 
-Then create the bot player and add it to the player list ls*)
+(** [get_bot_level i ls] gets level of bot and initial wealth from user
+    input. If illegal bot level is entered, then no bot is created. If
+    no valid wealth entered, then bot starts with initial wealth of 100.
+    Then create the bot player and add it to the player list ls*)
 let rec get_bot_level i ls =
   print_endline "\nWhich level of PokerBot do you want against?";
   print_endline "Possible mode are: Easy, Medium, Hard";
@@ -43,14 +43,16 @@ let rec get_bot_level i ls =
     in
     "PokerBot's initial wealth is $" ^ string_of_int wealth ^ "."
     |> print_endline;
-    let player = create_player "PokerBot" wealth (i + 1) (true, level) in
+    let player =
+      create_player "PokerBot" wealth (i + 1) (true, level)
+    in
     player :: ls
   with _ ->
     print_endline "Illegal Command";
     get_bot_level i ls
 
 (** [parse_bot_cmd str] parses the string command and returns Command
-and a corresponding string *)
+    and a corresponding string *)
 let parse_bot_cmd str =
   match str with
   | [ "fold" ] -> (Fold, "Fold")
@@ -88,6 +90,8 @@ let rec player_result_helper = function
 (** [player_result] prints the naeme and wealth of all players *)
 let rec player_result ls = List.rev ls |> player_result_helper
 
+exception ViewGameLog
+
 (** [parse] asks user to enter a parseable command. input of "exit"
     exits the game. Raise : Exit. *)
 let parse game : command =
@@ -107,6 +111,7 @@ let parse game : command =
         print_endline "\nGame saved to game_files folder."
       else print_endline "\nFailed to save game.";
       Exit 1 |> raise
+  | [ "view"; "game"; "log" ] -> raise ViewGameLog
   | _ -> failwith "Illegal Command"
 
 (** [reshuffling_parse] asks user to enter command during reshuffling
@@ -122,7 +127,7 @@ let rec reshuffle_parse game : game =
         let game = add_fund game name (int_of_string amount) in
         print_endline "Action succeeded";
         reshuffle_parse game
-    | [ "remove"; "player"; name ] -> 
+    | [ "remove"; "player"; name ] ->
         let game = remove_player game name in
         print_endline "Action succeeded";
         reshuffle_parse game
@@ -130,16 +135,18 @@ let rec reshuffle_parse game : game =
         let game = add_player game name (int_of_string wealth) in
         print_endline "Action succeeded";
         reshuffle_parse game
-    | [ "start" ] -> play_again game
+    | [ "start" ] ->
+        ignore (Sys.command "clear");
+        play_again game
     | [ "status" ] ->
         player_result game.active_players;
         reshuffle_parse game
-    | [ "exit" ] -> Exit 0 |> raise 
+    | [ "exit" ] -> Exit 0 |> raise
     | [ "save"; n ] ->
-      if save_game game n then
-        print_endline "\nGame saved to game_files folder."
-      else print_endline "\nFailed to save game.";
-      Exit 1 |> raise
+        if save_game game n then
+          print_endline "\nGame saved to game_files folder."
+        else print_endline "\nFailed to save game.";
+        Exit 1 |> raise
     | _ -> failwith "Illegal Command"
   with
   | PlayerNotFound ->
@@ -172,11 +179,21 @@ let rec get_command game : game * int =
   | RaiseFailure ->
       print_endline "Insufficient Raise";
       get_command game
+  | ViewGameLog ->
+      print_endline game.game_log;
+      get_command game
+
+(* [print_commands_menu] prints the commands menu during play *)
+let print_commands_menu () : unit =
+  print_endline
+    "Game Commands Menu: \n\
+     Fold   Call   Raise [amount]   View Game Log   Save [filename]   \
+     Exit"
 
 (** [end_game] shows the result of the game and asks whether to play
     again *)
 let rec end_game game =
-  print_endline "\n\nThis game is over.";
+  print_endline "This game is over.";
   let winners = List.map (fun x -> name x) (get_winners game) in
   let s = if List.length winners = 1 then "Winner: " else "Winners: " in
   s ^ String.concat ", " winners |> print_endline;
@@ -193,7 +210,7 @@ let rec end_game game =
       exit 0
 
 and reshuffle game =
-  print_endline "\n\n\n\n\n\n\n\nReshuffling Period";
+  print_endline "Reshuffling Period";
   print_endline
     "Commands Menu: \n\
     \ Add Fund [Name] [Amount] \n\
@@ -207,18 +224,14 @@ and reshuffle game =
 
 (** [begin_play] displays commands menu and play. *)
 and begin_play game =
-  print_endline "\n\n\n\n\n\n\n\nGame Started";
+  print_endline "Game Started";
   "Small Blind : " ^ name game.small_blind |> print_endline;
+  print_endline "The blinds are placed by the dealer.";
   print_endline "\nPlayer Status";
   get_all_players game |> player_result;
-  print_endline
-    "\n\
-     Game Commands Menu: \n\
-    \ Fold \n\
-    \ Call \n\
-    \ Raise [amount] \n\
-    \ Save [filename] \n\
-    \ Exit";
+  print_endline "Press Enter to confirm.";
+  ignore (read_line ());
+  ignore (Sys.command "clear");
   play game
 
 (** [play] loops through plyaers, displaying relevant information and
@@ -226,14 +239,16 @@ and begin_play game =
 and play game =
   if List.length game.winners > 0 then end_game game
   else if game.new_round = true then begin
-    print_endline "\n\n\n\n\n\n\n\nNew cards have been dealt. ";
-    "Table: " ^ pretty_print game.cards_on_table |> print_endline;
+    print_endline "New cards have been dealt to the table. ";
+    pretty_print game.cards_on_table |> print_endline;
+    print_endline "Press Enter to confirm.";
+    ignore (read_line ());
+    ignore (Sys.command "clear");
     play { game with new_round = false }
   end
   else
     let p = get_curr_player game in
-    "\n\n\n\n\n\n\n\nThe next player is " ^ name p ^ "."
-    |> print_endline;
+    "The next player is " ^ name p ^ "." |> print_endline;
     let bot, mode = is_bot p in
     if bot then (
       let cmd_str_lst =
@@ -245,24 +260,29 @@ and play game =
       "PokerBot plays " ^ cmd_str |> print_endline;
       let game, amount = execute_command game cmd in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
+      print_endline "Press Enter to confirm.";
+      ignore (read_line ());
+      ignore (Sys.command "clear");
       play game)
     else print_endline "Press Enter to confirm.";
-    print_string (read_line ());
+    ignore (read_line ());
+    print_commands_menu ();
     "\nTable: " ^ pretty_print game.cards_on_table |> print_endline;
-    "\nHello, " ^ name p ^ "!" |> print_endline;
-    "Your Hand: " ^ pretty_print (cards p) |> print_endline;
-    "\nYour wealth is $" ^ string_of_int (wealth p) ^ "."
-    |> print_endline;
-    "The pot has $" ^ string_of_int game.pot ^ "." |> print_endline;
-    "Highest bet on the table is $"
+    "Pot: $" ^ string_of_int game.pot ^ "\t" ^ "Highest bet: $"
     ^ string_of_int game.current_bet
-    ^ "."
     |> print_endline;
-    "Your current bet is $" ^ string_of_int (amount_placed p) ^ "."
+    "Your Hand: " ^ pretty_print (cards p) |> print_endline;
+    "\nYour wealth: $"
+    ^ string_of_int (wealth p)
+    ^ "\t" ^ "Your current bet: $"
+    ^ string_of_int (amount_placed p)
     |> print_endline;
     try
       let game, amount = get_command game in
       "$" ^ string_of_int amount ^ " to the pot." |> print_endline;
+      print_endline "Press Enter to confirm.";
+      ignore (read_line ());
+      ignore (Sys.command "clear");
       play game
     with Exit n ->
       "\nexit code " ^ string_of_int n ^ "\n" |> print_endline;
@@ -273,15 +293,21 @@ and play game =
     player name: player[i]. Default wealth: 100. Default cards: a full
     deck. Checks that the new name cannot be in namels *)
 let rec create_players n i (ls : player list) (namels : string list) =
-  if i > n then (
-    print_endline "\nWant to play with PokerBot? (Y/N)";
-    print_string "> ";
-    match read_line () |> String.trim |> String.lowercase_ascii with
-    | "y" -> get_bot_level i ls
-    | "n" -> ls
-    | _ ->
-        print_endline "Warning: No PokerBot in this game by defualt. \n";
-        ls)
+  if i > n then
+    if List.length ls = 1 then (
+      print_endline
+        "Warning: PokerBot activated in 1 player game by defualt. \n";
+      get_bot_level i ls)
+    else (
+      print_endline "\nWant to play with PokerBot? (Y/N)";
+      print_string "> ";
+      match read_line () |> String.trim |> String.lowercase_ascii with
+      | "y" -> get_bot_level i ls
+      | "n" -> ls
+      | _ ->
+          print_endline
+            "Warning: No PokerBot in this game by defualt. \n";
+          ls)
   else
     let _ =
       "\n*** Player" ^ string_of_int i ^ " ***" |> print_endline;
@@ -343,13 +369,15 @@ let setup () =
   "The small blind is $" ^ string_of_int sb ^ "." |> print_endline;
   let game = create_game (List.rev players) sb in
   print_endline "\n\nsetup completed";
-  "small blind : " ^ name game.small_blind |> print_endline;
-  print_endline "the blinds are placed by dealer\n";
+  print_endline "Press Enter to start game.";
+  ignore (read_line ());
+  ignore (Sys.command "clear");
   game
 
 (** Exectue game enegine *)
 let () =
-  print_endline "\n\nWelcome to poker.\n";
+  ignore (Sys.command "clear");
+  print_endline "Welcome to poker.\n";
   print_endline
     "Setup Commands: \n\
     \ New: start a new game \n\
@@ -357,8 +385,7 @@ let () =
   print_string "> ";
   match read_line () |> String.trim |> String.lowercase_ascii with
   | "new" -> setup () |> begin_play
-  | "load" -> 
-    begin
+  | "load" -> begin
       try load_file () |> begin_play
       with Exit n ->
         "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
