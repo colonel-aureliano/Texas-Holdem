@@ -70,12 +70,8 @@ let rec card_to_players queue deck num_dealed =
     players queue with big blind in the last place and each player with
     2 cards and the table has 0 cards *)
 let init_helper players_queue small_blind_amt first_player_pos =
-  let players_with_card, curr_deck =
-    card_to_players players_queue new_deck 0
-  in
-  let original_queue =
-    rearrange players_with_card position first_player_pos
-  in
+  let players_with_card, curr_deck = card_to_players players_queue new_deck 0 in
+  let original_queue = rearrange players_with_card position first_player_pos in
   let sb = peek original_queue in
   let queue_sb = player_shift small_blind_amt original_queue in
   let queue_bb = player_shift (2 * small_blind_amt) queue_sb in
@@ -176,9 +172,7 @@ let add_player game player_name wealth =
   else if wealth < 0 then failwith "negative"
   else
     let pos = List.nth players (List.length players - 1) |> position in
-    let player =
-      create_player player_name wealth (pos + 1) (false, None)
-    in
+    let player = create_player player_name wealth (pos + 1) (false, None) in
     { game with active_players = players @ [ player ] }
 
 (* END OF RESHUFFLING PERIOD FUNCTIONS *)
@@ -347,8 +341,6 @@ let get_legal_moves (g : game) : string list =
 
 (* SAVE LOAD GAME FUNCTIONS *)
 
-(** ============================ *)
-
 let replace str =
   let loc = ref "" in
   String.iter
@@ -479,8 +471,7 @@ let to_card_list (s : string) : card list =
           else if String.sub h 2 3 = "♣" then C number :: to_card t
           else if String.sub h 2 3 = "♠" then S number :: to_card t
           else failwith "failed to match suits"
-  in
-  to_card lst
+  in to_card lst
 
 let to_bot s =
   let lst = String.split_on_char ')' s in
