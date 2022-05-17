@@ -149,7 +149,9 @@ let rec reshuffle_parse game : game =
           print_endline "\nGame saved to game_files folder."
         else print_endline "\nFailed to save game.";
         Exit 1 |> raise
-    | _ -> failwith "Illegal Command"
+    | _ ->
+        print_endline "Illegal Command";
+        reshuffle_parse game
   with
   | PlayerNotFound ->
       print_endline "Action failed: player not found";
