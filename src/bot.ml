@@ -3,8 +3,7 @@ open Player
 
 let decision_rule (my_strength : int) (opp_strength : int)
     (wealth : int) (min_raise : int) : string list =
-  if min_raise > wealth then [ "Fold" ]
-  else if wealth <= 0 then [ "Fold" ]
+  if min_raise > wealth || wealth <= 0 then [ "Fold" ]
   else
     let threshold =
       Random.self_init ();
@@ -86,10 +85,10 @@ let next_move_medium (hand : Card.t) (table : Card.t) (deck : Card.t)
     in
     decision_rule my_avg_strength opp_avg_strength wealth min_raise
 
-(** [next_move_easy hand table wealth min_raise] returns the next
-   move (Call, Raise x, Fold) of the easy difficulty bot given cards
-   [hand] and [table] and states [wealth] and [min_raise]. It only looks
-   at the current hand to make decisions.*) 
+(** [next_move_easy hand table wealth min_raise] returns the next move
+    (Call, Raise x, Fold) of the easy difficulty bot given cards [hand]
+    and [table] and states [wealth] and [min_raise]. It only looks at
+    the current hand to make decisions.*)
 let next_move_easy (wealth : int) (min_raise : int) =
   decision_rule
     (Random.self_init ();
