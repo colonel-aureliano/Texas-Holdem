@@ -1,5 +1,5 @@
 open Card
-open Player_with_bot
+open Player
 open Bot
 open Yojson.Basic.Util
 open Str
@@ -222,8 +222,7 @@ let winners_with_pot_added g : player list =
       try
         [
           player_list
-          |> List.map (fun x ->
-                 Player_with_bot.cards x @ g.cards_on_table)
+          |> List.map (fun x -> Player.cards x @ g.cards_on_table)
           |> index_of_highest_hand;
         ]
       with Tie ls -> ls
@@ -273,9 +272,7 @@ let execute_command (g : game) (cmd : command) : game * int =
   match cmd with
   | Call ->
       let cur_player = get_curr_player g in
-      let x =
-        g.current_bet - Player_with_bot.amount_placed cur_player
-      in
+      let x = g.current_bet - Player.amount_placed cur_player in
       let updated_g =
         {
           (execute_player_spending g x) with
@@ -372,15 +369,15 @@ let bot_level_to_string b_level =
 let player_to_string (p : player) : string =
   let bot_bool, bot_mode = is_bot p in
   let str_bot_mode = bot_level_to_string bot_mode in
-  "      \"name\": " ^ "\"" ^ Player_with_bot.name p ^ "\"" ^ ",\n"
+  "      \"name\": " ^ "\"" ^ Player.name p ^ "\"" ^ ",\n"
   ^ "      \"wealth\": "
-  ^ string_of_int (Player_with_bot.wealth p)
+  ^ string_of_int (Player.wealth p)
   ^ ",\n" ^ "      \"amount_placed\": "
-  ^ string_of_int (Player_with_bot.amount_placed p)
+  ^ string_of_int (Player.amount_placed p)
   ^ ",\n" ^ "      \"cards\": " ^ "\""
-  ^ Card.to_string (Player_with_bot.cards p)
+  ^ Card.to_string (Player.cards p)
   ^ "\"" ^ ",\n" ^ "      \"position\": "
-  ^ string_of_int (Player_with_bot.position p)
+  ^ string_of_int (Player.position p)
   ^ ",\n" ^ "      \"is_bot\": " ^ "\"" ^ "(" ^ string_of_bool bot_bool
   ^ "," ^ str_bot_mode ^ ")" ^ "\""
 
@@ -507,8 +504,7 @@ let to_player (obj : Yojson.Basic.t) : player =
   let cards = to_card_list (to_string (List.assoc "cards" obj)) in
   let position = to_int (List.assoc "position" obj) in
   let bot = to_bot (to_string (List.assoc "is_bot" obj)) in
-  Player_with_bot.create_player_full name wealth cards amount_placed
-    position bot
+  Player.create_player_full name wealth cards amount_placed position bot
 
 let to_player_list (lst : Yojson.Basic.t list) : player list =
   try List.map to_player lst with _ -> []

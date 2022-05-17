@@ -1,6 +1,6 @@
 open Texas_holdem
-open Game_with_bot
-open Player_with_bot
+open Game
+open Player
 open Card
 open Bot
 
@@ -242,14 +242,13 @@ and begin_play game =
     asks for command*)
 and play game =
   if List.length game.winners > 0 then end_game game
-  else if game.new_round = true then begin
+  else if game.new_round = true then (
     print_endline "New cards have been dealt to the table. ";
     pretty_print game.cards_on_table |> print_endline;
     print_endline "Press Return to confirm.";
     ignore (read_line ());
     ignore (Sys.command "clear");
-    play { game with new_round = false }
-  end
+    play { game with new_round = false })
   else
     let p = get_curr_player game in
     "The next player is " ^ name p ^ "." |> print_endline;
@@ -394,9 +393,8 @@ let () =
   print_string "> ";
   match read_line () |> String.trim |> String.lowercase_ascii with
   | "new" -> setup () |> begin_play
-  | "load" -> begin
+  | "load" -> (
       try load_file () |> begin_play
       with Exit n ->
-        "\nexit code " ^ string_of_int n ^ "\n" |> print_endline
-    end
+        "\nexit code " ^ string_of_int n ^ "\n" |> print_endline)
   | _ -> ()

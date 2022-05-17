@@ -1,19 +1,15 @@
 open OUnit2
 open Texas_holdem
 open Card
-open Game_with_bot
+open Game
 
-let index_of_highest_hand_test
-    (name : string)
-    (input : card list list)
+let index_of_highest_hand_test (name : string) (input : card list list)
     (expected_output : int) =
   name >:: fun _ ->
   assert_equal expected_output (index_of_highest_hand input)
 
-let index_of_highest_hand_fail_test
-    (name : string)
-    (input : card list list)
-    (expected_output : exn) =
+let index_of_highest_hand_fail_test (name : string)
+    (input : card list list) (expected_output : exn) =
   name >:: fun _ ->
   assert_raises expected_output (fun _ -> index_of_highest_hand input)
 
@@ -118,10 +114,8 @@ let hand9_match = [ C 10; C 13; C 1; C 12; C 11; D 11; D 1 ]
   S 2; C 6 ] let buggy_hand_0 = [ S 2; H 7; C 12; H 12; C 9; D 1; H 5 ]
   let buggy_hand_1 = [ S 2; H 7; C 12; H 12; C 9; D 2; S 5 ]*)
 
-let starting_hand_estimated_strength_test
-    (name : string)
-    (input : card list)
-    (expected_output : int) =
+let starting_hand_estimated_strength_test (name : string)
+    (input : card list) (expected_output : int) =
   name >:: fun _ ->
   assert_equal expected_output (starting_hand_estimated_strength input)
 
@@ -257,18 +251,12 @@ let card_tests =
       outputs" [ test1; test2; test3 ] 2;*);
   ]
 
-let single_compare_test
-    (name : string)
-    (input1 : card)
-    (input2 : card)
+let single_compare_test (name : string) (input1 : card) (input2 : card)
     (expected_output : int) =
   name >:: fun _ ->
   assert_equal expected_output (single_compare input1 input2)
 
-let f_test
-    (name : string)
-    (f : card list -> bool)
-    (input : card list)
+let f_test (name : string) (f : card list -> bool) (input : card list)
     (expected_output : bool) =
   name >:: fun _ -> assert_equal expected_output (f input)
 
@@ -329,25 +317,26 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand5" has_royal_flush hand5 false;
   ]
 
-let get_small_blind_test
-    (name : string)
-    (input : game)
+let get_small_blind_test (name : string) (input : game)
     (expected_output : string) =
   name >:: fun _ ->
-  assert_equal expected_output (Player_with_bot.name input.small_blind)
+  assert_equal expected_output (Player.name input.small_blind)
 
-let get_curr_player_test
-    (name : string)
-    (input : game)
+let get_curr_player_test (name : string) (input : game)
     (expected_output : string) =
   name >:: fun _ ->
   assert_equal expected_output
-    (Player_with_bot.name (Game_with_bot.get_curr_player input))
+    (Player.name (Game.get_curr_player input))
 
-let player_a = Player_with_bot.create_player_full "b" 20 [ D 1; H 5 ] 0 0 (false, None)
-let player_b = Player_with_bot.create_player_full "a" 20 [ D 2; S 5 ] 0 1 (false, None)
-let player_c = Player_with_bot.create_player_full "c" 30 [] 0 2 (false, None)
-let player_d = Player_with_bot.create_player_full "d" 30 [] 0 3 (false, None)
+let player_a =
+  Player.create_player_full "b" 20 [ D 1; H 5 ] 0 0 (false, None)
+
+let player_b =
+  Player.create_player_full "a" 20 [ D 2; S 5 ] 0 1 (false, None)
+
+let player_c = Player.create_player_full "c" 30 [] 0 2 (false, None)
+
+let player_d = Player.create_player_full "d" 30 [] 0 3 (false, None)
 
 let rec list_to_queue players queue =
   match players with
@@ -358,7 +347,9 @@ let rec list_to_queue players queue =
          queue)
 
 let queue = Queue.create ()
+
 let players_queue = list_to_queue [ player_a; player_b ] queue
+
 let queue1 = Queue.create ()
 
 let players_queue1 =
@@ -375,26 +366,29 @@ let players_queue3 =
   list_to_queue [ player_c; player_d; player_a; player_b ] queue3
 
 let players_queue_with_b_only = list_to_queue [ player_b ] queue
+
 let players_queue_with_a_only = list_to_queue [ player_a ] queue
+
 let player_list2 = [ player_a; player_b ]
+
 let player_list4 = [ player_a; player_b; player_c; player_d ]
+
 let g_by_init2 = create_game player_list2 5
+
 let folded_g2, _ = execute_command g_by_init2 Fold
+
 let g_by_init4 = create_game player_list4 5
+
 let folded_g4, _ = execute_command g_by_init4 Fold
+
 let folded_g4, _ = execute_command folded_g4 Fold
 
-let save_game_test
-    (name : string)
-    (input : game)
-    (name : string)
+let save_game_test (name : string) (input : game) (name : string)
     (expected_output : bool) =
   name >:: fun _ ->
-  assert_equal expected_output (Game_with_bot.save_game input name)
+  assert_equal expected_output (Game.save_game input name)
 
-let read_game_test
-    (name : string)
-    (input : string)
+let read_game_test (name : string) (input : string)
     (expected_output : int) =
   name >:: fun _ ->
   assert_equal expected_output

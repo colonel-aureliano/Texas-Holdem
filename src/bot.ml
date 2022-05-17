@@ -1,5 +1,5 @@
 open Card
-open Player_with_bot
+open Player
 
 let decision_rule (my_strength : int) (opp_strength : int)
     (wealth : int) (min_raise : int) : string list =

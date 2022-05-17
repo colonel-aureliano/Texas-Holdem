@@ -10,7 +10,7 @@ test:
 	OCAMLRUNPARAM=b dune exec test/main.exe
 
 play:
-	OCAMLRUNPARAM=b dune exec bin/main_with_bot.exe
+	OCAMLRUNPARAM=b dune exec bin/main.exe
 
 check:
 	@bash check.sh

@@ -7,7 +7,7 @@
     executing command, saving & loading files and other functions
     related getting the state of the game *)
 
-open Player_with_bot
+open Player
 
 type game = {
   active_players : player list;
@@ -46,10 +46,7 @@ exception BadFormat
     correct format of the game *)
 
 (** The abstract type of values representing user command. *)
-type command =
-  | Call
-  | Raise of int
-  | Fold
+type command = Call | Raise of int | Fold
 
 val create_game : player list -> int -> game
 (** [create_game players pos] initialize the game with [players] passed
