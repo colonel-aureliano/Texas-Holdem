@@ -1,8 +1,4 @@
-type card =
-  | S of int
-  | H of int
-  | C of int
-  | D of int
+type card = S of int | H of int | C of int | D of int
 
 type t = card list
 
@@ -46,9 +42,7 @@ let rec fourth_line (lst : string list) (acc : string) : string =
       fourth_line (List.tl lst) (acc ^ "|    " ^ value ^ "|   ")
     else fourth_line (List.tl lst) (acc ^ "|   " ^ value ^ "|   ")
 
-let extract_value (c : card) =
-  match c with
-  | S x | H x | C x | D x -> x
+let extract_value (c : card) = match c with S x | H x | C x | D x -> x
 
 let rec pretty_print (hand : t) : string =
   let n = List.length hand in
@@ -58,11 +52,7 @@ let rec pretty_print (hand : t) : string =
   let suit_list =
     List.map
       (fun x ->
-        match x with
-        | S x -> "♠"
-        | C x -> "♣"
-        | H x -> "♥"
-        | D x -> "♦")
+        match x with S x -> "♠" | C x -> "♣" | H x -> "♥" | D x -> "♦")
       hand
   in
   "\n" ^ first_last_line n "" ^ "\n"
@@ -181,30 +171,21 @@ let has_straight (hand : t) =
 let has_flush_helper (hand : t) =
   let s =
     List.fold_left
-      (fun count x ->
-        match x with
-        | S _ -> count + 1
-        | _ -> count)
+      (fun count x -> match x with S _ -> count + 1 | _ -> count)
       0 hand
   in
   if s > 4 then (true, 'S')
   else
     let h =
       List.fold_left
-        (fun count x ->
-          match x with
-          | H _ -> count + 1
-          | _ -> count)
+        (fun count x -> match x with H _ -> count + 1 | _ -> count)
         0 hand
     in
     if h > 4 then (true, 'H')
     else
       let c =
         List.fold_left
-          (fun count x ->
-            match x with
-            | C _ -> count + 1
-            | _ -> count)
+          (fun count x -> match x with C _ -> count + 1 | _ -> count)
           0 hand
       in
       if c > 4 then (true, 'C')
@@ -212,9 +193,7 @@ let has_flush_helper (hand : t) =
         let d =
           List.fold_left
             (fun count x ->
-              match x with
-              | D _ -> count + 1
-              | _ -> count)
+              match x with D _ -> count + 1 | _ -> count)
             0 hand
         in
         if d > 4 then (true, 'D') else (false, ' ')
@@ -255,69 +234,37 @@ let has_straight_flush (hand : t) =
   match suit with
   | 'S' ->
       hand
-      |> List.filter (fun x ->
-             match x with
-             | S x -> true
-             | _ -> false)
+      |> List.filter (fun x -> match x with S x -> true | _ -> false)
       |> has_straight
   | 'H' ->
       hand
-      |> List.filter (fun x ->
-             match x with
-             | H x -> true
-             | _ -> false)
+      |> List.filter (fun x -> match x with H x -> true | _ -> false)
       |> has_straight
   | 'C' ->
       hand
-      |> List.filter (fun x ->
-             match x with
-             | C x -> true
-             | _ -> false)
+      |> List.filter (fun x -> match x with C x -> true | _ -> false)
       |> has_straight
   | 'D' ->
       hand
-      |> List.filter (fun x ->
-             match x with
-             | D x -> true
-             | _ -> false)
+      |> List.filter (fun x -> match x with D x -> true | _ -> false)
       |> has_straight
   | _ -> false
 
 let sort_and_group hand =
   let s =
-    List.filter
-      (fun x ->
-        match x with
-        | S x -> true
-        | _ -> false)
-      hand
+    List.filter (fun x -> match x with S x -> true | _ -> false) hand
   in
   let s = sort_and_rev s in
   let h =
-    List.filter
-      (fun x ->
-        match x with
-        | H x -> true
-        | _ -> false)
-      hand
+    List.filter (fun x -> match x with H x -> true | _ -> false) hand
   in
   let h = sort_and_rev h in
   let c =
-    List.filter
-      (fun x ->
-        match x with
-        | C x -> true
-        | _ -> false)
-      hand
+    List.filter (fun x -> match x with C x -> true | _ -> false) hand
   in
   let c = sort_and_rev c in
   let d =
-    List.filter
-      (fun x ->
-        match x with
-        | D x -> true
-        | _ -> false)
-      hand
+    List.filter (fun x -> match x with D x -> true | _ -> false) hand
   in
   let d = sort_and_rev d in
   s @ h @ c @ d
@@ -415,40 +362,28 @@ let winning_factor (hand : t) (rank : int) =
       | 'C' ->
           let l =
             List.filter
-              (fun x ->
-                match x with
-                | C x -> true
-                | _ -> false)
+              (fun x -> match x with C x -> true | _ -> false)
               hand
           in
           high_card l
       | 'D' ->
           let l =
             List.filter
-              (fun x ->
-                match x with
-                | D x -> true
-                | _ -> false)
+              (fun x -> match x with D x -> true | _ -> false)
               hand
           in
           high_card l
       | 'S' ->
           let l =
             List.filter
-              (fun x ->
-                match x with
-                | S x -> true
-                | _ -> false)
+              (fun x -> match x with S x -> true | _ -> false)
               hand
           in
           high_card l
       | 'H' ->
           let l =
             List.filter
-              (fun x ->
-                match x with
-                | H x -> true
-                | _ -> false)
+              (fun x -> match x with H x -> true | _ -> false)
               hand
           in
           high_card l
@@ -643,9 +578,7 @@ let three_of_a_kind_kicker (lst : t list) =
   let list =
     List.map
       (fun x ->
-        match x with
-        | a :: b :: _ -> [ a; b ]
-        | _ -> failwith "")
+        match x with a :: b :: _ -> [ a; b ] | _ -> failwith "")
       list
   in
   let temp =
@@ -831,8 +764,6 @@ let highest_hand_helper (lst : t list) =
   if List.length lst = 1 then List.hd lst
   else
     let lst = rank_hands lst in
-    (*let _ = print_endline ("Ranks of hands: " ^ String.concat ", "
-      (List.map string_of_int (fst (List.split lst)))) in*)
     let lst =
       List.rev
         (List.sort

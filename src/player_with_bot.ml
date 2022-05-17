@@ -1,8 +1,4 @@
-type bot_level = 
-| Easy 
-| Medium
-| Hard
-| None
+type bot_level = Easy | Medium | Hard | None
 
 type player = {
   name : string;
@@ -10,16 +6,13 @@ type player = {
   cards : Card.t;
   amount_placed_on_table : int;
   position : int;
-  bot : bool * bot_level
+  bot : bool * bot_level;
 }
 
 exception InsufficientFund
 
-let create_player
-    (input_name : string)
-    (input_wealth : int)
-    (position : int)  
-    (bot : bool * bot_level) =
+let create_player (input_name : string) (input_wealth : int)
+    (position : int) (bot : bool * bot_level) =
   {
     name = input_name;
     wealth = input_wealth;
@@ -29,13 +22,9 @@ let create_player
     bot;
   }
 
-let create_player_full
-    (input_name : string)
-    (input_wealth : int)
-    (input_cards : Card.t)
-    (input_amount_placed_on_table : int)
-    (position : int) 
-    (bot : bool * bot_level) =
+let create_player_full (input_name : string) (input_wealth : int)
+    (input_cards : Card.t) (input_amount_placed_on_table : int)
+    (position : int) (bot : bool * bot_level) =
   {
     name = input_name;
     wealth = input_wealth;
@@ -46,12 +35,19 @@ let create_player_full
   }
 
 let name player = player.name
+
 let wealth player = player.wealth
+
 let is_bot player = player.bot
+
 let amount_placed player = player.amount_placed_on_table
+
 let cards player = player.cards
+
 let position player = player.position
+
 let set_cards player cards = { player with cards }
+
 let set_wealth player amount = { player with wealth = amount }
 
 let reset_player player =

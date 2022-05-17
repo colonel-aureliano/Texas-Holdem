@@ -26,10 +26,7 @@ type game = {
   game_log : string; (* document player moves *)
 }
 
-type command =
-  | Call
-  | Raise of int
-  | Fold
+type command = Call | Raise of int | Fold
 
 (* BEGINING OF HELPER FUNCTIONS *)
 

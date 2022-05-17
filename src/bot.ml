@@ -1,11 +1,8 @@
 open Card
 open Player_with_bot
 
-let decision_rule
-    (my_strength : int)
-    (opp_strength : int)
-    (wealth : int)
-    (min_raise : int) : string list =
+let decision_rule (my_strength : int) (opp_strength : int)
+    (wealth : int) (min_raise : int) : string list =
   if min_raise > wealth then [ "Fold" ]
   else if wealth <= 0 then [ "Fold" ]
   else
@@ -20,19 +17,15 @@ let decision_rule
           wealth
       in
       let raised_amt = min amt wealth in
-      [ "raise"; string_of_int raised_amt]
+      [ "raise"; string_of_int raised_amt ]
     else if threshold < my_strength - opp_strength + 2 then [ "call" ]
     else [ "fold" ]
-
 
 (** [run_rollouts deck num_rollouts cur_cards] simulates [num_rollouts]
     number of rollouts till 7 cards and returns a list containing the
     hands under those rollouts *)
-let rec run_rollouts
-    (deck : Card.t)
-    (num_rollouts : int)
-    (cur_cards : Card.t)
-    (num_cards_to_rollout : int) : Card.t list =
+let rec run_rollouts (deck : Card.t) (num_rollouts : int)
+    (cur_cards : Card.t) (num_cards_to_rollout : int) : Card.t list =
   match num_rollouts with
   | 0 -> []
   | _ ->
@@ -67,13 +60,9 @@ let rec avg_hand_strength deck num_rollouts hand acc =
     (Call, Raise x, Fold) of the medium difficulty bot given cards
     [hand] and [table] and states [wealth] and [min_raise]. It only
     looks at the projection of its own hand's strength.*)
-let next_move_medium
-    (hand : Card.t)
-    (table : Card.t)
-    (deck : Card.t)
-    (wealth : int)
-    (min_raise : int)
-    (num_rollouts : int) : string list =
+let next_move_medium (hand : Card.t) (table : Card.t) (deck : Card.t)
+    (wealth : int) (min_raise : int) (num_rollouts : int) : string list
+    =
   if List.length table = 0 then
     decision_rule
       (starting_hand_estimated_strength hand)
@@ -96,7 +85,7 @@ let next_move_medium
       / (7 - List.length table)
     in
     decision_rule my_avg_strength opp_avg_strength wealth min_raise
-    
+
 (* (** [next_move_easy hand table wealth min_raise] returns the next
    move (Call, Raise x, Fold) of the easy difficulty bot given cards
    [hand] and [table] and states [wealth] and [min_raise]. It only looks
@@ -112,13 +101,8 @@ let next_move_easy (wealth : int) (min_raise : int) =
      Random.int 3)
     0 wealth min_raise
 
-let next_move
-    bot_level
-    (hand : Card.t)
-    (table : Card.t)
-    (deck : Card.t)
-    (wealth : int)
-    (min_raise : int) : string list =
+let next_move bot_level (hand : Card.t) (table : Card.t) (deck : Card.t)
+    (wealth : int) (min_raise : int) : string list =
   match bot_level with
   | Easy -> next_move_easy wealth min_raise
   | Medium -> next_move_medium hand table deck wealth min_raise 100
