@@ -14,16 +14,13 @@
     - [D 1] represents Ace of Diamonds
     - [H 7] represents 7 of Hearts *)
 
-type card =
-  | S of int
-  | H of int
-  | C of int
-  | D of int
+type card = S of int | H of int | C of int | D of int
 
 type t = card list
 (** Represents one deck of cards. *)
 
 exception Tie of int list
+(** Raised by [index_of_highest_hand]. *)
 
 val to_string : t -> string
 (** [to_string hand] returns a string representation of [hand]. *)
