@@ -3,7 +3,7 @@ open Player
 
 let decision_rule (my_strength : int) (opp_strength : int)
     (wealth : int) (min_raise : int) : string list =
-  if min_raise > wealth || wealth <= 0 then [ "Fold" ]
+  if min_raise > wealth || wealth <= 0 then [ "fold" ]
   else
     let threshold =
       Random.self_init ();

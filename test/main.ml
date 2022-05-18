@@ -2,6 +2,7 @@ open OUnit2
 open Texas_holdem
 open Card
 open Game
+open Bot
 
 let index_of_highest_hand_test (name : string) (input : card list list)
     (expected_output : int) =
@@ -335,7 +336,6 @@ let player_b =
   Player.create_player_full "a" 20 [ D 2; S 5 ] 0 1 (false, None)
 
 let player_c = Player.create_player_full "c" 30 [] 0 2 (false, None)
-
 let player_d = Player.create_player_full "d" 30 [] 0 3 (false, None)
 
 let rec list_to_queue players queue =
@@ -347,9 +347,7 @@ let rec list_to_queue players queue =
          queue)
 
 let queue = Queue.create ()
-
 let players_queue = list_to_queue [ player_a; player_b ] queue
-
 let queue1 = Queue.create ()
 
 let players_queue1 =
@@ -366,21 +364,13 @@ let players_queue3 =
   list_to_queue [ player_c; player_d; player_a; player_b ] queue3
 
 let players_queue_with_b_only = list_to_queue [ player_b ] queue
-
 let players_queue_with_a_only = list_to_queue [ player_a ] queue
-
 let player_list2 = [ player_a; player_b ]
-
 let player_list4 = [ player_a; player_b; player_c; player_d ]
-
 let g_by_init2 = create_game player_list2 5
-
 let folded_g2, _ = execute_command g_by_init2 Fold
-
 let g_by_init4 = create_game player_list4 5
-
 let folded_g4, _ = execute_command g_by_init4 Fold
-
 let folded_g4, _ = execute_command folded_g4 Fold
 
 let save_game_test (name : string) (input : game) (name : string)
@@ -404,9 +394,34 @@ let game_save_read_tests =
     read_game_test "" "game_files/4playerfold.json" 15;
   ]
 
+let bot_doesnt_crash difficulty (random_input : int * int * int) =
+  let cards_on_tbl, wealth, min_raise = random_input in
+  let hand, deck = n_random_card new_deck 2 in
+  let _, deck = n_random_card deck 2 in
+  let table, deck = n_random_card deck cards_on_tbl in
+  let move = next_move difficulty hand table deck wealth min_raise in
+  List.hd move = "raise"
+  || List.hd move = "call"
+  || List.hd move = "fold"
+
+let bot_test difficulty count name =
+  QCheck.Test.make ~count ~name
+    QCheck.(triple (3 -- 5) (1 -- 100) (1 -- 100))
+    (bot_doesnt_crash difficulty)
+
+let bot_tests =
+  List.map QCheck_ounit.to_ounit2_test
+    [
+      bot_test Easy 100 "easy bot doesn't crash";
+      bot_test Medium 50 "medium bot doesn't crash";
+      bot_test Hard 10 "hard bot doesn't crash";
+    ]
+
 let suite =
   "test suite for texas_holdem"
   >::: List.flatten
-         [ card_tests; card_impl_tests; game_save_read_tests ]
+         [
+           card_tests; card_impl_tests; game_save_read_tests; bot_tests;
+         ]
 
 let _ = run_test_tt_main suite
