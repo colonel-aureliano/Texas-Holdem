@@ -1,3 +1,42 @@
+(** Test Plan: In this test file, we mainly test the [Card] module,
+    since we're building a card game and the correctness of the [Card]
+    module is instrumental to the play-ability of our game. The [Card]
+    module requires extensive testing to account for numerous scenarios
+    and we try our best to test them all. We also test the save game
+    function from the [Game] module, to ensure that it writes and reads
+    game files correctly. We also test [Bot], which simulates a human
+    player.
+
+    Our tests use OUnit functions such as [assert_equal] and
+    [assert_raises] in testing [Card] and [Game]. Test cases are
+    manually created and they account both for normal cases and edge
+    cases. The method is mainly black-box testing, where we respect the
+    requires clause, feed in appropriate inputs and observe if the
+    module returns a correct ouput. For example, we ask if the
+    [index_of_highest_hand] function is able to identify the highest
+    hand in the list and if it correclty raises [Tie] in the situation
+    of a tie.
+
+    Note that the testing of the [Card] module is divided into
+    [card_tests] and [card_impl_tests], where the former tests functions
+    that are called by other modules, and the latter tests important
+    helper functions. The correctness of the functions in the former
+    depends on the correctness of the functions in the latter.
+
+    We use QCheck functions to test [Bot]'s scalability. This is mainly
+    to avoid its crashing.
+
+    Through ensuring that our Card module behaves correctly, we can be
+    certain that cards will be dealt correctly and that the game
+    correclty determines who the winner is. The other modules [Game] and
+    [Player] depend on the [Card] module for their own correctness. We
+    also ensure [Game] and [Player] are behaving correctly through the
+    testing the [save_game] and [read_game] functions from [Game], where
+    we observe if the behaviors of players and game are as expected
+    between each save and read. In addition, by ensuring that [Bot] is
+    behaving correctly, we ensure that this part of our system which is
+    most likely to crash will not crash. *)
+
 open OUnit2
 open Texas_holdem
 open Card
@@ -318,17 +357,6 @@ let card_impl_tests =
     f_test "has_royal_flush_test hand5" has_royal_flush hand5 false;
   ]
 
-let get_small_blind_test (name : string) (input : game)
-    (expected_output : string) =
-  name >:: fun _ ->
-  assert_equal expected_output (Player.name input.small_blind)
-
-let get_curr_player_test (name : string) (input : game)
-    (expected_output : string) =
-  name >:: fun _ ->
-  assert_equal expected_output
-    (Player.name (Game.get_curr_player input))
-
 let player_a =
   Player.create_player_full "b" 20 [ D 1; H 5 ] 0 0 (false, None)
 
@@ -336,41 +364,21 @@ let player_b =
   Player.create_player_full "a" 20 [ D 2; S 5 ] 0 1 (false, None)
 
 let player_c = Player.create_player_full "c" 30 [] 0 2 (false, None)
+
 let player_d = Player.create_player_full "d" 30 [] 0 3 (false, None)
 
-let rec list_to_queue players queue =
-  match players with
-  | [] -> queue
-  | h :: t ->
-      list_to_queue t
-        (Queue.add h queue;
-         queue)
-
-let queue = Queue.create ()
-let players_queue = list_to_queue [ player_a; player_b ] queue
-let queue1 = Queue.create ()
-
-let players_queue1 =
-  list_to_queue [ player_a; player_b; player_c; player_d ] queue1
-
-let queue2 = Queue.create ()
-
-let players_queue2 =
-  list_to_queue [ player_b; player_c; player_d; player_a ] queue2
-
-let queue3 = Queue.create ()
-
-let players_queue3 =
-  list_to_queue [ player_c; player_d; player_a; player_b ] queue3
-
-let players_queue_with_b_only = list_to_queue [ player_b ] queue
-let players_queue_with_a_only = list_to_queue [ player_a ] queue
 let player_list2 = [ player_a; player_b ]
+
 let player_list4 = [ player_a; player_b; player_c; player_d ]
+
 let g_by_init2 = create_game player_list2 5
+
 let folded_g2, _ = execute_command g_by_init2 Fold
+
 let g_by_init4 = create_game player_list4 5
+
 let folded_g4, _ = execute_command g_by_init4 Fold
+
 let folded_g4, _ = execute_command folded_g4 Fold
 
 let save_game_test (name : string) (input : game) (name : string)
@@ -386,12 +394,16 @@ let read_game_test (name : string) (input : string)
 
 let game_save_read_tests =
   [
-    save_game_test "" g_by_init2 "2player" true;
-    save_game_test "" folded_g2 "2playerfold" true;
-    save_game_test "" folded_g4 "4playerfold" true;
-    read_game_test "" "game_files/2player.json" 15;
-    read_game_test "" "game_files/2playerfold.json" 15;
-    read_game_test "" "game_files/4playerfold.json" 15;
+    save_game_test "save game of 2 player" g_by_init2 "2player" true;
+    save_game_test "save game of 2 player with one fold" folded_g2
+      "2playerfold" true;
+    save_game_test "save game of 4 player with one fold" folded_g4
+      "4playerfold" true;
+    read_game_test "read game of 2 player" "game_files/2player.json" 15;
+    read_game_test "read game of 2 player with one fold"
+      "game_files/2playerfold.json" 15;
+    read_game_test "read game of 4 player with one fold"
+      "game_files/4playerfold.json" 15;
   ]
 
 let bot_doesnt_crash difficulty (random_input : int * int * int) =
