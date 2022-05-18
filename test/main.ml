@@ -404,17 +404,21 @@ let bot_doesnt_crash difficulty (random_input : int * int * int) =
   || List.hd move = "call"
   || List.hd move = "fold"
 
-let bot_test difficulty count name =
+let bot_test difficulty tbl_card_count_range count name =
+  let l, h = tbl_card_count_range in
   QCheck.Test.make ~count ~name
-    QCheck.(triple (3 -- 5) (1 -- 100) (1 -- 100))
+    QCheck.(triple (l -- h) (-10 -- 100) (0 -- 100))
     (bot_doesnt_crash difficulty)
 
 let bot_tests =
   List.map QCheck_ounit.to_ounit2_test
     [
-      bot_test Easy 100 "easy bot doesn't crash";
-      bot_test Medium 50 "medium bot doesn't crash";
-      bot_test Hard 10 "hard bot doesn't crash";
+      bot_test Easy (3, 5) 100 "easy bot doesn't crash";
+      bot_test Medium (3, 5) 100 "medium bot doesn't crash";
+      bot_test Hard (3, 5) 20 "hard bot doesn't crash";
+      bot_test Easy (2, 2) 100 "easy bot preflop doesn't crash";
+      bot_test Medium (2, 2) 100 "medium bot preflop doesn't crash";
+      bot_test Hard (2, 2) 20 "hard bot preflop doesn't crash";
     ]
 
 let suite =
